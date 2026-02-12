@@ -6,22 +6,28 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL ?? process.env.DIRECT_URL;
 
 if (!connectionString) {
-  throw new Error("DATABASE_URL is not set");
+  throw new Error("DATABASE_URL (or DIRECT_URL) is not set");
 }
 
 const dbUrl = new URL(connectionString);
-const shouldUseTls =
-  dbUrl.searchParams.has("sslmode") || dbUrl.hostname.endsWith("supabase.co");
+const isSupabaseHost =
+  dbUrl.hostname.endsWith("supabase.co") ||
+  dbUrl.hostname.endsWith("supabase.com");
+const sslMode = dbUrl.searchParams.get("sslmode");
+const shouldUseTls = Boolean(sslMode) || isSupabaseHost;
+const shouldRelaxTlsValidation =
+  isSupabaseHost && sslMode !== "verify-full" && sslMode !== "verify-ca";
 
 const pool = new Pool({
   connectionString,
   ...(shouldUseTls
     ? {
-        // Supabase connection endpoints require TLS; this avoids local cert chain failures.
-        ssl: { rejectUnauthorized: false },
+        ssl: shouldRelaxTlsValidation
+          ? { rejectUnauthorized: false }
+          : true,
       }
     : {}),
 });
