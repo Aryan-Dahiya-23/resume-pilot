@@ -11,10 +11,6 @@ export type ParsedResume = {
   parserVersion: string;
 };
 
-async function loadModule(moduleName: string) {
-  return (new Function(`return import("${moduleName}")`)() as Promise<Record<string, unknown>>);
-}
-
 function normalizeText(text: string) {
   return text.replace(/\r\n/g, "\n").replace(/\u0000/g, "").replace(/\t/g, " ").replace(/\n{3,}/g, "\n\n").trim();
 }
@@ -163,14 +159,14 @@ function structureResumeText(rawText: string): ParsedResume["structured"] {
 }
 
 async function parsePdf(buffer: Buffer) {
-  const importedModule = await loadModule("pdf-parse");
+  const importedModule = (await import("pdf-parse")) as Record<string, unknown>;
   const parser = (importedModule.default ?? importedModule) as (input: Buffer) => Promise<{ text?: string }>;
   const result = await parser(buffer);
   return result.text ?? "";
 }
 
 async function parseDocx(buffer: Buffer) {
-  const importedModule = await loadModule("mammoth");
+  const importedModule = (await import("mammoth")) as Record<string, unknown>;
   const parser = importedModule.extractRawText as
     | ((input: { buffer: Buffer }) => Promise<{ value?: string }>)
     | undefined;
