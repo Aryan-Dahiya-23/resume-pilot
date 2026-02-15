@@ -6,6 +6,22 @@ datasource db {
   provider = "postgresql"
 }
 
+enum ResumeStatus {
+  UPLOADED
+  PARSING
+  REVIEWING
+  READY
+  FAILED
+}
+
+enum JobStatus {
+  Saved
+  Applied
+  Interview
+  Offer
+  Rejected
+}
+
 model User {
   id        String   @id @default(uuid())
   clerkId   String   @unique
@@ -13,4 +29,90 @@ model User {
   email     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  resumes   Resume[]
+  jobs      Job[]
+}
+
+model Resume {
+  id         String       @id @default(uuid())
+  userId     String
+  fileName   String
+  storageKey String
+  mimeType   String
+  size       Int
+  roleTarget String?
+  targetLevel String?
+  status     ResumeStatus @default(UPLOADED)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parse  ResumeParse?
+  review ResumeReview?
+  reviewHistory ResumeReviewHistory[]
+
+  @@index([userId, createdAt])
+}
+
+model ResumeParse {
+  id             String   @id @default(uuid())
+  resumeId       String   @unique
+  rawText        String
+  structuredJson Json
+  parserVersion  String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model ResumeReview {
+  id              String   @id @default(uuid())
+  resumeId        String   @unique
+  score           Int
+  summaryJson     Json
+  missingKeywords Json
+  suggestionsJson Json
+  model           String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model ResumeReviewHistory {
+  id              String   @id @default(uuid())
+  resumeId        String
+  score           Int
+  summaryJson     Json
+  missingKeywords Json
+  suggestionsJson Json
+  model           String
+  createdAt       DateTime @default(now())
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId, createdAt])
+}
+
+model Job {
+  id        String    @id @default(uuid())
+  userId    String
+  company   String
+  role      String
+  status    JobStatus @default(Saved)
+  notes     String?
+  followUp  String?
+  contactName  String?
+  contactEmail String?
+  interviewRounds Json?
+  location  String?
+  link      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, status])
 }

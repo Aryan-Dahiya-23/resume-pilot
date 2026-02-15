@@ -4,7 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { statusVariant, type Job, type JobDetail } from "@/lib/mock-data";
 
-export function JobDetailsHeader({ job }: { job: Job }) {
+export function JobDetailsHeader({
+  job,
+  onEditJob,
+}: {
+  job: Job;
+  onEditJob?: () => void;
+}) {
   return (
     <div className="flex flex-col gap-3 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
       <div>
@@ -32,8 +38,13 @@ export function JobDetailsHeader({ job }: { job: Job }) {
               Open listing
             </Button>
           </a>
-        ) : null}
-        <Button>
+        ) : (
+          <Button variant="secondary" disabled>
+            <ExternalLink className="h-4 w-4" />
+            Open listing
+          </Button>
+        )}
+        <Button onClick={onEditJob}>
           <Pencil className="h-4 w-4" />
           Edit job
         </Button>
@@ -42,21 +53,51 @@ export function JobDetailsHeader({ job }: { job: Job }) {
   );
 }
 
-export function JobDetailsMain({ details }: { details: JobDetail }) {
+export function JobDetailsMain({
+  details,
+  notesValue,
+  onNotesChange,
+  onSaveNotes,
+  isSavingNotes,
+  onCopyNotes,
+  onEditRounds,
+}: {
+  details: JobDetail;
+  notesValue?: string;
+  onNotesChange?: (value: string) => void;
+  onSaveNotes?: () => void;
+  isSavingNotes?: boolean;
+  onCopyNotes?: (value: string) => void;
+  onEditRounds?: () => void;
+}) {
+  const currentNotes = notesValue ?? details.notes ?? "";
+
   return (
     <div className="space-y-6">
       <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
         <div className="text-sm font-medium text-zinc-900">Notes</div>
-        <div className="mt-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700">
-          {details.notes || "No notes yet."}
-        </div>
+        <textarea
+          value={currentNotes}
+          onChange={(event) => onNotesChange?.(event.target.value)}
+          placeholder="Add notes for this job..."
+          className="mt-3 min-h-[130px] w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700 outline-none focus:border-zinc-400"
+        />
 
         <div className="mt-4 flex gap-2">
-          <Button variant="secondary" className="px-3">
-            <Pencil className="h-4 w-4" />
-            Edit notes
+          <Button
+            variant="secondary"
+            className="px-3"
+            onClick={onSaveNotes}
+            disabled={isSavingNotes}
+          >
+            <Save className="h-4 w-4" />
+            {isSavingNotes ? "Saving..." : "Save notes"}
           </Button>
-          <Button variant="secondary" className="px-3">
+          <Button
+            variant="secondary"
+            className="px-3"
+            onClick={() => onCopyNotes?.(currentNotes)}
+          >
             <Copy className="h-4 w-4" />
             Copy
           </Button>
@@ -82,18 +123,50 @@ export function JobDetailsMain({ details }: { details: JobDetail }) {
             <div className="text-sm text-zinc-600">No rounds added.</div>
           )}
         </div>
+        <div className="mt-3">
+          <Button variant="secondary" className="px-3" onClick={onEditRounds}>
+            <Pencil className="h-4 w-4" />
+            Edit rounds
+          </Button>
+        </div>
       </section>
     </div>
   );
 }
 
-export function JobDetailsSidebar({ details }: { details: JobDetail }) {
+export function JobDetailsSidebar({
+  details,
+  status,
+  onStatusChange,
+  onSaveStatus,
+  isSavingStatus,
+  onSetFollowUp,
+  isSettingFollowUp,
+  onEditContact,
+  onDelete,
+  isDeleting,
+}: {
+  details: JobDetail;
+  status?: Job["status"];
+  onStatusChange?: (value: Job["status"]) => void;
+  onSaveStatus?: () => void;
+  isSavingStatus?: boolean;
+  onSetFollowUp?: () => void;
+  isSettingFollowUp?: boolean;
+  onEditContact?: () => void;
+  onDelete?: () => void;
+  isDeleting?: boolean;
+}) {
   return (
     <aside className="space-y-6">
       <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
         <div className="text-sm font-medium text-zinc-900">Status</div>
         <div className="mt-3">
-          <select className="w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400">
+          <select
+            value={status ?? "Saved"}
+            onChange={(event) => onStatusChange?.(event.target.value as Job["status"])}
+            className="w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+          >
             <option>Saved</option>
             <option>Applied</option>
             <option>Interview</option>
@@ -102,9 +175,9 @@ export function JobDetailsSidebar({ details }: { details: JobDetail }) {
           </select>
         </div>
         <div className="mt-3">
-          <Button className="w-full">
+          <Button className="w-full" onClick={onSaveStatus} disabled={isSavingStatus}>
             <Save className="h-4 w-4" />
-            Update status
+            {isSavingStatus ? "Updating..." : "Update status"}
           </Button>
         </div>
       </section>
@@ -116,9 +189,14 @@ export function JobDetailsSidebar({ details }: { details: JobDetail }) {
           {details.followUp || "Not set"}
         </div>
         <div className="mt-3">
-          <Button variant="secondary" className="w-full">
+          <Button
+            variant="secondary"
+            className="w-full"
+            onClick={onSetFollowUp}
+            disabled={isSettingFollowUp}
+          >
             <Calendar className="h-4 w-4" />
-            Set follow-up
+            {isSettingFollowUp ? "Saving..." : "Set follow-up"}
           </Button>
         </div>
       </section>
@@ -135,14 +213,25 @@ export function JobDetailsSidebar({ details }: { details: JobDetail }) {
             <div className="font-medium text-zinc-900">{details.contact?.email || "—"}</div>
           </div>
         </div>
+        <div className="mt-3">
+          <Button variant="secondary" className="w-full" onClick={onEditContact}>
+            <Pencil className="h-4 w-4" />
+            Edit contact
+          </Button>
+        </div>
       </section>
 
       <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
         <div className="text-sm font-medium text-zinc-900">Danger zone</div>
         <div className="mt-3">
-          <Button variant="danger" className="w-full">
+          <Button
+            variant="danger"
+            className="w-full"
+            onClick={onDelete}
+            disabled={isDeleting}
+          >
             <Trash2 className="h-4 w-4" />
-            Delete job
+            {isDeleting ? "Deleting..." : "Delete job"}
           </Button>
         </div>
       </section>

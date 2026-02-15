@@ -1,32 +1,19 @@
-import {
-  JobDetailsHeader,
-  JobDetailsMain,
-  JobDetailsSidebar,
-} from "@/components/dashboard/job-details-sections";
-import { mockData } from "@/lib/mock-data";
+"use client";
 
-export default async function JobDetailsPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const job = mockData.jobs.find((item) => item.id === id) ?? mockData.jobs[0];
-  const details = mockData.jobDetails[id] ?? {
-    notes: "",
-    contact: { name: "", email: "" },
-    rounds: [],
-    followUp: "",
-  };
+import { useParams } from "next/navigation";
+import { JobDetailsClient } from "@/components/dashboard/job-details-client";
 
-  return (
-    <>
-      <JobDetailsHeader job={job} />
+export default function JobDetailsPage() {
+  const params = useParams<{ id: string }>();
+  const jobId = params?.id;
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">
-        <JobDetailsMain details={details} />
-        <JobDetailsSidebar details={details} />
+  if (!jobId) {
+    return (
+      <div className="rounded-3xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-700 shadow-sm">
+        Invalid job id.
       </div>
-    </>
-  );
+    );
+  }
+
+  return <JobDetailsClient jobId={jobId} />;
 }

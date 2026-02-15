@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowRight, BarChart3, CheckCircle2, FileText, Shield, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/landing/pill";
@@ -28,13 +29,17 @@ export function HeroSection() {
           </p>
 
           <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-            <Button className="px-5 py-2.5">
-              Get started
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-            <Button variant="secondary" className="px-5 py-2.5">
-              View demo
-            </Button>
+            <Link href="/sign-in">
+              <Button className="px-5 py-2.5">
+                Get started
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button variant="secondary" className="px-5 py-2.5">
+                View demo
+              </Button>
+            </Link>
           </div>
 
           <div className="mt-6 flex flex-col gap-2 text-sm text-zinc-600 sm:flex-row sm:items-center">

@@ -19,13 +19,9 @@ export function LandingHeader() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" className="hidden sm:inline-flex">
-            Pricing
-          </Button>
           <Link href="/sign-in">
-            <Button variant="secondary">Sign in</Button>
+            <Button>Get started</Button>
           </Link>
-          <Button>Get started</Button>
         </div>
       </div>
     </header>

@@ -2,26 +2,36 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SignOutButton } from "@clerk/nextjs";
+import { useQueryClient } from "@tanstack/react-query";
+import { useClerk } from "@clerk/nextjs";
 import { Briefcase, FileText, LayoutDashboard, LogOut, Settings, TrendingUp } from "lucide-react";
 import { cn } from "@/components/ui/cn";
 import { Button } from "@/components/ui/button";
-import { useCurrentDbUser } from "@/hooks/queries";
+import { useCurrentDbUser, useDashboardOverview } from "@/hooks/queries";
+import { getDashboardOverview } from "@/lib/api/dashboard";
+import { listJobs } from "@/lib/api/jobs";
+import { listResumes } from "@/lib/api/resumes";
+import { getCurrentDbUserClient } from "@/lib/api/users";
+import { queryKeys } from "@/lib/react-query/query-keys";
+import { useState } from "react";
 
 function SidebarItem({
   href,
   icon,
   label,
   active,
+  onHover,
 }: {
   href: string;
   icon: React.ReactNode;
   label: string;
   active?: boolean;
+  onHover?: () => void;
 }) {
   return (
     <Link
       href={href}
+      onMouseEnter={onHover}
       className={cn(
         "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm transition",
         active ? "bg-zinc-900 text-white" : "text-zinc-700 hover:bg-zinc-100",
@@ -35,9 +45,59 @@ function SidebarItem({
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const queryClient = useQueryClient();
+  const { signOut } = useClerk();
   const { data: currentUser } = useCurrentDbUser();
+  const { data: dashboardOverview } = useDashboardOverview();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const displayName = currentUser?.name?.trim() || currentUser?.email || "User";
   const avatarInitial = displayName.charAt(0).toUpperCase();
+  const weeklyGoal = 10;
+  const weeklyDone = dashboardOverview?.weeklyApplications ?? 0;
+  const weeklyProgress = Math.min(100, Math.max(0, Math.round((weeklyDone / weeklyGoal) * 100)));
+
+  function prefetchDashboardOverview() {
+    void queryClient.prefetchQuery({
+      queryKey: queryKeys.dashboard.overview(),
+      queryFn: getDashboardOverview,
+      staleTime: 30 * 1000,
+    });
+  }
+
+  function prefetchResumesList() {
+    void queryClient.prefetchQuery({
+      queryKey: queryKeys.resumes.list(),
+      queryFn: listResumes,
+      staleTime: 30 * 1000,
+    });
+  }
+
+  function prefetchJobsList() {
+    void queryClient.prefetchQuery({
+      queryKey: queryKeys.jobs.list(),
+      queryFn: listJobs,
+      staleTime: 30 * 1000,
+    });
+  }
+
+  function prefetchSettingsData() {
+    void queryClient.prefetchQuery({
+      queryKey: queryKeys.user.current(),
+      queryFn: getCurrentDbUserClient,
+      staleTime: 30 * 1000,
+    });
+  }
+
+  async function handleConfirmLogout() {
+    setIsLoggingOut(true);
+    try {
+      await signOut({ redirectUrl: "/" });
+    } finally {
+      setIsLoggingOut(false);
+      setIsLogoutModalOpen(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -60,24 +120,28 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 icon={<LayoutDashboard className="h-4 w-4" />}
                 label="Dashboard"
                 active={pathname === "/dashboard"}
+                onHover={prefetchDashboardOverview}
               />
               <SidebarItem
                 href="/dashboard/resumes"
                 icon={<FileText className="h-4 w-4" />}
                 label="Resumes"
                 active={pathname.startsWith("/dashboard/resumes")}
+                onHover={prefetchResumesList}
               />
               <SidebarItem
                 href="/dashboard/jobs"
                 icon={<Briefcase className="h-4 w-4" />}
                 label="Jobs"
                 active={pathname.startsWith("/dashboard/jobs")}
+                onHover={prefetchJobsList}
               />
               <SidebarItem
                 href="/dashboard/settings"
                 icon={<Settings className="h-4 w-4" />}
                 label="Settings"
                 active={pathname.startsWith("/dashboard/settings")}
+                onHover={prefetchSettingsData}
               />
             </div>
 
@@ -90,24 +154,60 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 Apply to <span className="font-medium">10 jobs</span> this week.
               </div>
               <div className="mt-3 h-2 w-full rounded-full bg-zinc-200">
-                <div className="h-2 w-2/3 rounded-full bg-zinc-900" />
+                <div
+                  className="h-2 rounded-full bg-zinc-900 transition-[width] duration-300"
+                  style={{ width: `${weeklyProgress}%` }}
+                />
               </div>
-              <div className="mt-2 text-xs text-zinc-500">6 / 10 done</div>
+              <div className="mt-2 text-xs text-zinc-500">
+                {weeklyDone} / {weeklyGoal} done
+              </div>
             </div>
 
             <div className="mt-4">
-              <SignOutButton redirectUrl="/">
-                <Button variant="secondary" className="w-full">
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </Button>
-              </SignOutButton>
+              <Button
+                variant="secondary"
+                className="w-full"
+                onClick={() => setIsLogoutModalOpen(true)}
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
             </div>
           </aside>
 
           <main className="space-y-6">{children}</main>
         </div>
       </div>
+
+      {isLogoutModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
+          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
+            <div className="text-base font-semibold text-zinc-900">
+              Logout now?
+            </div>
+            <div className="mt-2 text-sm text-zinc-600">
+              You will be signed out from your account.
+            </div>
+            <div className="mt-4 flex items-center justify-end gap-2">
+              <button
+                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+                onClick={() => setIsLogoutModalOpen(false)}
+                disabled={isLoggingOut}
+              >
+                Cancel
+              </button>
+              <button
+                className="rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
+                onClick={handleConfirmLogout}
+                disabled={isLoggingOut}
+              >
+                {isLoggingOut ? "Logging out..." : "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

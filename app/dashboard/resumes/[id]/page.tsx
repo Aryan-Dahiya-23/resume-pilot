@@ -1,27 +1,19 @@
-import {
-  ResumeDetailsMain,
-  ResumeDetailsSidebar,
-  ResumeFeedbackHeader,
-} from "@/components/dashboard/resume-details-sections";
-import { mockData } from "@/lib/mock-data";
+"use client";
 
-export default async function ResumeDetailsPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const resume = mockData.resumes.find((item) => item.id === id) ?? mockData.resumes[0];
-  const feedback = mockData.resumeFeedback[id] ?? mockData.resumeFeedback[mockData.resumes[0].id];
+import { useParams } from "next/navigation";
+import { ResumeDetailsClient } from "@/components/dashboard/resume-details-client";
 
-  return (
-    <>
-      <ResumeFeedbackHeader resume={resume} />
+export default function ResumeDetailsPage() {
+  const params = useParams<{ id: string }>();
+  const resumeId = params?.id;
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">
-        <ResumeDetailsMain feedback={feedback} />
-        <ResumeDetailsSidebar feedback={feedback} />
+  if (!resumeId) {
+    return (
+      <div className="rounded-3xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-700 shadow-sm">
+        Invalid resume id.
       </div>
-    </>
-  );
+    );
+  }
+
+  return <ResumeDetailsClient resumeId={resumeId} />;
 }

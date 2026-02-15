@@ -64,6 +64,19 @@ export async function deleteUserByClerkId(clerkId: string) {
   });
 }
 
+export async function updateUserNameById(input: { userId: string; name: string | null }) {
+  return prisma.user.update({
+    where: { id: input.userId },
+    data: { name: input.name },
+  });
+}
+
+export async function deleteUserById(userId: string) {
+  return prisma.user.delete({
+    where: { id: userId },
+  });
+}
+
 export async function syncCurrentUserToDatabase() {
   const user = await currentUser();
   if (!user) return null;
@@ -81,4 +94,12 @@ export async function syncCurrentUserToDatabase() {
     email: primaryEmail,
     name: fullName || null,
   });
+}
+
+export async function ensureCurrentDbUser() {
+  const existing = await getCurrentDbUser();
+  if (existing) return existing;
+
+  await syncCurrentUserToDatabase();
+  return getCurrentDbUser();
 }

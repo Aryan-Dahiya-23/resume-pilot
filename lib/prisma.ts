@@ -33,12 +33,19 @@ const pool = new Pool({
 });
 const adapter = new PrismaPg(pool);
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+function createPrismaClient() {
+  return new PrismaClient({
     adapter,
     log: ["warn", "error"],
   });
+}
+
+const cachedPrisma = globalForPrisma.prisma;
+const hasJobDelegate =
+  cachedPrisma &&
+  typeof (cachedPrisma as unknown as { job?: unknown }).job !== "undefined";
+
+export const prisma = cachedPrisma && hasJobDelegate ? cachedPrisma : createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;

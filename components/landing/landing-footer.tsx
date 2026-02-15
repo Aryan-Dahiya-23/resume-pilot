@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Sparkles } from "lucide-react";
 
 export function LandingFooter() {
@@ -15,15 +16,15 @@ export function LandingFooter() {
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
-          <a className="hover:underline" href="#">
+          <Link className="hover:underline" href="/privacy">
             Privacy
-          </a>
-          <a className="hover:underline" href="#">
+          </Link>
+          <Link className="hover:underline" href="/terms">
             Terms
-          </a>
-          <a className="hover:underline" href="#">
+          </Link>
+          <Link className="hover:underline" href="/contact">
             Contact
-          </a>
+          </Link>
         </div>
       </div>
     </footer>
