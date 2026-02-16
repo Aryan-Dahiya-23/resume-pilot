@@ -65,6 +65,7 @@ export default function JobsPage() {
   }, [debouncedQuery, statusFilter, dateFilter]);
 
   const rows = useMemo(() => {
+    if (jobsQuery.isFetching) return [];
     const jobs = jobsQuery.data?.jobs ?? [];
     return jobs.map((job) => ({
         id: job.id,
@@ -75,7 +76,7 @@ export default function JobsPage() {
         link: job.link ?? undefined,
         location: job.location ?? undefined,
       }));
-  }, [jobsQuery.data]);
+  }, [jobsQuery.data, jobsQuery.isFetching]);
 
   const editingJob = useMemo(
     () => (jobsQuery.data?.jobs ?? []).find((job) => job.id === editingJobId) ?? null,
@@ -266,7 +267,7 @@ export default function JobsPage() {
             currentPage={page}
             totalPages={totalPages}
             onPageChange={handlePageChange}
-            isLoadingRows={false}
+            isLoadingRows={jobsQuery.isFetching}
           />
           {!jobsQuery.isLoading && !hasAnyJobs ? (
             <section className="rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
