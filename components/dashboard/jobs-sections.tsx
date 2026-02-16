@@ -147,9 +147,9 @@ export function AddJobModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/55 p-4 backdrop-blur-[2px]">
-      <div className="w-full max-w-xl rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-        <div className="flex items-start justify-between gap-3">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/55 p-0 backdrop-blur-[2px] sm:items-center sm:p-4">
+      <div className="flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-zinc-200 bg-white shadow-xl sm:max-h-[90dvh] sm:max-w-xl sm:rounded-3xl">
+        <div className="flex items-start justify-between gap-3 border-b border-zinc-200 px-4 py-4 sm:px-5 sm:py-5">
           <div>
             <div className="text-base font-semibold text-zinc-900">
               {mode === "edit" ? "Edit job" : "Add job"}
@@ -170,7 +170,7 @@ export function AddJobModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="text-xs font-medium text-zinc-600">Company</label>
@@ -260,7 +260,7 @@ export function AddJobModal({
             </div>
           ) : null}
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col-reverse gap-2 border-t border-zinc-200 pt-4 sm:flex-row sm:items-center sm:justify-end">
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
@@ -271,7 +271,7 @@ export function AddJobModal({
                 mode === "edit" ? "Save changes" : "Create job"
               )}
             </Button>
-            <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
+            <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
           </div>
