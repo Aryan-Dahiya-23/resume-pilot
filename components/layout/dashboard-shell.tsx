@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useClerk } from "@clerk/nextjs";
-import { Briefcase, FileText, LayoutDashboard, LogOut, Menu, Settings, TrendingUp, X } from "lucide-react";
+import { Briefcase, ChevronRight, FileText, LayoutDashboard, LogOut, Menu, Settings, TrendingUp } from "lucide-react";
 import { cn } from "@/components/ui/cn";
 import { Button } from "@/components/ui/button";
 import { useCurrentDbUser, useDashboardOverview } from "@/hooks/queries";
@@ -40,12 +40,20 @@ function SidebarItem({
       onMouseEnter={onHover}
       onClick={onClick}
       className={cn(
-        "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm transition-all duration-200",
+        "flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm transition-all duration-200",
         isHighlighted ? "bg-zinc-900 text-white" : "text-zinc-700 hover:bg-zinc-100",
       )}
     >
-      <span className="grid place-items-center">{icon}</span>
-      <span className="font-medium">{label}</span>
+      <span className="flex items-center gap-2">
+        <span className="grid place-items-center">{icon}</span>
+        <span className="font-medium">{label}</span>
+      </span>
+      <ChevronRight
+        className={cn(
+          "h-4 w-4 transition-transform duration-200",
+          isHighlighted ? "text-white/80" : "text-zinc-400",
+        )}
+      />
     </Link>
   );
 }
@@ -158,7 +166,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     return (
       <>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
           <div>
             <div className="text-sm text-zinc-500">Welcome back</div>
             <div className="text-lg font-semibold text-zinc-900">{displayName}</div>
@@ -168,7 +176,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <div className="mt-6 space-y-1">
+        <div className="mt-4 space-y-1">
           <SidebarItem
             href="/dashboard"
             icon={<LayoutDashboard className="h-4 w-4" />}
@@ -267,7 +275,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           >
             <Menu className="h-4 w-4" />
           </button>
-          <div className="text-sm font-semibold text-zinc-900">Dashboard</div>
+          <div className="text-sm font-semibold text-zinc-900">Resume Pilot</div>
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-zinc-900 text-white">
             <span className="text-xs font-semibold">{avatarInitial}</span>
           </div>
@@ -299,16 +307,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         onTouchMove={handleDrawerTouchMove}
         onTouchEnd={handleDrawerTouchEnd}
       >
-        <div className="mb-2 flex items-center justify-end">
-          <button
-            type="button"
-            className="rounded-xl border border-zinc-200 bg-white p-2 text-zinc-700 hover:bg-zinc-50"
-            onClick={() => setIsMobileSidebarOpen(false)}
-            aria-label="Close menu"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
         <SidebarContent onNavigate={() => setIsMobileSidebarOpen(false)} />
       </aside>
 
