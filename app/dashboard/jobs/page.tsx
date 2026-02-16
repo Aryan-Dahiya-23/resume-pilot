@@ -33,7 +33,6 @@ function toRelativeDayLabel(dateInput: string) {
 export default function JobsPage() {
   const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<JobStatus | "All">("All");
   const [isAddJobOpen, setIsAddJobOpen] = useState(false);
   const [editingJobId, setEditingJobId] = useState<string | null>(null);
   const [jobToDeleteId, setJobToDeleteId] = useState<string | null>(null);
@@ -57,15 +56,12 @@ export default function JobsPage() {
         link: job.link ?? undefined,
         location: job.location ?? undefined,
       }))
-      .filter((job) => {
-      const matchesStatus = status === "All" ? true : job.status === status;
-      const matchesQuery = search
-        ? [job.company, job.role, job.location ?? ""].join(" ").toLowerCase().includes(search)
-        : true;
-
-      return matchesStatus && matchesQuery;
-    });
-  }, [jobsQuery.data, query, status]);
+      .filter((job) =>
+        search
+          ? [job.company, job.role, job.location ?? ""].join(" ").toLowerCase().includes(search)
+          : true,
+      );
+  }, [jobsQuery.data, query]);
 
   const editingJob = useMemo(
     () => (jobsQuery.data ?? []).find((job) => job.id === editingJobId) ?? null,
@@ -238,8 +234,6 @@ export default function JobsPage() {
           <JobsTableSection
             query={query}
             onQueryChange={setQuery}
-            status={status}
-            onStatusChange={setStatus}
             rows={rows}
             onEditJob={setEditingJobId}
             onRequestDeleteJob={setJobToDeleteId}

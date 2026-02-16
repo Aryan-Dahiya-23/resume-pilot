@@ -1,8 +1,6 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
-  Download,
-  Filter,
   Loader2,
   Pencil,
   Plus,
@@ -27,10 +25,6 @@ export function JobsHeader({ onAddJobClick }: { onAddJobClick?: () => void }) {
         <Button onClick={onAddJobClick}>
           <Plus className="h-4 w-4" />
           Add job
-        </Button>
-        <Button variant="secondary">
-          <Download className="h-4 w-4" />
-          Export CSV
         </Button>
       </div>
     </div>
@@ -290,8 +284,6 @@ export function AddJobModal({
 export function JobsTableSection({
   query,
   onQueryChange,
-  status,
-  onStatusChange,
   rows,
   onEditJob,
   onRequestDeleteJob,
@@ -301,8 +293,6 @@ export function JobsTableSection({
 }: {
   query: string;
   onQueryChange: (value: string) => void;
-  status: JobStatus | "All";
-  onStatusChange: (value: JobStatus | "All") => void;
   rows: Job[];
   onEditJob?: (jobId: string) => void;
   onRequestDeleteJob?: (jobId: string) => void;
@@ -312,57 +302,31 @@ export function JobsTableSection({
 }) {
   return (
     <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="relative w-full sm:w-[360px]">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-            <input
-              value={query}
-              onChange={(event) => onQueryChange(event.target.value)}
-              placeholder="Search company, role, location..."
-              className="w-full rounded-2xl border border-zinc-200 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-zinc-500">Status</span>
-            <select
-              value={status}
-              onChange={(event) => onStatusChange(event.target.value as JobStatus | "All")}
-              className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-            >
-              <option>All</option>
-              <option>Saved</option>
-              <option>Applied</option>
-              <option>Interview</option>
-              <option>Offer</option>
-              <option>Rejected</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" className="px-3">
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
-        </div>
+      <div className="relative w-full sm:w-[360px]">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+        <input
+          value={query}
+          onChange={(event) => onQueryChange(event.target.value)}
+          placeholder="Search company, role, location..."
+          className="w-full rounded-2xl border border-zinc-200 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
+        />
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-2xl border border-zinc-200">
-        <div className="grid grid-cols-[1.2fr_1.4fr_160px_140px_80px] bg-zinc-50 px-4 py-3 text-xs font-medium text-zinc-600">
-          <div>Company</div>
-          <div>Role</div>
-          <div>Status</div>
-          <div>Date</div>
-          <div className="text-right">...</div>
-        </div>
-        <div className="divide-y divide-zinc-200">
-          {rows.map((job) => (
-            <div
-              key={job.id}
-              className="grid grid-cols-[1.2fr_1.4fr_160px_140px_80px] items-center px-4 py-3"
-            >
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200">
+        <div className="min-w-[780px]">
+          <div className="grid grid-cols-[1.2fr_1.4fr_160px_140px_80px] bg-zinc-50 px-4 py-3 text-xs font-medium text-zinc-600">
+            <div>Company</div>
+            <div>Role</div>
+            <div>Status</div>
+            <div>Date</div>
+            <div className="text-right">...</div>
+          </div>
+          <div className="divide-y divide-zinc-200">
+            {rows.map((job) => (
+              <div
+                key={job.id}
+                className="grid grid-cols-[1.2fr_1.4fr_160px_140px_80px] items-center px-4 py-3"
+              >
               <div className="truncate text-left text-sm font-medium text-zinc-900">
                 {job.company}
               </div>
@@ -405,8 +369,9 @@ export function JobsTableSection({
                   )}
                 </button>
               </div>
-            </div>
-          ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

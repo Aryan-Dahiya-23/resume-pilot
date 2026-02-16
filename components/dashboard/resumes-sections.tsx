@@ -5,9 +5,7 @@ import {
   ArrowUpRight,
   Briefcase,
   CheckCircle2,
-  Download,
   FileText,
-  Filter,
   Loader2,
   Lightbulb,
   Search,
@@ -66,43 +64,31 @@ export function ResumesTableSection({
 }) {
   return (
     <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-          <input
-            value={query}
-            onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Search versions, file name, target role..."
-            className="w-full rounded-2xl border border-zinc-200 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" className="px-3">
-            <Filter className="h-4 w-4" />
-            Filter
-          </Button>
-          <Button variant="secondary" className="px-3">
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
-        </div>
+      <div className="relative w-full sm:max-w-md">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+        <input
+          value={query}
+          onChange={(event) => onQueryChange(event.target.value)}
+          placeholder="Search versions, file name, target role..."
+          className="w-full rounded-2xl border border-zinc-200 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
+        />
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-2xl border border-zinc-200">
-        <div className="grid grid-cols-[110px_1fr_120px_120px_140px] gap-0 bg-zinc-50 px-4 py-3 text-xs font-medium text-zinc-600">
-          <div>Version</div>
-          <div>File</div>
-          <div>Status</div>
-          <div>Score</div>
-          <div className="text-right">Actions</div>
-        </div>
-        <div className="divide-y divide-zinc-200">
-          {rows.map((resume) => (
-            <div
-              key={resume.id}
-              className="grid grid-cols-[110px_1fr_120px_120px_140px] items-center gap-0 px-4 py-3"
-            >
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200">
+        <div className="min-w-[740px]">
+          <div className="grid grid-cols-[110px_1fr_120px_120px_140px] gap-0 bg-zinc-50 px-4 py-3 text-xs font-medium text-zinc-600">
+            <div>Version</div>
+            <div>File</div>
+            <div>Status</div>
+            <div>Score</div>
+            <div className="text-right">Actions</div>
+          </div>
+          <div className="divide-y divide-zinc-200">
+            {rows.map((resume) => (
+              <div
+                key={resume.id}
+                className="grid grid-cols-[110px_1fr_120px_120px_140px] items-center gap-0 px-4 py-3"
+              >
               <div className="text-sm font-medium text-zinc-900">
                 {resume.version}
                 <div className="mt-0.5 text-xs text-zinc-500">
@@ -162,8 +148,9 @@ export function ResumesTableSection({
                   )}
                 </button>
               </div>
-            </div>
-          ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
