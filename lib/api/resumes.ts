@@ -56,13 +56,30 @@ export type ResumeListItem = {
 
 type ListResumesResponse = {
   resumes: ResumeListItem[];
+  totalCount: number;
 };
 
-export async function listResumes() {
+export type ListResumesFilters = {
+  q?: string;
+  status?: "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED";
+  dateRange?: "today" | "7d" | "30d";
+};
+
+export async function listResumesQuery(filters?: ListResumesFilters) {
   const response = await axios.get<ListResumesResponse>("/api/resumes", {
     withCredentials: true,
+    params: {
+      q: filters?.q || undefined,
+      status: filters?.status || undefined,
+      dateRange: filters?.dateRange || undefined,
+    },
   });
-  return response.data.resumes;
+  return response.data;
+}
+
+export async function listResumes() {
+  const response = await listResumesQuery();
+  return response.resumes;
 }
 
 export type ResumeDetails = {

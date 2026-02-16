@@ -9,8 +9,8 @@ import { cn } from "@/components/ui/cn";
 import { Button } from "@/components/ui/button";
 import { useCurrentDbUser, useDashboardOverview } from "@/hooks/queries";
 import { getDashboardOverview } from "@/lib/api/dashboard";
-import { listJobs } from "@/lib/api/jobs";
-import { listResumes } from "@/lib/api/resumes";
+import { listJobsQuery } from "@/lib/api/jobs";
+import { listResumesQuery } from "@/lib/api/resumes";
 import { getCurrentDbUserClient } from "@/lib/api/users";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { useState } from "react";
@@ -67,16 +67,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   function prefetchResumesList() {
     void queryClient.prefetchQuery({
-      queryKey: queryKeys.resumes.list(),
-      queryFn: listResumes,
+      queryKey: queryKeys.resumes.listWithFilters({}),
+      queryFn: () => listResumesQuery({}),
       staleTime: 30 * 1000,
     });
   }
 
   function prefetchJobsList() {
     void queryClient.prefetchQuery({
-      queryKey: queryKeys.jobs.list(),
-      queryFn: listJobs,
+      queryKey: queryKeys.jobs.listWithFilters({}),
+      queryFn: () => listJobsQuery({}),
       staleTime: 30 * 1000,
     });
   }

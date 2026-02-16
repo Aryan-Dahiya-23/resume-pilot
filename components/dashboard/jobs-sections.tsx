@@ -284,32 +284,80 @@ export function AddJobModal({
 export function JobsTableSection({
   query,
   onQueryChange,
+  statusFilter,
+  onStatusFilterChange,
+  dateFilter,
+  onDateFilterChange,
   rows,
   onEditJob,
   onRequestDeleteJob,
   updatingJobId,
   deletingJobId,
   onHoverJob,
+  currentPage,
+  totalPages,
+  onPageChange,
+  isLoadingRows,
 }: {
   query: string;
   onQueryChange: (value: string) => void;
+  statusFilter: JobStatus | "All";
+  onStatusFilterChange: (value: JobStatus | "All") => void;
+  dateFilter: "All" | "today" | "7d" | "30d";
+  onDateFilterChange: (value: "All" | "today" | "7d" | "30d") => void;
   rows: Job[];
   onEditJob?: (jobId: string) => void;
   onRequestDeleteJob?: (jobId: string) => void;
   updatingJobId?: string | null;
   deletingJobId?: string | null;
   onHoverJob?: (jobId: string) => void;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  isLoadingRows?: boolean;
 }) {
   return (
     <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="relative w-full sm:w-[360px]">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-        <input
-          value={query}
-          onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="Search company, role, location..."
-          className="w-full rounded-2xl border border-zinc-200 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
-        />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:w-[360px]">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+          <input
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            placeholder="Search company, role, location..."
+            className="w-full rounded-2xl border border-zinc-200 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
+          />
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <select
+            value={statusFilter}
+            onChange={(event) =>
+              onStatusFilterChange(event.target.value as JobStatus | "All")
+            }
+            className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+          >
+            <option value="All">All statuses</option>
+            <option value="Saved">Saved</option>
+            <option value="Applied">Applied</option>
+            <option value="Interview">Interview</option>
+            <option value="Offer">Offer</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+          <select
+            value={dateFilter}
+            onChange={(event) =>
+              onDateFilterChange(
+                event.target.value as "All" | "today" | "7d" | "30d",
+              )
+            }
+            className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+          >
+            <option value="All">Any date</option>
+            <option value="today">Today</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+          </select>
+        </div>
       </div>
 
       <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200">
@@ -322,6 +370,14 @@ export function JobsTableSection({
             <div className="text-right">...</div>
           </div>
           <div className="divide-y divide-zinc-200">
+            {isLoadingRows ? (
+              <div className="px-4 py-8 text-center">
+                <div className="inline-flex items-center gap-2 text-sm text-zinc-600">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading jobs...
+                </div>
+              </div>
+            ) : null}
             {rows.map((job) => (
               <div
                 key={job.id}
@@ -371,7 +427,39 @@ export function JobsTableSection({
               </div>
               </div>
             ))}
+            {rows.length === 0 && !isLoadingRows ? (
+              <div className="px-4 py-8 text-center">
+                <div className="text-sm font-medium text-zinc-900">No matching jobs</div>
+                <div className="mt-1 text-sm text-zinc-600">
+                  Try changing search text or filters to see results.
+                </div>
+              </div>
+            ) : null}
           </div>
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-center justify-between">
+        <div className="text-sm text-zinc-500">
+          Page {Math.min(currentPage, totalPages)} of {totalPages}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            className="px-3"
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage <= 1 || isLoadingRows}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="secondary"
+            className="px-3"
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage >= totalPages || isLoadingRows}
+          >
+            Next
+          </Button>
         </div>
       </div>
 

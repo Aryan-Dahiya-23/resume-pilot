@@ -1,10 +1,25 @@
 import { auth } from "@clerk/nextjs/server";
+import type { JobStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { createJob, listJobsByUserId } from "@/lib/db/jobs";
+import {
+  countJobsByUserId,
+  countJobsByUserIdWithFilters,
+  createJob,
+  listJobsByUserIdWithFiltersPaginated,
+} from "@/lib/db/jobs";
 import { ensureCurrentDbUser } from "@/lib/db/users";
 import { createJobSchema } from "@/lib/validators/jobs";
 
-export async function GET() {
+const ALLOWED_STATUS = new Set<JobStatus>([
+  "Saved",
+  "Applied",
+  "Interview",
+  "Offer",
+  "Rejected",
+]);
+const ALLOWED_DATE_RANGE = new Set(["today", "7d", "30d"]);
+
+export async function GET(request: Request) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -18,9 +33,48 @@ export async function GET() {
     );
   }
 
-  const jobs = await listJobsByUserId(dbUser.id);
+  const { searchParams } = new URL(request.url);
+  const query = searchParams.get("q")?.trim() ?? "";
+  const statusRaw = searchParams.get("status");
+  const dateRangeRaw = searchParams.get("dateRange");
+  const pageRaw = Number.parseInt(searchParams.get("page") ?? "1", 10);
+  const limitRaw = Number.parseInt(searchParams.get("limit") ?? "10", 10);
+  const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 50) : 10;
+
+  const status =
+    statusRaw && ALLOWED_STATUS.has(statusRaw as JobStatus)
+      ? (statusRaw as JobStatus)
+      : undefined;
+  const dateRange =
+    dateRangeRaw && ALLOWED_DATE_RANGE.has(dateRangeRaw)
+      ? (dateRangeRaw as "today" | "7d" | "30d")
+      : undefined;
+
+  const [jobs, totalCount, filteredCount] = await Promise.all([
+    listJobsByUserIdWithFiltersPaginated(
+      dbUser.id,
+      {
+        query,
+        status,
+        dateRange,
+      },
+      {
+        page,
+        limit,
+      },
+    ),
+    countJobsByUserId(dbUser.id),
+    countJobsByUserIdWithFilters(dbUser.id, {
+      query,
+      status,
+      dateRange,
+    }),
+  ]);
+  const totalPages = Math.max(1, Math.ceil(filteredCount / limit));
+
   return NextResponse.json(
-    { jobs },
+    { jobs, totalCount, filteredCount, page, limit, totalPages },
     {
       headers: { "Cache-Control": "no-store" },
     },

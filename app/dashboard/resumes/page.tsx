@@ -15,25 +15,39 @@ import {
   ResumesTableSection,
 } from "@/components/dashboard/resumes-sections";
 import { useResumes, useUploadResume } from "@/hooks/queries";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { getResumeDetails } from "@/lib/api/resumes";
 import type { Resume } from "@/lib/mock-data";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
+type ResumeStatusFilter = "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED";
+type ResumeDateFilter = "All" | "today" | "7d" | "30d";
+
 export default function ResumesPage() {
   const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ResumeStatusFilter>("All");
+  const [dateFilter, setDateFilter] = useState<ResumeDateFilter>("All");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [roleTarget, setRoleTarget] = useState("Software Engineer");
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [resumeToDelete, setResumeToDelete] = useState<string | null>(null);
   const [isDeletingResume, setIsDeletingResume] = useState(false);
-  const resumesQuery = useResumes();
+  const debouncedQuery = useDebouncedValue(query, 400);
+  const resumesQuery = useResumes({
+    q: debouncedQuery.trim() || undefined,
+    status: statusFilter === "All" ? undefined : statusFilter,
+    dateRange: dateFilter === "All" ? undefined : dateFilter,
+  });
   const uploadResume = useUploadResume();
+  const isInitialLoading = resumesQuery.isLoading && !resumesQuery.data;
+  const hasInitialError = resumesQuery.isError && !resumesQuery.data;
+  const hasAnyResumes = (resumesQuery.data?.totalCount ?? 0) > 0;
 
-  const rows = useMemo<Array<Resume & { status?: string }>>(() => {
-    const source = resumesQuery.data ?? [];
-    const mappedRows = source.map((resume, index) => ({
+  const rows = useMemo<Array<Resume & { status?: string; createdAtIso: string }>>(() => {
+    const source = resumesQuery.data?.resumes ?? [];
+    return source.map((resume, index) => ({
       id: resume.id,
       version: `v${source.length - index}`,
       uploadedAt: new Date(resume.createdAt).toLocaleDateString(),
@@ -41,18 +55,9 @@ export default function ResumesPage() {
       roleTarget: resume.roleTarget ?? undefined,
       fileName: resume.fileName,
       status: resume.status,
+      createdAtIso: resume.createdAt,
     }));
-
-    const search = query.trim().toLowerCase();
-    if (!search) return mappedRows;
-
-    return mappedRows.filter((resume) =>
-      [resume.version, resume.fileName, resume.roleTarget ?? "", resume.status ?? ""]
-        .join(" ")
-        .toLowerCase()
-        .includes(search),
-    );
-  }, [query, resumesQuery.data]);
+  }, [resumesQuery.data]);
 
   function handleUploadClick() {
     setUploadError(null);
@@ -122,8 +127,8 @@ export default function ResumesPage() {
 
   return (
     <>
-      {resumesQuery.isLoading ? <DashboardPageLoading label="Loading resumes..." /> : null}
-      {resumesQuery.isError ? (
+      {isInitialLoading ? <DashboardPageLoading label="Loading resumes..." /> : null}
+      {hasInitialError ? (
         <DashboardPageError
           title="Could not load resumes"
           message="We could not fetch your resumes right now."
@@ -133,7 +138,7 @@ export default function ResumesPage() {
         />
       ) : null}
 
-      {resumesQuery.isLoading || resumesQuery.isError ? null : (
+      {isInitialLoading || hasInitialError ? null : (
         <>
           <ResumesHeaderWithAction onUploadClick={handleUploadClick} />
           <ResumeUploadModal
@@ -150,10 +155,14 @@ export default function ResumesPage() {
           />
 
           <div className="space-y-6">
-            {rows.length > 0 ? (
+            {hasAnyResumes ? (
               <ResumesTableSection
                 query={query}
                 onQueryChange={setQuery}
+                statusFilter={statusFilter}
+                onStatusFilterChange={setStatusFilter}
+                dateFilter={dateFilter}
+                onDateFilterChange={setDateFilter}
                 rows={rows}
                 onDeleteResume={setResumeToDelete}
                 deletingResumeId={isDeletingResume ? resumeToDelete : null}

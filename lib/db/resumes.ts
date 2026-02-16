@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { ResumeStatus } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 type CreateResumeInput = {
   userId: string;
@@ -42,6 +43,73 @@ export async function listResumesByUserId(userId: string) {
     orderBy: {
       createdAt: "desc",
     },
+  });
+}
+
+type ListResumesFilters = {
+  query?: string;
+  status?: ResumeStatus;
+  dateRange?: "today" | "7d" | "30d";
+};
+
+function getDateRangeStart(dateRange: "today" | "7d" | "30d") {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  if (dateRange === "today") return startOfToday;
+  if (dateRange === "7d") {
+    return new Date(startOfToday.getTime() - 6 * 24 * 60 * 60 * 1000);
+  }
+
+  return new Date(startOfToday.getTime() - 29 * 24 * 60 * 60 * 1000);
+}
+
+export async function listResumesByUserIdWithFilters(
+  userId: string,
+  filters: ListResumesFilters,
+) {
+  const andFilters: Prisma.ResumeWhereInput[] = [];
+
+  if (filters.status) {
+    andFilters.push({ status: filters.status });
+  }
+
+  if (filters.dateRange) {
+    andFilters.push({
+      createdAt: {
+        gte: getDateRangeStart(filters.dateRange),
+      },
+    });
+  }
+
+  if (filters.query?.trim()) {
+    const search = filters.query.trim();
+    andFilters.push({
+      OR: [
+        { fileName: { contains: search, mode: "insensitive" } },
+        { roleTarget: { contains: search, mode: "insensitive" } },
+        { targetLevel: { contains: search, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  return prisma.resume.findMany({
+    where: {
+      userId,
+      ...(andFilters.length ? { AND: andFilters } : {}),
+    },
+    include: {
+      review: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+
+export async function countResumesByUserId(userId: string) {
+  return prisma.resume.count({
+    where: { userId },
   });
 }
 

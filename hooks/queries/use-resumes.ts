@@ -1,13 +1,14 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { getResumeDetails, listResumes } from "@/lib/api/resumes";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { getResumeDetails, listResumesQuery, type ListResumesFilters } from "@/lib/api/resumes";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
-export function useResumes() {
+export function useResumes(filters: ListResumesFilters) {
   return useQuery({
-    queryKey: queryKeys.resumes.list(),
-    queryFn: listResumes,
+    queryKey: queryKeys.resumes.listWithFilters(filters),
+    queryFn: () => listResumesQuery(filters),
+    placeholderData: keepPreviousData,
   });
 }
 

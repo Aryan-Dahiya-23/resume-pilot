@@ -50,6 +50,10 @@ export function ResumesHeaderWithAction({
 export function ResumesTableSection({
   query,
   onQueryChange,
+  statusFilter,
+  onStatusFilterChange,
+  dateFilter,
+  onDateFilterChange,
   rows,
   onDeleteResume,
   deletingResumeId,
@@ -57,6 +61,10 @@ export function ResumesTableSection({
 }: {
   query: string;
   onQueryChange: (value: string) => void;
+  statusFilter: "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED";
+  onStatusFilterChange: (value: "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED") => void;
+  dateFilter: "All" | "today" | "7d" | "30d";
+  onDateFilterChange: (value: "All" | "today" | "7d" | "30d") => void;
   rows: Array<Resume & { status?: string }>;
   onDeleteResume?: (resumeId: string) => void;
   deletingResumeId?: string | null;
@@ -64,14 +72,48 @@ export function ResumesTableSection({
 }) {
   return (
     <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="relative w-full sm:max-w-md">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-        <input
-          value={query}
-          onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="Search versions, file name, target role..."
-          className="w-full rounded-2xl border border-zinc-200 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
-        />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-md">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+          <input
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            placeholder="Search versions, file name, target role..."
+            className="w-full rounded-2xl border border-zinc-200 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
+          />
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <select
+            value={statusFilter}
+            onChange={(event) =>
+              onStatusFilterChange(
+                event.target.value as "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED",
+              )
+            }
+            className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+          >
+            <option value="All">All statuses</option>
+            <option value="UPLOADED">Uploaded</option>
+            <option value="PARSING">Parsing</option>
+            <option value="REVIEWING">Reviewing</option>
+            <option value="READY">Ready</option>
+            <option value="FAILED">Failed</option>
+          </select>
+          <select
+            value={dateFilter}
+            onChange={(event) =>
+              onDateFilterChange(
+                event.target.value as "All" | "today" | "7d" | "30d",
+              )
+            }
+            className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+          >
+            <option value="All">Any date</option>
+            <option value="today">Today</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+          </select>
+        </div>
       </div>
 
       <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200">
@@ -150,6 +192,14 @@ export function ResumesTableSection({
               </div>
               </div>
             ))}
+            {rows.length === 0 ? (
+              <div className="px-4 py-8 text-center">
+                <div className="text-sm font-medium text-zinc-900">No matching resumes</div>
+                <div className="mt-1 text-sm text-zinc-600">
+                  Try changing search text or filters to see results.
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

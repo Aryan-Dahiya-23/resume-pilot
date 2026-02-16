@@ -3,10 +3,11 @@
 import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
 import { Briefcase, Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AddJobModal, JobsHeader, JobsTableSection } from "@/components/dashboard/jobs-sections";
 import { DashboardPageError, DashboardPageLoading } from "@/components/dashboard/page-state";
 import { useCreateJob, useDeleteJob, useJobs } from "@/hooks/queries";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { getJob, updateJob } from "@/lib/api/jobs";
 import type { JobStatus } from "@/lib/mock-data";
 import { queryKeys } from "@/lib/react-query/query-keys";
@@ -30,24 +31,42 @@ function toRelativeDayLabel(dateInput: string) {
   return `${weekDiff} weeks ago`;
 }
 
+type JobDateFilter = "All" | "today" | "7d" | "30d";
+const JOBS_PAGE_SIZE = 10;
+
 export default function JobsPage() {
   const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<JobStatus | "All">("All");
+  const [dateFilter, setDateFilter] = useState<JobDateFilter>("All");
+  const [page, setPage] = useState(1);
   const [isAddJobOpen, setIsAddJobOpen] = useState(false);
   const [editingJobId, setEditingJobId] = useState<string | null>(null);
   const [jobToDeleteId, setJobToDeleteId] = useState<string | null>(null);
   const [updatingJobId, setUpdatingJobId] = useState<string | null>(null);
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
-  const jobsQuery = useJobs();
+  const debouncedQuery = useDebouncedValue(query, 400);
+  const jobsQuery = useJobs({
+    q: debouncedQuery.trim() || undefined,
+    status: statusFilter === "All" ? undefined : statusFilter,
+    dateRange: dateFilter === "All" ? undefined : dateFilter,
+    page,
+    limit: JOBS_PAGE_SIZE,
+  });
   const createJob = useCreateJob();
   const deleteJob = useDeleteJob();
+  const isInitialLoading = jobsQuery.isLoading && !jobsQuery.data;
+  const hasInitialError = jobsQuery.isError && !jobsQuery.data;
+  const hasAnyJobs = (jobsQuery.data?.totalCount ?? 0) > 0;
+  const totalPages = jobsQuery.data?.totalPages ?? 1;
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedQuery, statusFilter, dateFilter]);
 
   const rows = useMemo(() => {
-    const search = query.trim().toLowerCase();
-    const jobs = jobsQuery.data ?? [];
-
-    return jobs
-      .map((job) => ({
+    const jobs = jobsQuery.data?.jobs ?? [];
+    return jobs.map((job) => ({
         id: job.id,
         company: job.company,
         role: job.role,
@@ -55,18 +74,18 @@ export default function JobsPage() {
         when: toRelativeDayLabel(job.createdAt),
         link: job.link ?? undefined,
         location: job.location ?? undefined,
-      }))
-      .filter((job) =>
-        search
-          ? [job.company, job.role, job.location ?? ""].join(" ").toLowerCase().includes(search)
-          : true,
-      );
-  }, [jobsQuery.data, query]);
+      }));
+  }, [jobsQuery.data]);
 
   const editingJob = useMemo(
-    () => (jobsQuery.data ?? []).find((job) => job.id === editingJobId) ?? null,
+    () => (jobsQuery.data?.jobs ?? []).find((job) => job.id === editingJobId) ?? null,
     [editingJobId, jobsQuery.data],
   );
+
+  function handlePageChange(nextPage: number) {
+    if (nextPage < 1 || nextPage > totalPages) return;
+    setPage(nextPage);
+  }
 
   function handlePrefetchJob(jobId: string) {
     void queryClient.prefetchQuery({
@@ -190,8 +209,8 @@ export default function JobsPage() {
 
   return (
     <>
-      {jobsQuery.isLoading ? <DashboardPageLoading label="Loading jobs..." /> : null}
-      {jobsQuery.isError ? (
+      {isInitialLoading ? <DashboardPageLoading label="Loading jobs..." /> : null}
+      {hasInitialError ? (
         <DashboardPageError
           title="Could not load jobs"
           message="We could not fetch your jobs right now."
@@ -201,7 +220,7 @@ export default function JobsPage() {
         />
       ) : null}
 
-      {jobsQuery.isLoading || jobsQuery.isError ? null : (
+      {isInitialLoading || hasInitialError ? null : (
         <>
           <JobsHeader onAddJobClick={() => setIsAddJobOpen(true)} />
           <AddJobModal
@@ -234,14 +253,22 @@ export default function JobsPage() {
           <JobsTableSection
             query={query}
             onQueryChange={setQuery}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            dateFilter={dateFilter}
+            onDateFilterChange={setDateFilter}
             rows={rows}
             onEditJob={setEditingJobId}
             onRequestDeleteJob={setJobToDeleteId}
             updatingJobId={updatingJobId}
             deletingJobId={deletingJobId}
             onHoverJob={handlePrefetchJob}
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            isLoadingRows={false}
           />
-          {!jobsQuery.isLoading && rows.length === 0 ? (
+          {!jobsQuery.isLoading && !hasAnyJobs ? (
             <section className="rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
               <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-zinc-100 text-zinc-700">
                 <Briefcase className="h-5 w-5" />

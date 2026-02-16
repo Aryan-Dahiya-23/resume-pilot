@@ -39,6 +39,149 @@ export async function listJobsByUserId(userId: string) {
   });
 }
 
+type ListJobsFilters = {
+  query?: string;
+  status?: JobStatus;
+  dateRange?: "today" | "7d" | "30d";
+};
+
+function getDateRangeStart(dateRange: "today" | "7d" | "30d") {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  if (dateRange === "today") return startOfToday;
+  if (dateRange === "7d") {
+    return new Date(startOfToday.getTime() - 6 * 24 * 60 * 60 * 1000);
+  }
+
+  return new Date(startOfToday.getTime() - 29 * 24 * 60 * 60 * 1000);
+}
+
+export async function listJobsByUserIdWithFilters(userId: string, filters: ListJobsFilters) {
+  const andFilters: Prisma.JobWhereInput[] = [];
+
+  if (filters.status) {
+    andFilters.push({ status: filters.status });
+  }
+
+  if (filters.dateRange) {
+    andFilters.push({
+      createdAt: {
+        gte: getDateRangeStart(filters.dateRange),
+      },
+    });
+  }
+
+  if (filters.query?.trim()) {
+    const search = filters.query.trim();
+    andFilters.push({
+      OR: [
+        { company: { contains: search, mode: "insensitive" } },
+        { role: { contains: search, mode: "insensitive" } },
+        { location: { contains: search, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  return prisma.job.findMany({
+    where: {
+      userId,
+      ...(andFilters.length ? { AND: andFilters } : {}),
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+
+type ListJobsPagination = {
+  page: number;
+  limit: number;
+};
+
+export async function listJobsByUserIdWithFiltersPaginated(
+  userId: string,
+  filters: ListJobsFilters,
+  pagination: ListJobsPagination,
+) {
+  const andFilters: Prisma.JobWhereInput[] = [];
+
+  if (filters.status) {
+    andFilters.push({ status: filters.status });
+  }
+
+  if (filters.dateRange) {
+    andFilters.push({
+      createdAt: {
+        gte: getDateRangeStart(filters.dateRange),
+      },
+    });
+  }
+
+  if (filters.query?.trim()) {
+    const search = filters.query.trim();
+    andFilters.push({
+      OR: [
+        { company: { contains: search, mode: "insensitive" } },
+        { role: { contains: search, mode: "insensitive" } },
+        { location: { contains: search, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  return prisma.job.findMany({
+    where: {
+      userId,
+      ...(andFilters.length ? { AND: andFilters } : {}),
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    skip: (pagination.page - 1) * pagination.limit,
+    take: pagination.limit,
+  });
+}
+
+export async function countJobsByUserId(userId: string) {
+  return prisma.job.count({
+    where: { userId },
+  });
+}
+
+export async function countJobsByUserIdWithFilters(userId: string, filters: ListJobsFilters) {
+  const andFilters: Prisma.JobWhereInput[] = [];
+
+  if (filters.status) {
+    andFilters.push({ status: filters.status });
+  }
+
+  if (filters.dateRange) {
+    andFilters.push({
+      createdAt: {
+        gte: getDateRangeStart(filters.dateRange),
+      },
+    });
+  }
+
+  if (filters.query?.trim()) {
+    const search = filters.query.trim();
+    andFilters.push({
+      OR: [
+        { company: { contains: search, mode: "insensitive" } },
+        { role: { contains: search, mode: "insensitive" } },
+        { location: { contains: search, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  return prisma.job.count({
+    where: {
+      userId,
+      ...(andFilters.length ? { AND: andFilters } : {}),
+    },
+  });
+}
+
 export async function createJob(input: CreateJobInput) {
   return prisma.job.create({
     data: {

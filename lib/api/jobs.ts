@@ -25,6 +25,11 @@ export type JobListItem = {
 
 type ListJobsResponse = {
   jobs: JobListItem[];
+  totalCount: number;
+  filteredCount: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 };
 
 type CreateJobPayload = {
@@ -60,11 +65,31 @@ type UpdateJobPayload = {
   link?: string | null;
 };
 
-export async function listJobs() {
+export type ListJobsFilters = {
+  q?: string;
+  status?: JobStatus;
+  dateRange?: "today" | "7d" | "30d";
+  page?: number;
+  limit?: number;
+};
+
+export async function listJobsQuery(filters?: ListJobsFilters) {
   const response = await axios.get<ListJobsResponse>("/api/jobs", {
     withCredentials: true,
+    params: {
+      q: filters?.q || undefined,
+      status: filters?.status || undefined,
+      dateRange: filters?.dateRange || undefined,
+      page: filters?.page ?? undefined,
+      limit: filters?.limit ?? undefined,
+    },
   });
-  return response.data.jobs;
+  return response.data;
+}
+
+export async function listJobs() {
+  const response = await listJobsQuery();
+  return response.jobs;
 }
 
 export async function createJob(payload: CreateJobPayload) {

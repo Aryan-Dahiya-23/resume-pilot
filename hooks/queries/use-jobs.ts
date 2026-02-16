@@ -1,13 +1,14 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createJob, deleteJob, getJob, listJobs, updateJob } from "@/lib/api/jobs";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createJob, deleteJob, getJob, listJobs, listJobsQuery, updateJob, type ListJobsFilters } from "@/lib/api/jobs";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
-export function useJobs() {
+export function useJobs(filters: ListJobsFilters) {
   return useQuery({
-    queryKey: queryKeys.jobs.list(),
-    queryFn: listJobs,
+    queryKey: queryKeys.jobs.listWithFilters(filters),
+    queryFn: () => listJobsQuery(filters),
+    placeholderData: keepPreviousData,
   });
 }
 
