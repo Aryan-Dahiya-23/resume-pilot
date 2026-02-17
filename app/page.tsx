@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { FeaturesSection } from "@/components/landing/features-section";
 import { FinalCtaSection } from "@/components/landing/final-cta-section";
 import { HeroSection } from "@/components/landing/hero-section";
@@ -7,16 +8,19 @@ import { LandingHeader } from "@/components/landing/landing-header";
 import { ProductPreviewSection } from "@/components/landing/product-preview-section";
 import { SocialProofSection } from "@/components/landing/social-proof-section";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { userId } = await auth();
+  const isSignedIn = Boolean(userId);
+
   return (
     <div className="min-h-screen bg-zinc-50">
-      <LandingHeader />
-      <HeroSection />
+      <LandingHeader isSignedIn={isSignedIn} />
+      <HeroSection isSignedIn={isSignedIn} />
       <SocialProofSection />
       <FeaturesSection />
-      <ProductPreviewSection />
+      <ProductPreviewSection isSignedIn={isSignedIn} />
       <HowItWorksSection />
-      <FinalCtaSection />
+      <FinalCtaSection isSignedIn={isSignedIn} />
       <LandingFooter />
     </div>
   );

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Calendar, FileText, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function ProductPreviewSection() {
+export function ProductPreviewSection({ isSignedIn = false }: { isSignedIn?: boolean }) {
   return (
     <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8 lg:pb-16">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.1fr_0.9fr]">
@@ -57,7 +57,7 @@ export function ProductPreviewSection() {
             <span className="font-medium text-zinc-900">6 / 10</span>
           </div>
           <div className="mt-4">
-            <Link href="/sign-in">
+            <Link href={isSignedIn ? "/dashboard" : "/sign-in"}>
               <Button>
                 Try dashboard
                 <ArrowRight className="h-4 w-4" />

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function LandingHeader() {
+export function LandingHeader({ isSignedIn = false }: { isSignedIn?: boolean }) {
   return (
     <header className="border-b border-zinc-200 bg-white/80 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
@@ -19,8 +19,8 @@ export function LandingHeader() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Link href="/sign-in">
-            <Button>Get started</Button>
+          <Link href={isSignedIn ? "/dashboard" : "/sign-in"}>
+            <Button>{isSignedIn ? "Go to dashboard" : "Get started"}</Button>
           </Link>
         </div>
       </div>

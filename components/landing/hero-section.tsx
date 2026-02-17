@@ -3,7 +3,7 @@ import { ArrowRight, BarChart3, CheckCircle2, FileText, Shield, Wand2 } from "lu
 import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/landing/pill";
 
-export function HeroSection() {
+export function HeroSection({ isSignedIn = false }: { isSignedIn?: boolean }) {
   return (
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
@@ -29,15 +29,15 @@ export function HeroSection() {
           </p>
 
           <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-            <Link href="/sign-in">
+            <Link href={isSignedIn ? "/dashboard" : "/sign-in"}>
               <Button className="px-5 py-2.5">
-                Get started
+                {isSignedIn ? "Go to dashboard" : "Get started"}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/dashboard">
+            <Link href={isSignedIn ? "/dashboard/resumes" : "/dashboard"}>
               <Button variant="secondary" className="px-5 py-2.5">
-                View demo
+                {isSignedIn ? "Upload resume" : "View demo"}
               </Button>
             </Link>
           </div>
