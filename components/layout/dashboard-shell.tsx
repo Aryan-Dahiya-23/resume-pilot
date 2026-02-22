@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { useClerk } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { Briefcase, ChevronRight, FileText, LayoutDashboard, LogOut, Menu, Settings, TrendingUp } from "lucide-react";
 import { cn } from "@/components/ui/cn";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const queryClient = useQueryClient();
   const { signOut } = useClerk();
+  const { user: clerkUser } = useUser();
   const { data: currentUser } = useCurrentDbUser();
   const { data: dashboardOverview } = useDashboardOverview();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -72,6 +73,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const drawerTouchCurrentX = useRef<number | null>(null);
   const displayName = currentUser?.name?.trim() || currentUser?.email || "User";
   const avatarInitial = displayName.charAt(0).toUpperCase();
+  const avatarImageUrl = clerkUser?.hasImage ? clerkUser.imageUrl : null;
   const weeklyGoal = 10;
   const weeklyDone = dashboardOverview?.weeklyApplications ?? 0;
   const weeklyProgress = Math.min(100, Math.max(0, Math.round((weeklyDone / weeklyGoal) * 100)));
@@ -172,7 +174,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <div className="text-lg font-semibold text-zinc-900">{displayName}</div>
           </div>
           <div className="grid h-10 w-10 place-items-center rounded-2xl bg-zinc-900 text-white">
-            <span className="text-sm font-semibold">{avatarInitial}</span>
+            {avatarImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={avatarImageUrl}
+                alt={displayName}
+                className="h-full w-full rounded-2xl object-cover"
+              />
+            ) : (
+              <span className="text-sm font-semibold">{avatarInitial}</span>
+            )}
           </div>
         </div>
 
