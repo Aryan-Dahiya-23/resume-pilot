@@ -20,6 +20,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ResumePilot",
   description: "AI Resume Reviewer + Job Tracker",
+  icons: {
+    icon: "/icon",
+    shortcut: "/icon",
+    apple: "/icon",
+  },
 };
 
 export default function RootLayout({
