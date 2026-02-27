@@ -288,7 +288,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           </button>
           <div className="text-sm font-semibold text-zinc-900">Resume Pilot</div>
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-zinc-900 text-white">
-            <span className="text-xs font-semibold">{avatarInitial}</span>
+            {avatarImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={avatarImageUrl}
+                alt={displayName}
+                className="h-full w-full rounded-xl object-cover"
+              />
+            ) : (
+              <span className="text-xs font-semibold">{avatarInitial}</span>
+            )}
           </div>
         </div>
 
