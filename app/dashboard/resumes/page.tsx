@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { useToast } from "@/components/providers/toast-provider";
 import { useResumes, useUploadResume } from "@/hooks/queries";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { getResumeDetails } from "@/lib/api/resumes";
@@ -27,6 +28,7 @@ type ResumeStatusFilter = "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY"
 type ResumeDateFilter = "All" | "today" | "7d" | "30d";
 
 export default function ResumesPage() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<ResumeStatusFilter>("All");
@@ -90,6 +92,7 @@ export default function ResumesPage() {
       });
       void queryClient.invalidateQueries({ queryKey: ["resumes"] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
+      toast({ tone: "success", message: "Resume uploaded successfully! DeepSeek AI analysis started." });
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setUploadError(
@@ -108,9 +111,10 @@ export default function ResumesPage() {
       await axios.delete(`/api/resumes/${resumeToDelete}`);
       void queryClient.invalidateQueries({ queryKey: ["resumes"] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
+      toast({ tone: "success", message: "Resume version deleted." });
       setResumeToDelete(null);
     } catch {
-      // Keep state for error or retry
+      toast({ tone: "error", message: "Could not delete resume." });
     } finally {
       setIsDeletingResume(false);
     }
@@ -149,7 +153,7 @@ export default function ResumesPage() {
                 query={query}
                 onQueryChange={setQuery}
                 statusFilter={statusFilter}
-                onStatusFilterChange={setStatusFilter}
+                onStatusFilterChange={(val) => setStatusFilter(val as ResumeStatusFilter)}
                 dateFilter={dateFilter}
                 onDateFilterChange={setDateFilter}
                 rows={rows}

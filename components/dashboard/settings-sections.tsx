@@ -174,8 +174,8 @@ export function DataSettingsCard() {
     setIsExportingFeedback(true);
     try {
       await downloadFile(
-        "/api/settings/export/feedback",
-        `feedback-${new Date().toISOString().slice(0, 10)}.json`,
+        "/api/settings/export/resume-feedback",
+        `resume-feedback-${new Date().toISOString().slice(0, 10)}.json`,
       );
       toast({ tone: "success", message: "Feedback exported successfully." });
     } catch {

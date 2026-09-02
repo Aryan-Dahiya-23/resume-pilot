@@ -9,6 +9,7 @@ import { DashboardPageError, DashboardPageLoading } from "@/components/dashboard
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { useToast } from "@/components/providers/toast-provider";
 import { useCreateJob, useDeleteJob, useJobs } from "@/hooks/queries";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { getJob, updateJob } from "@/lib/api/jobs";
@@ -38,6 +39,7 @@ type JobDateFilter = "All" | "today" | "7d" | "30d";
 const JOBS_PAGE_SIZE = 10;
 
 export default function JobsPage() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<JobStatus | "All">("All");
@@ -65,12 +67,16 @@ export default function JobsPage() {
   const hasAnyJobs = (jobsQuery.data?.totalCount ?? 0) > 0;
   const totalPages = jobsQuery.data?.totalPages ?? 1;
 
-  useEffect(() => {
+  const [prevFilterKey, setPrevFilterKey] = useState(
+    `${debouncedQuery}-${statusFilter}-${dateFilter}`,
+  );
+  const currentFilterKey = `${debouncedQuery}-${statusFilter}-${dateFilter}`;
+  if (prevFilterKey !== currentFilterKey) {
+    setPrevFilterKey(currentFilterKey);
     setPage(1);
-  }, [debouncedQuery, statusFilter, dateFilter]);
+  }
 
   const rows = useMemo(() => {
-    if (jobsQuery.isFetching) return [];
     const jobs = jobsQuery.data?.jobs ?? [];
     return jobs.map((job) => ({
       id: job.id,
@@ -81,7 +87,7 @@ export default function JobsPage() {
       link: job.link ?? undefined,
       location: job.location ?? undefined,
     }));
-  }, [jobsQuery.data, jobsQuery.isFetching]);
+  }, [jobsQuery.data]);
 
   const editingJob = useMemo(
     () => (jobsQuery.data?.jobs ?? []).find((job) => job.id === editingJobId) ?? null,
@@ -111,8 +117,13 @@ export default function JobsPage() {
     location: string;
     link: string;
   }) {
-    await createJob.mutateAsync(input);
-    setIsAddJobOpen(false);
+    try {
+      await createJob.mutateAsync(input);
+      setIsAddJobOpen(false);
+      toast({ tone: "success", message: `Opportunity at ${input.company} tracked.` });
+    } catch {
+      toast({ tone: "error", message: "Failed to create job opportunity." });
+    }
   }
 
   async function handleUpdateJob(input: {
@@ -143,6 +154,9 @@ export default function JobsPage() {
       await queryClient.invalidateQueries({ queryKey: ["jobs"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
       setEditingJobId(null);
+      toast({ tone: "success", message: "Opportunity updated." });
+    } catch {
+      toast({ tone: "error", message: "Failed to update opportunity." });
     } finally {
       setUpdatingJobId(null);
     }
@@ -153,6 +167,9 @@ export default function JobsPage() {
     try {
       await deleteJob.mutateAsync(jobId);
       setJobToDeleteId(null);
+      toast({ tone: "success", message: "Opportunity deleted." });
+    } catch {
+      toast({ tone: "error", message: "Failed to delete opportunity." });
     } finally {
       setDeletingJobId(null);
     }

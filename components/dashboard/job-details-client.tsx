@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
 import { AddJobModal } from "@/components/dashboard/jobs-sections";
 import { DashboardPageError, DashboardPageLoading } from "@/components/dashboard/page-state";
 import { useToast } from "@/components/providers/toast-provider";
@@ -115,14 +116,15 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
     [rawJob],
   );
 
-  useEffect(() => {
-    if (!rawJob) return;
+  const [prevJobId, setPrevJobId] = useState<string | null>(null);
+  if (rawJob && prevJobId !== rawJob.id) {
+    setPrevJobId(rawJob.id);
     setNotesDraft(rawJob.notes ?? "");
     setStatusDraft(rawJob.status);
     setContactNameDraft(rawJob.contactName ?? "");
     setContactEmailDraft(rawJob.contactEmail ?? "");
     setRoundsDraft(toInterviewRounds(rawJob.interviewRounds));
-  }, [rawJob?.id, rawJob?.notes, rawJob?.status]);
+  }
 
   async function refreshQueries() {
     await Promise.all([
@@ -404,8 +406,9 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
                     setRoundsDraft((prev) => prev.filter((_, itemIndex) => itemIndex !== index))
                   }
                   className="text-slate-400 hover:text-rose-600"
+                  title="Remove round"
                 >
-                  ✕
+                  <Trash2 className="size-3.5" />
                 </Button>
               </div>
             ))}
@@ -416,7 +419,8 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
                 setRoundsDraft((prev) => [...prev, { name: "", status: "Pending" }])
               }
             >
-              + Add Round
+              <Plus className="size-3.5" />
+              Add Round
             </Button>
           </div>
           <DialogFooter className="mt-4">

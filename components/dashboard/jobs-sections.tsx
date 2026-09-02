@@ -98,22 +98,25 @@ export function AddJobModal({
   const [link, setLink] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    setCompany(initialValues?.company ?? "");
-    setRole(initialValues?.role ?? "");
-    setStatus(initialValues?.status ?? "Saved");
-    setContactName(initialValues?.contactName ?? "");
-    setContactEmail(initialValues?.contactEmail ?? "");
-    setRoundsText(
-      (initialValues?.interviewRounds ?? [])
-        .map((round) => `${round.name} | ${round.status}`)
-        .join("\n"),
-    );
-    setLocation(initialValues?.location ?? "");
-    setLink(initialValues?.link ?? "");
-    setError(null);
-  }, [open, initialValues]);
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (open) {
+      setCompany(initialValues?.company ?? "");
+      setRole(initialValues?.role ?? "");
+      setStatus(initialValues?.status ?? "Saved");
+      setContactName(initialValues?.contactName ?? "");
+      setContactEmail(initialValues?.contactEmail ?? "");
+      setRoundsText(
+        (initialValues?.interviewRounds ?? [])
+          .map((round) => `${round.name} | ${round.status}`)
+          .join("\n"),
+      );
+      setLocation(initialValues?.location ?? "");
+      setLink(initialValues?.link ?? "");
+      setError(null);
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();

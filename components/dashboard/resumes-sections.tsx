@@ -4,20 +4,13 @@ import Link from "next/link";
 import {
   ArrowUpRight,
   Briefcase,
-  CheckCircle2,
-  Clock,
   Download,
-  FileCheck2,
   FileText,
-  Filter,
   Loader2,
-  Plus,
-  RefreshCw,
   Search,
   Sparkles,
   Trash2,
   Upload,
-  X,
 } from "lucide-react";
 import { useState, type DragEvent } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -76,7 +69,7 @@ export function ResumesTableSection({
   query: string;
   onQueryChange: (value: string) => void;
   statusFilter?: string;
-  onStatusFilterChange?: (value: any) => void;
+  onStatusFilterChange?: (value: string) => void;
   dateFilter: "All" | "today" | "7d" | "30d";
   onDateFilterChange: (value: "All" | "today" | "7d" | "30d") => void;
   rows: Array<Resume & { status?: string }>;
@@ -421,21 +414,28 @@ export function ResumeUploadModal({
           ) : null}
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-slate-100">
-            <Button variant="secondary" onClick={onClose} disabled={isUploading} className="w-full sm:w-auto">
-              Cancel
-            </Button>
             <Button
-              onClick={onStartUpload}
-              disabled={isUploading || !selectedFile || !roleTarget.trim()}
-              className="w-full sm:w-auto shadow-xs shadow-emerald-600/20"
+              variant={uploadResult ? "default" : "secondary"}
+              onClick={onClose}
+              disabled={isUploading}
+              className="w-full sm:w-auto"
             >
-              {isUploading ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Upload className="size-4" />
-              )}
-              {isUploading ? "Processing..." : "Begin AI Audit"}
+              {uploadResult ? "Done" : "Cancel"}
             </Button>
+            {!uploadResult ? (
+              <Button
+                onClick={onStartUpload}
+                disabled={isUploading || !selectedFile || !roleTarget.trim()}
+                className="w-full sm:w-auto shadow-xs shadow-emerald-600/20"
+              >
+                {isUploading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Upload className="size-4" />
+                )}
+                {isUploading ? "Processing..." : "Begin AI Audit"}
+              </Button>
+            ) : null}
           </div>
         </div>
       </DialogContent>

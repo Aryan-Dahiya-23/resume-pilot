@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -52,6 +53,7 @@ export function ConfirmModal({
             onClick={onConfirm}
             disabled={isLoading}
           >
+            {isLoading ? <Loader2 className="size-3.5 animate-spin" /> : null}
             {isLoading ? "Processing..." : confirmText}
           </Button>
         </DialogFooter>

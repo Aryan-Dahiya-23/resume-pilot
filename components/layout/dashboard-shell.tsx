@@ -93,9 +93,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const weeklyDone = dashboardOverview?.weeklyApplications ?? 0;
   const weeklyProgress = Math.min(100, Math.max(0, Math.round((weeklyDone / weeklyGoal) * 100)));
 
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setIsMobileOpen(false);
-  }, [pathname]);
+  }
 
   function prefetchDashboard() {
     void queryClient.prefetchQuery({

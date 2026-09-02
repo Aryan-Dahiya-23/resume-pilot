@@ -16,6 +16,7 @@ import {
   DashboardPageLoading,
 } from "@/components/dashboard/page-state";
 import { ResumeUploadModal } from "@/components/dashboard/resumes-sections";
+import { useToast } from "@/components/providers/toast-provider";
 import {
   useCreateJob,
   useDashboardOverview,
@@ -25,6 +26,7 @@ import type { Job, JobStatus, Resume } from "@/lib/mock-data";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
 export function DashboardPageClient({}: Record<string, never>) {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const overviewQuery = useDashboardOverview();
   const uploadResume = useUploadResume();
@@ -89,6 +91,10 @@ export function DashboardPageClient({}: Record<string, never>) {
       ]);
       setUploadModalOpen(false);
       setSelectedFile(null);
+      toast({
+        tone: "success",
+        message: "Resume uploaded successfully! DeepSeek AI analysis is running.",
+      });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const message =
@@ -132,6 +138,10 @@ export function DashboardPageClient({}: Record<string, never>) {
         }),
       ]);
       setAddJobModalOpen(false);
+      toast({
+        tone: "success",
+        message: `Opportunity at ${input.company} tracked in pipeline.`,
+      });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(

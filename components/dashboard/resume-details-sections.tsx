@@ -12,6 +12,7 @@ import {
   History,
   Layers,
   Lightbulb,
+  Loader2,
   Save,
   Sparkles,
   Target,
@@ -93,7 +94,11 @@ export function ResumeFeedbackHeader({
           disabled={isRerunning}
           className="shadow-xs shadow-emerald-600/20"
         >
-          <Wand2 className="size-3.5" />
+          {isRerunning ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <Wand2 className="size-3.5" />
+          )}
           {isRerunning ? "Analyzing..." : "Re-run Audit"}
         </Button>
       </div>
@@ -454,7 +459,11 @@ export function ResumeDetailsSidebar({
             onClick={onSaveTargetRole}
             disabled={isSavingRole}
           >
-            <Save className="size-3.5" />
+            {isSavingRole ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Save className="size-3.5" />
+            )}
             {isSavingRole ? "Updating..." : "Save Role Target"}
           </Button>
         </CardContent>
@@ -473,7 +482,11 @@ export function ResumeDetailsSidebar({
             onClick={onDownload}
             disabled={isDownloading}
           >
-            <Download className="size-3.5" />
+            {isDownloading ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Download className="size-3.5" />
+            )}
             {isDownloading ? "Downloading..." : "Download Original PDF"}
           </Button>
 
@@ -484,7 +497,11 @@ export function ResumeDetailsSidebar({
             onClick={onDelete}
             disabled={isDeleting}
           >
-            <Trash2 className="size-3.5" />
+            {isDeleting ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Trash2 className="size-3.5" />
+            )}
             {isDeleting ? "Deleting..." : "Delete Resume"}
           </Button>
         </CardContent>

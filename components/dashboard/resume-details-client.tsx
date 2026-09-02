@@ -78,37 +78,23 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!detailsQuery.data) return;
+  const [prevDetailsId, setPrevDetailsId] = useState<string | null>(null);
+  if (detailsQuery.data && prevDetailsId !== detailsQuery.data.id) {
+    setPrevDetailsId(detailsQuery.data.id);
     setRoleTarget(detailsQuery.data.roleTarget ?? "Frontend Engineer");
     setTargetLevel(detailsQuery.data.targetLevel ?? "Internship");
-  }, [
-    detailsQuery.data?.id,
-    detailsQuery.data?.roleTarget,
-    detailsQuery.data?.targetLevel,
-  ]);
+  }
 
   const baseFeedback = useMemo(
     () =>
       detailsQuery.data?.feedback ? toLegacyFeedback(detailsQuery.data.feedback) : emptyFeedback,
-    [detailsQuery.data?.feedback],
+    [detailsQuery.data],
   );
 
   const reviewHistory = useMemo(() => {
     const source = detailsQuery.data?.reviewHistory ?? [];
     return source.map((item, index) => toHistoryItem(item, `v${source.length - index}`));
-  }, [detailsQuery.data?.reviewHistory]);
-
-  useEffect(() => {
-    if (!reviewHistory.length) {
-      setSelectedReviewId(null);
-      return;
-    }
-    setSelectedReviewId((current) => {
-      if (current && reviewHistory.some((item) => item.id === current)) return current;
-      return reviewHistory[0].id;
-    });
-  }, [reviewHistory]);
+  }, [detailsQuery.data]);
 
   const selectedReview =
     reviewHistory.find((item) => item.id === selectedReviewId) ?? reviewHistory[0] ?? null;
@@ -142,10 +128,10 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
     score: item.feedback.score,
   }));
 
-  async function copyToClipboard(text: string) {
+  async function copyToClipboard(text: string, message = "Copied to clipboard.") {
     try {
       await navigator.clipboard.writeText(text);
-      toast({ tone: "success", message: "Copied to clipboard." });
+      toast({ tone: "success", message });
     } catch {
       toast({ tone: "error", message: "Could not copy." });
     }
@@ -304,9 +290,14 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
           reviewHistory={reviewHistoryRows}
           selectedReviewId={selectedReviewId}
           onSelectReview={setSelectedReviewId}
-          onCopyKeywords={() => copyToClipboard(selectedFeedback.missingKeywords.join(", "))}
+          onCopyKeywords={() =>
+            copyToClipboard(
+              selectedFeedback.missingKeywords.join(", "),
+              "Missing keywords copied to clipboard.",
+            )
+          }
           onCopySuggestion={(item) =>
-            copyToClipboard(`Before: ${item.before}\nAfter: ${item.after}\nWhy: ${item.why}`)
+            copyToClipboard(item.after, "Optimized bullet copied to clipboard.")
           }
         />
         <ResumeDetailsSidebar
