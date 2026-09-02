@@ -1,45 +1,79 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
   BarChart3,
   CheckCircle2,
   FileCheck2,
-  Shield,
-  Wand2,
+  Layers,
+  ShieldCheck,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pill } from "@/components/landing/pill";
 import { ProgressRing } from "@/components/ui/progress-ring";
+import { cn } from "@/lib/utils";
+
+const SAMPLE_PROFILES = [
+  {
+    id: "backend",
+    role: "Staff Backend Engineer",
+    fileName: "Staff_Backend_Platform.pdf",
+    score: 92,
+    percentile: "Top 4% of applicants",
+    delta: "+16 pts",
+    original: "Responsible for backend APIs and making database queries faster.",
+    optimizedAction: "Architected distributed Redis cluster and partitioned PostgreSQL schemas",
+    optimizedMetric: "slashing p99 query latency from 820ms to 48ms under 45k QPS.",
+    missingKeywords: ["Distributed Systems", "Kafka", "PostgreSQL Sharding", "gRPC"],
+    pipeline: "18 Applied • 5 Interviews • 28% Callback",
+  },
+  {
+    id: "frontend",
+    role: "Senior Frontend Architect",
+    fileName: "Senior_Frontend_Architect.pdf",
+    score: 88,
+    percentile: "Top 7% of applicants",
+    delta: "+12 pts",
+    original: "Worked on React app components and improved our page load speeds.",
+    optimizedAction: "Re-engineered core React rendering pipeline with code splitting and edge CDN hydration",
+    optimizedMetric: "reducing Largest Contentful Paint (LCP) by 54% across 1.4M active users.",
+    missingKeywords: ["Next.js App Router", "Web Vitals", "Turbopack", "Design Systems"],
+    pipeline: "14 Applied • 4 Interviews • 29% Callback",
+  },
+];
 
 export function HeroSection({ isSignedIn = false }: { isSignedIn?: boolean }) {
+  const [activeProfileId, setActiveProfileId] = useState<"backend" | "frontend">("backend");
+  const profile = SAMPLE_PROFILES.find((p) => p.id === activeProfileId) ?? SAMPLE_PROFILES[0];
+
   return (
-    <section className="relative overflow-hidden hero-mesh py-12 sm:py-20 lg:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden dot-pattern py-12 sm:py-20 lg:py-24 border-b border-slate-200/70">
+      {/* Subtle ambient lighting */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 size-[650px] rounded-full bg-emerald-500/8 blur-[120px]" />
+
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          {/* Left Column: Copy & CTAs */}
+          {/* Left Column: Authoritative Editorial Copy */}
           <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Pill>AI Resume Audit v2.0</Pill>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-2xs">
-                <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Neural AI Powered
-              </span>
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200/90 bg-white/90 px-3.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs backdrop-blur-md">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
+              <span>Resume Intelligence & ATS Optimization</span>
             </div>
 
-            <h1 className="mt-6 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl leading-[1.15]">
-              Precision Resume Intelligence.{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600">
-                Accelerated Career Velocity.
-              </span>
+            <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl leading-[1.08]">
+              Engineered for ATS. <br />
+              <span className="text-slate-400 font-bold">Built for senior hiring teams.</span>
             </h1>
 
             <p className="mt-5 max-w-xl text-sm sm:text-base text-slate-600 leading-relaxed">
-              Audit your resume against modern corporate applicant tracking systems, optimize bullet points with quantifiable metrics, and manage every opportunity in a unified pipeline.
+              Applicant tracking filters reject over 70% of resumes before human review. ResumePilot audits your document against modern enterprise filters, sharpens bullet points with quantifiable impact, and organizes your full opportunity pipeline.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <Button size="lg" asChild className="shadow-md shadow-emerald-600/25 w-full sm:w-auto">
+              <Button size="lg" asChild className="shadow-sm shadow-emerald-600/20 w-full sm:w-auto">
                 <Link href={isSignedIn ? "/dashboard" : "/sign-up"}>
                   {isSignedIn ? "Go to Dashboard" : "Audit Your Resume Free"}
                   <ArrowRight className="size-4" />
@@ -52,86 +86,136 @@ export function HeroSection({ isSignedIn = false }: { isSignedIn?: boolean }) {
               </Button>
             </div>
 
-            <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 text-xs font-medium text-slate-500">
+            <div className="mt-8 flex flex-wrap items-center gap-4 sm:gap-6 text-xs font-medium text-slate-500">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
-                <span>Instant 30-Second AI Analysis</span>
+                <span>Zero Hallucination Scoring</span>
               </div>
               <div className="flex items-center gap-2">
-                <Shield className="size-4 text-teal-600 shrink-0" />
-                <span>Strict Privacy: No Model Training</span>
+                <ShieldCheck className="size-4 text-emerald-600 shrink-0" />
+                <span>Strict Privacy: No Public Training</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Layers className="size-4 text-teal-600 shrink-0" />
+                <span>Full Application CRM Included</span>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Interactive Hero Mockup Card */}
-          <div className="relative w-full overflow-hidden sm:overflow-visible">
-            {/* Ambient Background Glow */}
-            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-emerald-500 to-teal-600 opacity-20 blur-xl" />
-
-            <div className="relative rounded-3xl border border-slate-200/90 bg-white/95 p-5 sm:p-7 shadow-xl backdrop-blur-md">
-              {/* Header */}
-              <div className="flex items-start justify-between border-b border-slate-100 pb-4 sm:pb-5">
-                <div className="min-w-0 pr-2">
-                  <div className="flex items-center gap-2">
-                    <span className="flex size-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 shrink-0">
-                      <FileCheck2 className="size-4" />
-                    </span>
-                    <span className="truncate text-xs sm:text-sm font-bold text-slate-900">
-                      Senior_Frontend_Resume.pdf
-                    </span>
-                  </div>
-                  <div className="mt-1 text-xs text-slate-400">
-                    Version 3 • Target: Senior Frontend Engineer
-                  </div>
+          {/* Right Column: Interactive Live ATS Inspector */}
+          <div className="relative w-full">
+            {/* Soft border ring */}
+            <div className="relative rounded-3xl border border-slate-200/90 bg-white/95 p-5 sm:p-7 shadow-xl backdrop-blur-md card-elevation">
+              {/* Profile Switcher Pills */}
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-xl">
+                  {SAMPLE_PROFILES.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => setActiveProfileId(p.id as "backend" | "frontend")}
+                      className={cn(
+                        "rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer",
+                        activeProfileId === p.id
+                          ? "bg-white text-slate-900 shadow-2xs"
+                          : "text-slate-500 hover:text-slate-800",
+                      )}
+                    >
+                      {p.id === "backend" ? "Backend Eng" : "Frontend Arch"}
+                    </button>
+                  ))}
                 </div>
 
                 <Badge variant="success" withDot>
-                  +12 pts vs v2
+                  {profile.delta} vs baseline
                 </Badge>
               </div>
 
-              {/* Scorecard Hero Strip */}
-              <div className="mt-5 flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+              {/* Document Meta */}
+              <div className="mt-4 flex items-center justify-between">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="flex size-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 shrink-0">
+                    <FileCheck2 className="size-4" />
+                  </span>
+                  <span className="truncate text-xs sm:text-sm font-bold text-slate-900">
+                    {profile.fileName}
+                  </span>
+                </div>
+                <span className="text-[11px] text-slate-400 font-medium shrink-0">
+                  Target: {profile.role}
+                </span>
+              </div>
+
+              {/* ATS Scorecard Bar */}
+              <div className="mt-4 flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
                 <div>
-                  <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                     ATS Readiness Rating
                   </div>
-                  <div className="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-900">
-                    84 <span className="text-sm sm:text-base font-normal text-slate-400">/ 100</span>
+                  <div className="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-900 tabular-nums">
+                    {profile.score} <span className="text-sm font-normal text-slate-400">/ 100</span>
                   </div>
                   <div className="text-xs text-emerald-700 font-medium mt-0.5">
-                    Top 8% of candidate resumes
+                    {profile.percentile}
                   </div>
                 </div>
-                <ProgressRing value={84} size={85} strokeWidth={8} />
+                <ProgressRing value={profile.score} size={80} strokeWidth={8} />
               </div>
 
-              {/* Bullet Rewrite Preview */}
-              <div className="mt-5 space-y-2.5">
-                <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                  <Wand2 className="size-3.5 text-emerald-600" />
-                  <span>Neural Resume Optimization</span>
+              {/* Editorial Diff Studio Preview */}
+              <div className="mt-4 space-y-2.5">
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                  <Zap className="size-3.5 text-emerald-600" />
+                  <span>High-Impact Bullet Transformation</span>
                 </div>
 
-                <div className="rounded-xl border border-rose-100 bg-rose-50/40 p-2.5 text-xs text-slate-600 font-mono">
-                  <span className="font-bold text-rose-700 block text-[10px]">ORIGINAL</span>
-                  &quot;Responsible for frontend updates and making pages faster.&quot;
+                {/* Original Weak Bullet */}
+                <div className="rounded-xl border border-rose-100 bg-rose-50/35 p-3 text-xs leading-relaxed text-slate-600">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-bold tracking-wider text-rose-700 uppercase">
+                      Before (Low ATS Impact)
+                    </span>
+                  </div>
+                  <p className="line-through decoration-rose-300 text-slate-500">
+                    &quot;{profile.original}&quot;
+                  </p>
                 </div>
 
-                <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-2.5 text-xs text-slate-800 font-mono">
-                  <span className="font-bold text-emerald-700 block text-[10px]">AI OPTIMIZED</span>
-                  &quot;Architected modular React micro-frontends, reducing LCP by 42% across 1.2M monthly users.&quot;
+                {/* Optimized Strong Bullet */}
+                <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-3 text-xs leading-relaxed text-slate-800">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-bold tracking-wider text-emerald-800 uppercase">
+                      After (Quantified Metric Alignment)
+                    </span>
+                  </div>
+                  <p>
+                    &quot;<span className="diff-strong">{profile.optimizedAction}</span>,{" "}
+                    <span className="diff-strong">{profile.optimizedMetric}</span>&quot;
+                  </p>
                 </div>
               </div>
 
-              {/* Mini Pipeline Indicator */}
-              <div className="mt-5 border-t border-slate-100 pt-4 flex items-center justify-between text-xs text-slate-500">
+              {/* Missing High-Value Keywords */}
+              <div className="mt-4 border-t border-slate-100 pt-3 flex flex-wrap items-center gap-1.5">
+                <span className="text-[11px] font-semibold text-slate-400 mr-1">
+                  Key Skills Injected:
+                </span>
+                {profile.missingKeywords.map((kw) => (
+                  <span
+                    key={kw}
+                    className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700 border border-slate-200/60"
+                  >
+                    + {kw}
+                  </span>
+                ))}
+              </div>
+
+              {/* Pipeline conversion telemetry */}
+              <div className="mt-4 border-t border-slate-100 pt-3 flex items-center justify-between text-xs text-slate-500">
                 <div className="flex items-center gap-2">
                   <BarChart3 className="size-4 text-emerald-600 shrink-0" />
-                  <span className="truncate">Pipeline: 14 Applications • 4 Interviews</span>
+                  <span>{profile.pipeline}</span>
                 </div>
-                <span className="font-bold text-emerald-700 shrink-0">28% Rate</span>
+                <span className="font-bold text-emerald-700">Interview Ready</span>
               </div>
             </div>
           </div>

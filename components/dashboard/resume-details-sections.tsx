@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   AlertCircle,
   ArrowLeft,
   Briefcase,
+  Check,
   CheckCircle2,
   Copy,
   Download,
@@ -99,6 +101,75 @@ export function ResumeFeedbackHeader({
             <Wand2 className="size-3.5" />
           )}
           {isRerunning ? "Analyzing..." : "Re-run Audit"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function RewriteSuggestionItem({
+  suggestion,
+  onCopy,
+}: {
+  suggestion: { before: string; after: string; why: string };
+  onCopy?: (input: { before: string; after: string; why: string }) => void;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    onCopy?.(suggestion);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs card-elevation-hover space-y-3">
+      {/* Before */}
+      <div className="rounded-xl border border-rose-100 bg-rose-50/30 p-3.5">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 block mb-1">
+          Original Statement (Low ATS Impact)
+        </span>
+        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed line-through decoration-rose-300">
+          &quot;{suggestion.before}&quot;
+        </p>
+      </div>
+
+      {/* After */}
+      <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-3.5">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block mb-1">
+          Quantified Rewrite (Action Verb + Measurable Metric)
+        </span>
+        <p className="text-xs sm:text-sm font-medium text-slate-900 leading-relaxed">
+          &quot;{suggestion.after}&quot;
+        </p>
+      </div>
+
+      {/* Rationale & Action */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pt-1 border-t border-slate-100">
+        <div className="flex items-start sm:items-center gap-1.5 text-xs text-slate-600">
+          <Lightbulb className="size-3.5 text-amber-500 shrink-0 mt-0.5 sm:mt-0" />
+          <span>
+            <strong className="font-semibold text-slate-700">Audit Rationale:</strong> {suggestion.why}
+          </span>
+        </div>
+
+        <Button
+          variant={copied ? "subtle" : "secondary"}
+          size="xs"
+          onClick={handleCopy}
+          className="shrink-0 self-start sm:self-auto cursor-pointer"
+        >
+          {copied ? (
+            <>
+              <Check className="size-3 text-emerald-600" />
+              <span className="text-emerald-700 font-semibold">Copied!</span>
+            </>
+          ) : (
+            <>
+              <Copy className="size-3" />
+              <span>Copy Rewrite</span>
+            </>
+          )}
         </Button>
       </div>
     </div>
@@ -270,48 +341,11 @@ export function ResumeDetailsMain({
         </CardHeader>
         <CardContent className="space-y-4">
           {feedback.rewriteSuggestions.map((suggestion, index) => (
-            <div
+            <RewriteSuggestionItem
               key={index}
-              className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs space-y-3"
-            >
-              {/* Original Weak Bullet */}
-              <div className="rounded-xl border border-rose-200/80 bg-rose-50/50 p-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 block mb-1">
-                  Original / Weak
-                </span>
-                <p className="text-xs text-slate-700 leading-relaxed font-mono">
-                  {suggestion.before}
-                </p>
-              </div>
-
-              {/* AI Optimized Bullet */}
-              <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/50 p-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block mb-1">
-                  AI Optimized / High-Impact
-                </span>
-                <p className="text-xs font-semibold text-slate-900 leading-relaxed font-mono">
-                  {suggestion.after}
-                </p>
-              </div>
-
-              {/* Rationale & Copy */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-1">
-                <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                  <Lightbulb className="size-3.5 text-amber-500 shrink-0" />
-                  <span>{suggestion.why}</span>
-                </div>
-
-                <Button
-                  variant="secondary"
-                  size="xs"
-                  onClick={() => onCopySuggestion?.(suggestion)}
-                  className="shrink-0 self-start sm:self-auto"
-                >
-                  <Copy className="size-3" />
-                  Copy Bullet
-                </Button>
-              </div>
-            </div>
+              suggestion={suggestion}
+              onCopy={onCopySuggestion}
+            />
           ))}
         </CardContent>
       </Card>

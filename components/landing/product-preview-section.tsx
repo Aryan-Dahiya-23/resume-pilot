@@ -73,14 +73,22 @@ export function ProductPreviewSection({ isSignedIn = false }: { isSignedIn?: boo
                     </span>
                     <Badge variant="brand">Impact Score +24%</Badge>
                   </div>
-                  <div className="mt-3 space-y-2 text-xs">
-                    <div className="rounded-lg bg-rose-50/60 p-2.5 text-slate-600 font-mono">
-                      <span className="font-bold text-rose-700 block text-[10px]">ORIGINAL:</span>
-                      Built authentication and API endpoints for our app.
+                  <div className="mt-3 space-y-2.5 text-xs">
+                    <div className="rounded-xl border border-rose-100 bg-rose-50/35 p-3 text-slate-600 leading-relaxed">
+                      <span className="font-bold text-rose-700 text-[10px] uppercase block mb-1">
+                        Original Submission:
+                      </span>
+                      <p className="line-through decoration-rose-300 text-slate-500">
+                        &quot;Built authentication and API endpoints for our app.&quot;
+                      </p>
                     </div>
-                    <div className="rounded-lg bg-emerald-50/60 p-2.5 text-slate-900 font-mono font-medium">
-                      <span className="font-bold text-emerald-700 block text-[10px]">AI SUGGESTION:</span>
-                      Engineered OAuth2 session management with Redis token revocation, cutting latency by 35% for 450k active sessions.
+                    <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-3 text-slate-900 leading-relaxed font-medium">
+                      <span className="font-bold text-emerald-800 text-[10px] uppercase block mb-1">
+                        Quantified Rewrite:
+                      </span>
+                      <p>
+                        &quot;<span className="diff-strong">Engineered OAuth2 session architecture</span> with <span className="diff-strong">Redis token revocation</span>, cutting auth latency by 35% across 450k active sessions.&quot;
+                      </p>
                     </div>
                   </div>
                 </div>

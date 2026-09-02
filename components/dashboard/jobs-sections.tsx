@@ -10,6 +10,8 @@ import {
   ChevronRight,
   Filter,
   Globe,
+  Kanban,
+  List,
   Loader2,
   MapPin,
   Pencil,
@@ -363,6 +365,17 @@ export function JobsTableSection({
     "Rejected",
   ];
 
+  const [viewMode, setViewMode] = useState<"table" | "board">("table");
+
+  const boardStages: JobStatus[] = ["Saved", "Applied", "Interview", "Offer", "Rejected"];
+  const stageBadges: Record<JobStatus, string> = {
+    Saved: "bg-slate-100 text-slate-700",
+    Applied: "bg-blue-50 text-blue-700 border-blue-200/60",
+    Interview: "bg-teal-50 text-teal-800 border-teal-200/60",
+    Offer: "bg-emerald-50 text-emerald-800 border-emerald-200/60",
+    Rejected: "bg-rose-50 text-rose-700 border-rose-200/60",
+  };
+
   return (
     <section className="rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs">
       {/* Search & Filters */}
@@ -407,121 +420,256 @@ export function JobsTableSection({
             <option value="7d">Last 7 Days</option>
             <option value="30d">Last 30 Days</option>
           </select>
+
+          {/* View Mode Switcher (Table vs Board) */}
+          <div className="flex items-center gap-1 rounded-xl border border-slate-200/80 bg-slate-100/80 p-1">
+            <button
+              onClick={() => setViewMode("table")}
+              title="Table view"
+              className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === "table"
+                  ? "bg-white text-slate-900 shadow-2xs"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              <List className="size-3.5" />
+              <span className="hidden sm:inline">Table</span>
+            </button>
+            <button
+              onClick={() => setViewMode("board")}
+              title="Kanban board view"
+              className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === "board"
+                  ? "bg-white text-slate-900 shadow-2xs"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              <Kanban className="size-3.5" />
+              <span className="hidden sm:inline">Board</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Table Content with Horizontal Scroll Support */}
-      <div className="mt-6 overflow-x-auto no-scrollbar">
-        <div className="min-w-[650px]">
-          {/* Table Header */}
-          <div className="grid grid-cols-[1.5fr_1.5fr_130px_120px_100px] border-b border-slate-100 bg-slate-50/60 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 rounded-xl">
-            <div>Company</div>
-            <div>Position</div>
-            <div>Stage</div>
-            <div>Tracked</div>
-            <div className="text-right">Actions</div>
-          </div>
+      {/* Table / Board Content */}
+      {viewMode === "board" ? (
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 overflow-x-auto pb-2">
+          {boardStages.map((stage) => {
+            const stageJobs = rows.filter((r) => r.status === stage);
 
-          {/* Table Body */}
-          <div className="divide-y divide-slate-100 mt-1">
-            {isLoadingRows ? (
-              <div className="py-12 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-                <Loader2 className="size-4 animate-spin text-emerald-600" />
-                <span>Refreshing jobs...</span>
-              </div>
-            ) : null}
-
-            {rows.map((job) => {
-              const companyInitial = job.company.charAt(0).toUpperCase();
-
-              return (
-                <div
-                  key={job.id}
-                  className="grid grid-cols-[1.5fr_1.5fr_130px_120px_100px] items-center px-4 py-3.5 transition-colors hover:bg-slate-50/70 rounded-xl"
-                >
-                  <div className="flex items-center gap-3 min-w-0 pr-3">
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 font-bold text-xs text-emerald-800">
-                      {companyInitial}
-                    </div>
-                    <span className="truncate text-sm font-semibold text-slate-900">
-                      {job.company}
+            return (
+              <div
+                key={stage}
+                className="rounded-2xl border border-slate-200/80 bg-slate-50/50 p-3 flex flex-col min-h-[360px]"
+              >
+                {/* Column Header */}
+                <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/70 mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-900">{stage}</span>
+                    <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-slate-600 border border-slate-200/80">
+                      {stageJobs.length}
                     </span>
                   </div>
-
-                  <div className="min-w-0 pr-3">
-                    <div className="truncate text-xs font-medium text-slate-800">
-                      {job.role}
-                    </div>
-                    {job.location ? (
-                      <div className="truncate text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
-                        <MapPin className="size-3 text-slate-300" />
-                        {job.location}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div>
-                    <Badge variant={statusVariant(job.status)} withDot>
-                      {job.status}
-                    </Badge>
-                  </div>
-
-                  <div className="text-xs text-slate-400">
-                    {job.when}
-                  </div>
-
-                  <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon-xs" asChild>
-                      <Link
-                        href={`/dashboard/jobs/${job.id}`}
-                        onMouseEnter={() => onHoverJob?.(job.id)}
-                        title="View details"
-                      >
-                        <ArrowUpRight className="size-3.5" />
-                      </Link>
-                    </Button>
-
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      onClick={() => onEditJob?.(job.id)}
-                      disabled={updatingJobId === job.id || deletingJobId === job.id}
-                      title="Edit job"
-                    >
-                      {updatingJobId === job.id ? (
-                        <Loader2 className="size-3 animate-spin" />
-                      ) : (
-                        <Pencil className="size-3.5" />
-                      )}
-                    </Button>
-
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      onClick={() => onRequestDeleteJob?.(job.id)}
-                      disabled={deletingJobId === job.id || updatingJobId === job.id}
-                      className="text-slate-400 hover:text-rose-600 hover:bg-rose-50"
-                      title="Delete job"
-                    >
-                      {deletingJobId === job.id ? (
-                        <Loader2 className="size-3 animate-spin" />
-                      ) : (
-                        <Trash2 className="size-3.5" />
-                      )}
-                    </Button>
-                  </div>
                 </div>
-              );
-            })}
 
-            {rows.length === 0 && !isLoadingRows ? (
-              <div className="py-12 text-center text-xs text-slate-400">
-                No matching opportunities found.
+                {/* Cards List */}
+                <div className="space-y-2.5 flex-1 overflow-y-auto">
+                  {stageJobs.map((job) => {
+                    const companyInitial = job.company.charAt(0).toUpperCase();
+
+                    return (
+                      <div
+                        key={job.id}
+                        className="group rounded-xl border border-slate-200/90 bg-white p-3 shadow-2xs card-elevation-hover space-y-2"
+                      >
+                        <div className="flex items-start justify-between gap-1.5">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-emerald-50 font-bold text-[11px] text-emerald-800">
+                              {companyInitial}
+                            </div>
+                            <span className="truncate text-xs font-bold text-slate-900">
+                              {job.company}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-0.5 opacity-80 group-hover:opacity-100">
+                            <Button variant="ghost" size="icon-xs" asChild className="size-6">
+                              <Link
+                                href={`/dashboard/jobs/${job.id}`}
+                                onMouseEnter={() => onHoverJob?.(job.id)}
+                                title="View details"
+                              >
+                                <ArrowUpRight className="size-3" />
+                              </Link>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              onClick={() => onEditJob?.(job.id)}
+                              disabled={updatingJobId === job.id || deletingJobId === job.id}
+                              className="size-6"
+                              title="Edit job"
+                            >
+                              <Pencil className="size-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              onClick={() => onRequestDeleteJob?.(job.id)}
+                              disabled={deletingJobId === job.id || updatingJobId === job.id}
+                              className="size-6 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                              title="Delete job"
+                            >
+                              <Trash2 className="size-3" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-xs font-medium text-slate-800 line-clamp-1">
+                            {job.role}
+                          </div>
+                          {job.location ? (
+                            <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+                              <MapPin className="size-2.5 text-slate-300" />
+                              <span className="truncate">{job.location}</span>
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[10px] text-slate-400">
+                          <span>{job.when}</span>
+                          <span className="font-semibold text-slate-500">
+                            Active
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {stageJobs.length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-slate-200/80 p-4 text-center text-[11px] text-slate-400 my-auto">
+                      No {stage.toLowerCase()} jobs
+                    </div>
+                  ) : null}
+                </div>
               </div>
-            ) : null}
+            );
+          })}
+        </div>
+      ) : (
+        <div className="mt-6 overflow-x-auto no-scrollbar">
+          <div className="min-w-[650px]">
+            {/* Table Header */}
+            <div className="grid grid-cols-[1.5fr_1.5fr_130px_120px_100px] border-b border-slate-100 bg-slate-50/60 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 rounded-xl">
+              <div>Company</div>
+              <div>Position</div>
+              <div>Stage</div>
+              <div>Tracked</div>
+              <div className="text-right">Actions</div>
+            </div>
+
+            {/* Table Body */}
+            <div className="divide-y divide-slate-100 mt-1">
+              {isLoadingRows ? (
+                <div className="py-12 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+                  <Loader2 className="size-4 animate-spin text-emerald-600" />
+                  <span>Refreshing jobs...</span>
+                </div>
+              ) : null}
+
+              {rows.map((job) => {
+                const companyInitial = job.company.charAt(0).toUpperCase();
+
+                return (
+                  <div
+                    key={job.id}
+                    className="grid grid-cols-[1.5fr_1.5fr_130px_120px_100px] items-center px-4 py-3.5 transition-colors hover:bg-slate-50/70 rounded-xl"
+                  >
+                    <div className="flex items-center gap-3 min-w-0 pr-3">
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 font-bold text-xs text-emerald-800">
+                        {companyInitial}
+                      </div>
+                      <span className="truncate text-sm font-semibold text-slate-900">
+                        {job.company}
+                      </span>
+                    </div>
+
+                    <div className="min-w-0 pr-3">
+                      <div className="truncate text-xs font-medium text-slate-800">
+                        {job.role}
+                      </div>
+                      {job.location ? (
+                        <div className="truncate text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+                          <MapPin className="size-3 text-slate-300" />
+                          {job.location}
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div>
+                      <Badge variant={statusVariant(job.status)} withDot>
+                        {job.status}
+                      </Badge>
+                    </div>
+
+                    <div className="text-xs text-slate-400">
+                      {job.when}
+                    </div>
+
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="icon-xs" asChild>
+                        <Link
+                          href={`/dashboard/jobs/${job.id}`}
+                          onMouseEnter={() => onHoverJob?.(job.id)}
+                          title="View details"
+                        >
+                          <ArrowUpRight className="size-3.5" />
+                        </Link>
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={() => onEditJob?.(job.id)}
+                        disabled={updatingJobId === job.id || deletingJobId === job.id}
+                        title="Edit job"
+                      >
+                        {updatingJobId === job.id ? (
+                          <Loader2 className="size-3 animate-spin" />
+                        ) : (
+                          <Pencil className="size-3.5" />
+                        )}
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={() => onRequestDeleteJob?.(job.id)}
+                        disabled={deletingJobId === job.id || updatingJobId === job.id}
+                        className="text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                        title="Delete job"
+                      >
+                        {deletingJobId === job.id ? (
+                          <Loader2 className="size-3 animate-spin" />
+                        ) : (
+                          <Trash2 className="size-3.5" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {rows.length === 0 && !isLoadingRows ? (
+                <div className="py-12 text-center text-xs text-slate-400">
+                  No matching opportunities found.
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Pagination Footer */}
       <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 pt-4">
