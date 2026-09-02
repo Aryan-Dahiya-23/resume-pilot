@@ -1,18 +1,19 @@
 "use client";
 
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function DashboardPageLoading({
-  label = "Loading...",
+  label = "Loading workspace...",
 }: {
   label?: string;
 }) {
   return (
-    <div className="relative min-h-[60vh] w-full">
-      <div className="absolute left-1/2 top-[56%] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-3 text-zinc-700">
-        <Loader2 className="h-5 w-5 animate-spin" />
-        <span className="text-sm font-medium">{label}</span>
+    <div className="flex min-h-[50vh] w-full flex-col items-center justify-center gap-3">
+      <div className="relative flex size-12 items-center justify-center rounded-2xl border border-emerald-100 bg-emerald-50/50 shadow-xs">
+        <Loader2 className="size-6 animate-spin text-emerald-600" />
       </div>
+      <span className="text-sm font-medium text-slate-500">{label}</span>
     </div>
   );
 }
@@ -27,22 +28,25 @@ export function DashboardPageError({
   onRetry?: () => void;
 }) {
   return (
-    <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 shadow-sm">
-      <div className="flex items-start gap-3">
-        <div className="mt-0.5 rounded-xl bg-rose-100 p-2 text-rose-700">
-          <AlertTriangle className="h-4 w-4" />
+    <div className="rounded-2xl border border-rose-200/80 bg-rose-50/60 p-6 shadow-xs">
+      <div className="flex items-start gap-4">
+        <div className="rounded-xl bg-rose-100 p-2.5 text-rose-600 shrink-0">
+          <AlertCircle className="size-5" />
         </div>
-        <div>
-          <div className="text-sm font-semibold text-rose-800">{title}</div>
-          <div className="mt-1 text-sm text-rose-700">{message}</div>
+        <div className="flex-1">
+          <h3 className="text-sm font-bold text-rose-900">{title}</h3>
+          <p className="mt-1 text-sm text-rose-700 leading-relaxed">{message}</p>
           {onRetry ? (
             <div className="mt-4">
-              <button
-                className="rounded-2xl bg-rose-700 px-4 py-2 text-sm font-medium text-white hover:bg-rose-600"
+              <Button
+                variant="danger"
+                size="sm"
                 onClick={onRetry}
+                className="gap-1.5"
               >
+                <RotateCcw className="size-3.5" />
                 Try again
-              </button>
+              </Button>
             </div>
           ) : null}
         </div>

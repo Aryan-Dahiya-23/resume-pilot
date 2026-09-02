@@ -4,56 +4,71 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useClerk, useUser } from "@clerk/nextjs";
-import { Briefcase, ChevronRight, FileText, LayoutDashboard, LogOut, Menu, Settings, TrendingUp } from "lucide-react";
-import { cn } from "@/components/ui/cn";
+import {
+  Briefcase,
+  Compass,
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Settings,
+  TrendingUp,
+  X,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { useCurrentDbUser, useDashboardOverview } from "@/hooks/queries";
 import { getDashboardOverview } from "@/lib/api/dashboard";
 import { listJobsQuery } from "@/lib/api/jobs";
 import { listResumesQuery } from "@/lib/api/resumes";
 import { getCurrentDbUserClient } from "@/lib/api/users";
 import { queryKeys } from "@/lib/react-query/query-keys";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
-function SidebarItem({
-  href,
-  icon,
-  label,
-  active,
-  pending,
-  onHover,
-  onClick,
-}: {
+interface NavItemProps {
   href: string;
-  icon: React.ReactNode;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   active?: boolean;
-  pending?: boolean;
   onHover?: () => void;
   onClick?: () => void;
-}) {
-  const isHighlighted = active || pending;
+}
 
+function NavItem({
+  href,
+  icon: Icon,
+  label,
+  active,
+  onHover,
+  onClick,
+}: NavItemProps) {
   return (
     <Link
       href={href}
       onMouseEnter={onHover}
       onClick={onClick}
       className={cn(
-        "flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm transition-all duration-200",
-        isHighlighted ? "bg-zinc-900 text-white" : "text-zinc-700 hover:bg-zinc-100",
+        "group relative flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-150 select-none",
+        active
+          ? "bg-emerald-50 text-emerald-800 shadow-2xs border border-emerald-100/90 font-semibold"
+          : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900",
       )}
     >
-      <span className="flex items-center gap-2">
-        <span className="grid place-items-center">{icon}</span>
-        <span className="font-medium">{label}</span>
+      <span className="flex items-center gap-3">
+        <Icon
+          className={cn(
+            "size-4.5 transition-colors",
+            active ? "text-emerald-600" : "text-slate-400 group-hover:text-slate-600",
+          )}
+        />
+        <span>{label}</span>
       </span>
-      <ChevronRight
-        className={cn(
-          "h-4 w-4 transition-transform duration-200",
-          isHighlighted ? "text-white/80" : "text-zinc-400",
-        )}
-      />
+      {active ? (
+        <span className="size-1.5 rounded-full bg-emerald-600" />
+      ) : null}
     </Link>
   );
 }
@@ -65,12 +80,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const { user: clerkUser } = useUser();
   const { data: currentUser } = useCurrentDbUser();
   const { data: dashboardOverview } = useDashboardOverview();
+
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [pendingPath, setPendingPath] = useState<string | null>(null);
-  const drawerTouchStartX = useRef<number | null>(null);
-  const drawerTouchCurrentX = useRef<number | null>(null);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
   const displayName = currentUser?.name?.trim() || currentUser?.email || "User";
   const avatarInitial = displayName.charAt(0).toUpperCase();
   const avatarImageUrl = clerkUser?.hasImage ? clerkUser.imageUrl : null;
@@ -78,23 +92,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const weeklyDone = dashboardOverview?.weeklyApplications ?? 0;
   const weeklyProgress = Math.min(100, Math.max(0, Math.round((weeklyDone / weeklyGoal) * 100)));
 
-  useEffect(() => {
-    setIsMobileSidebarOpen(false);
-    setPendingPath(null);
-  }, [pathname]);
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    setIsMobileOpen(false);
+  }
 
-  useEffect(() => {
-    if (!isMobileSidebarOpen) return;
-
-    const { overflow } = document.body.style;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = overflow;
-    };
-  }, [isMobileSidebarOpen]);
-
-  function prefetchDashboardOverview() {
+  function prefetchDashboard() {
     void queryClient.prefetchQuery({
       queryKey: queryKeys.dashboard.overview(),
       queryFn: getDashboardOverview,
@@ -102,7 +106,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     });
   }
 
-  function prefetchResumesList() {
+  function prefetchResumes() {
     void queryClient.prefetchQuery({
       queryKey: queryKeys.resumes.listWithFilters({}),
       queryFn: () => listResumesQuery({}),
@@ -110,7 +114,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     });
   }
 
-  function prefetchJobsList() {
+  function prefetchJobs() {
     void queryClient.prefetchQuery({
       queryKey: queryKeys.jobs.listWithFilters({}),
       queryFn: () => listJobsQuery({}),
@@ -118,7 +122,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     });
   }
 
-  function prefetchSettingsData() {
+  function prefetchSettings() {
     void queryClient.prefetchQuery({
       queryKey: queryKeys.user.current(),
       queryFn: getCurrentDbUserClient,
@@ -136,228 +140,201 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     }
   }
 
-  function handleNavigate(href: string) {
-    setPendingPath(href);
-    setIsMobileSidebarOpen(false);
-  }
+  const navLinks = [
+    {
+      href: "/dashboard",
+      label: "Overview",
+      icon: LayoutDashboard,
+      active: pathname === "/dashboard",
+      onHover: prefetchDashboard,
+    },
+    {
+      href: "/dashboard/resumes",
+      label: "Resume Audits",
+      icon: FileText,
+      active: pathname.startsWith("/dashboard/resumes"),
+      onHover: prefetchResumes,
+    },
+    {
+      href: "/dashboard/jobs",
+      label: "Job Pipeline",
+      icon: Briefcase,
+      active: pathname.startsWith("/dashboard/jobs"),
+      onHover: prefetchJobs,
+    },
+    {
+      href: "/dashboard/settings",
+      label: "Settings",
+      icon: Settings,
+      active: pathname === "/dashboard/settings",
+      onHover: prefetchSettings,
+    },
+  ];
 
-  function handleDrawerTouchStart(event: React.TouchEvent<HTMLElement>) {
-    drawerTouchStartX.current = event.touches[0]?.clientX ?? null;
-    drawerTouchCurrentX.current = drawerTouchStartX.current;
-  }
-
-  function handleDrawerTouchMove(event: React.TouchEvent<HTMLElement>) {
-    drawerTouchCurrentX.current = event.touches[0]?.clientX ?? null;
-  }
-
-  function handleDrawerTouchEnd() {
-    const startX = drawerTouchStartX.current;
-    const endX = drawerTouchCurrentX.current;
-
-    drawerTouchStartX.current = null;
-    drawerTouchCurrentX.current = null;
-
-    if (startX === null || endX === null) return;
-
-    const deltaX = endX - startX;
-    if (deltaX < -40) {
-      setIsMobileSidebarOpen(false);
-    }
-  }
-
-  function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-    return (
-      <>
-        <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
-          <div>
-            <div className="text-sm text-zinc-500">Welcome back</div>
-            <div className="text-lg font-semibold text-zinc-900">{displayName}</div>
-          </div>
-          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-zinc-900 text-white">
-            {avatarImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={avatarImageUrl}
-                alt={displayName}
-                className="h-full w-full rounded-2xl object-cover"
-              />
-            ) : (
-              <span className="text-sm font-semibold">{avatarInitial}</span>
-            )}
-          </div>
+  const sidebarContent = (
+    <div className="flex h-full flex-col justify-between p-4 sm:p-5">
+      <div className="space-y-6">
+        {/* Brand Header */}
+        <div className="flex items-center justify-between px-2">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs shadow-emerald-600/20">
+              <Compass className="size-5" />
+            </div>
+            <div>
+              <span className="text-base font-bold tracking-tight text-slate-900">
+                ResumePilot
+              </span>
+              <span className="block text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
+                Intelligence v2.0
+              </span>
+            </div>
+          </Link>
         </div>
 
-        <div className="mt-4 space-y-1">
-          <SidebarItem
-            href="/dashboard"
-            icon={<LayoutDashboard className="h-4 w-4" />}
-            label="Dashboard"
-            active={pathname === "/dashboard"}
-            pending={pendingPath === "/dashboard"}
-            onHover={prefetchDashboardOverview}
-            onClick={() => {
-              handleNavigate("/dashboard");
-              onNavigate?.();
-            }}
-          />
-          <SidebarItem
-            href="/dashboard/resumes"
-            icon={<FileText className="h-4 w-4" />}
-            label="Resumes"
-            active={pathname.startsWith("/dashboard/resumes")}
-            pending={pendingPath === "/dashboard/resumes"}
-            onHover={prefetchResumesList}
-            onClick={() => {
-              handleNavigate("/dashboard/resumes");
-              onNavigate?.();
-            }}
-          />
-          <SidebarItem
-            href="/dashboard/jobs"
-            icon={<Briefcase className="h-4 w-4" />}
-            label="Jobs"
-            active={pathname.startsWith("/dashboard/jobs")}
-            pending={pendingPath === "/dashboard/jobs"}
-            onHover={prefetchJobsList}
-            onClick={() => {
-              handleNavigate("/dashboard/jobs");
-              onNavigate?.();
-            }}
-          />
-          <SidebarItem
-            href="/dashboard/settings"
-            icon={<Settings className="h-4 w-4" />}
-            label="Settings"
-            active={pathname.startsWith("/dashboard/settings")}
-            pending={pendingPath === "/dashboard/settings"}
-            onHover={prefetchSettingsData}
-            onClick={() => {
-              handleNavigate("/dashboard/settings");
-              onNavigate?.();
-            }}
-          />
+        {/* Status Chip */}
+        <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+            </span>
+            <span className="text-xs font-semibold text-emerald-900">
+              AI Engine Active
+            </span>
+          </div>
+          <span className="text-[10px] font-mono text-emerald-700 bg-white/80 rounded px-1.5 py-0.5 border border-emerald-200/50">
+            v2.0
+          </span>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-            <TrendingUp className="h-4 w-4" />
-            Weekly goal
-          </div>
-          <div className="mt-2 text-sm text-zinc-600">
-            Apply to <span className="font-medium">10 jobs</span> this week.
-          </div>
-          <div className="mt-3 h-2 w-full rounded-full bg-zinc-200">
-            <div
-              className="h-2 rounded-full bg-zinc-900 transition-[width] duration-300"
-              style={{ width: `${weeklyProgress}%` }}
+        {/* Navigation Items */}
+        <nav className="space-y-1">
+          {navLinks.map((item) => (
+            <NavItem
+              key={item.href}
+              {...item}
+              onClick={() => setIsMobileOpen(false)}
             />
-          </div>
-          <div className="mt-2 text-xs text-zinc-500">
-            {weeklyDone} / {weeklyGoal} done
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <Button
-            variant="secondary"
-            className="w-full"
-            onClick={() => {
-              setIsLogoutModalOpen(true);
-              onNavigate?.();
-            }}
-          >
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
-        </div>
-      </>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-zinc-50">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mb-4 flex items-center justify-between rounded-2xl border border-zinc-200 bg-white px-4 py-3 shadow-sm lg:hidden">
-          <button
-            type="button"
-            className="rounded-xl border border-zinc-200 bg-white p-2 text-zinc-700 hover:bg-zinc-50"
-            onClick={() => setIsMobileSidebarOpen(true)}
-            aria-label="Open menu"
-          >
-            <Menu className="h-4 w-4" />
-          </button>
-          <div className="text-sm font-semibold text-zinc-900">Resume Pilot</div>
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-zinc-900 text-white">
-            {avatarImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={avatarImageUrl}
-                alt={displayName}
-                className="h-full w-full rounded-xl object-cover"
-              />
-            ) : (
-              <span className="text-xs font-semibold">{avatarInitial}</span>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
-          <aside className="hidden rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm lg:sticky lg:top-6 lg:block lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
-            <SidebarContent />
-          </aside>
-
-          <main className="space-y-6">{children}</main>
-        </div>
+          ))}
+        </nav>
       </div>
 
-      <div
-        className={cn(
-          "fixed inset-0 z-40 bg-zinc-900/40 transition-opacity duration-200 lg:hidden",
-          isMobileSidebarOpen ? "opacity-100" : "pointer-events-none opacity-0",
-        )}
-        onClick={() => setIsMobileSidebarOpen(false)}
-      />
+      <div className="space-y-4 pt-4 border-t border-slate-100">
+        {/* Weekly Velocity Metric */}
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-slate-700 flex items-center gap-1.5">
+              <TrendingUp className="size-3.5 text-emerald-600" />
+              Weekly Velocity
+            </span>
+            <span className="font-bold text-emerald-700">
+              {weeklyDone}/{weeklyGoal}
+            </span>
+          </div>
+          <div className="mt-2">
+            <Progress value={weeklyProgress} className="h-1.5" />
+          </div>
+          <p className="mt-1.5 text-[11px] text-slate-400">
+            {weeklyGoal - weeklyDone > 0
+              ? `${weeklyGoal - weeklyDone} more to target`
+              : "Goal reached! Excellent momentum"}
+          </p>
+        </div>
 
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 w-[86%] max-w-[320px] border-r border-zinc-200 bg-white p-4 shadow-xl transition-transform duration-200 lg:hidden",
-          isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full",
-        )}
-        onTouchStart={handleDrawerTouchStart}
-        onTouchMove={handleDrawerTouchMove}
-        onTouchEnd={handleDrawerTouchEnd}
-      >
-        <SidebarContent onNavigate={() => setIsMobileSidebarOpen(false)} />
-      </aside>
+        {/* User Card */}
+        <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50/60 p-2.5">
+          <div className="flex items-center gap-2.5 min-w-0 pr-2">
+            <Avatar className="size-8 rounded-xl border border-emerald-200">
+              {avatarImageUrl ? (
+                <AvatarImage src={avatarImageUrl} alt={displayName} />
+              ) : null}
+              <AvatarFallback className="bg-emerald-100 text-emerald-800 text-xs font-bold">
+                {avatarInitial}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <div className="truncate text-xs font-bold text-slate-900">
+                {displayName}
+              </div>
+              <div className="truncate text-[10px] text-slate-400">
+                Pro Candidate
+              </div>
+            </div>
+          </div>
 
-      {isLogoutModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">
-              Logout now?
-            </div>
-            <div className="mt-2 text-sm text-zinc-600">
-              You will be signed out from your account.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsLogoutModalOpen(false)}
-                disabled={isLoggingOut}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
-                onClick={handleConfirmLogout}
-                disabled={isLoggingOut}
-              >
-                {isLoggingOut ? "Logging out..." : "Confirm"}
-              </button>
-            </div>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => setIsLogoutModalOpen(true)}
+            title="Sign out"
+            className="text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+          >
+            <LogOut className="size-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-50/70 ambient-glow flex flex-col">
+      {/* Mobile Top Header */}
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-md lg:hidden">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-2xs">
+            <Compass className="size-4" />
+          </div>
+          <span className="font-bold text-slate-900 text-sm tracking-tight">
+            ResumePilot
+          </span>
+        </Link>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsMobileOpen((prev) => !prev)}
+          aria-label="Toggle mobile navigation menu"
+          className="h-9 w-9 p-0"
+        >
+          {isMobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+        </Button>
+      </header>
+
+      {/* Mobile Drawer Backdrop & Menu */}
+      {isMobileOpen ? (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity duration-200"
+            onClick={() => setIsMobileOpen(false)}
+          />
+          <div className="fixed inset-y-0 left-0 z-50 w-full max-w-[280px] bg-white shadow-2xl transition-transform duration-200 ease-out">
+            {sidebarContent}
           </div>
         </div>
       ) : null}
+
+      {/* Desktop Fixed Sidebar */}
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 border-r border-slate-200/80 bg-white/90 backdrop-blur-md lg:flex lg:flex-col xl:w-72">
+        {sidebarContent}
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="flex-1 lg:pl-64 xl:pl-72 transition-all duration-200">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 space-y-6">
+          {children}
+        </div>
+      </main>
+
+      {/* Sign Out Confirmation Modal */}
+      <ConfirmModal
+        open={isLogoutModalOpen}
+        onOpenChange={setIsLogoutModalOpen}
+        title="Sign Out of ResumePilot?"
+        description="You will need to sign in again to access your resumes and pipeline."
+        confirmText="Sign Out"
+        isLoading={isLoggingOut}
+        onConfirm={handleConfirmLogout}
+      />
     </div>
   );
 }

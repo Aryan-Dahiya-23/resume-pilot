@@ -3,20 +3,47 @@
 import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
 import { useClerk } from "@clerk/nextjs";
-import { AlertTriangle, Download, Loader2, Save, Settings, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  Database,
+  Download,
+  FileSpreadsheet,
+  Loader2,
+  Lock,
+  Save,
+  Shield,
+  Trash2,
+  User,
+} from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from "@/components/providers/toast-provider";
 import { useCurrentDbUser } from "@/hooks/queries";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
 export function SettingsHeader() {
   return (
-    <div className="flex flex-col gap-3 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <div className="text-sm text-zinc-500">Settings</div>
-        <h1 className="text-xl font-semibold text-zinc-900">Account & data</h1>
+        <div className="text-xs font-semibold uppercase tracking-wider text-emerald-600">
+          Preferences & Governance
+        </div>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          Account & Data Settings
+        </h1>
+        <p className="mt-1 text-xs sm:text-sm text-slate-500">
+          Manage your personal profile, export your career data, or configure workspace retention.
+        </p>
       </div>
     </div>
   );
@@ -40,7 +67,7 @@ export function ProfileSettingsCard() {
         { withCredentials: true },
       );
       await queryClient.invalidateQueries({ queryKey: queryKeys.user.current() });
-      toast({ tone: "success", message: "Profile updated." });
+      toast({ tone: "success", message: "Profile updated successfully." });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast({
@@ -58,34 +85,52 @@ export function ProfileSettingsCard() {
   }
 
   return (
-    <Card title="Profile" icon={<Settings className="h-4 w-4" />}>
-      <div className="text-sm text-zinc-600">
-        Update your profile details used across dashboard widgets.
-      </div>
-      <div className="mt-4 grid grid-cols-1 gap-3">
-        <div>
-          <div className="text-xs font-medium text-zinc-600">Name</div>
-          <input
-            value={value}
-            onChange={(event) => setName(event.target.value)}
-            className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-          />
+    <Card className="rounded-3xl border-slate-200/90 shadow-xs">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <User className="size-4 text-emerald-600" />
+          <CardTitle className="text-base">Profile Information</CardTitle>
         </div>
-        <div>
-          <div className="text-xs font-medium text-zinc-600">Email</div>
-          <input
-            value={currentUser?.email ?? ""}
-            readOnly
-            className="mt-1 w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-600 outline-none"
-          />
+        <CardDescription>
+          Display name used in workspace headers and review summaries.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              Full Name
+            </label>
+            <Input
+              value={value}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your full name"
+              className="mt-1"
+            />
+          </div>
+
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              Email Address
+            </label>
+            <Input
+              value={currentUser?.email ?? ""}
+              readOnly
+              className="mt-1 bg-slate-50 text-slate-500 cursor-not-allowed"
+            />
+            <span className="text-[11px] text-slate-400 mt-1 block">
+              Managed through your authentication provider.
+            </span>
+          </div>
         </div>
-      </div>
-      <div className="mt-4">
-        <Button onClick={handleSave} disabled={isSaving}>
-          {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          {isSaving ? "Saving..." : "Save changes"}
-        </Button>
-      </div>
+
+        <div className="pt-2">
+          <Button onClick={handleSave} disabled={isSaving} className="shadow-xs shadow-emerald-600/20 w-full sm:w-auto">
+            {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+            {isSaving ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   );
 }
@@ -117,9 +162,9 @@ export function DataSettingsCard() {
         "/api/settings/export/jobs",
         `jobs-${new Date().toISOString().slice(0, 10)}.csv`,
       );
-      toast({ tone: "success", message: "Jobs exported." });
+      toast({ tone: "success", message: "Jobs exported successfully." });
     } catch {
-      toast({ tone: "error", message: "Could not export jobs." });
+      toast({ tone: "error", message: "Failed to export jobs." });
     } finally {
       setIsExportingJobs(false);
     }
@@ -132,47 +177,78 @@ export function DataSettingsCard() {
         "/api/settings/export/resume-feedback",
         `resume-feedback-${new Date().toISOString().slice(0, 10)}.json`,
       );
-      toast({ tone: "success", message: "Feedback exported." });
+      toast({ tone: "success", message: "Feedback exported successfully." });
     } catch {
-      toast({ tone: "error", message: "Could not export feedback." });
+      toast({ tone: "error", message: "Failed to export feedback." });
     } finally {
       setIsExportingFeedback(false);
     }
   }
 
   return (
-    <Card title="Data" icon={<Download className="h-4 w-4" />}>
-      <div className="text-sm text-zinc-600">
-        Export your jobs and resume feedback for backups or offline analysis.
-      </div>
-      <div className="mt-4 flex gap-2">
-        <Button
-          variant="secondary"
-          className="w-full"
-          onClick={handleExportJobs}
-          disabled={isExportingJobs}
-        >
-          {isExportingJobs ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Download className="h-4 w-4" />
-          )}
-          {isExportingJobs ? "Exporting..." : "Export jobs CSV"}
-        </Button>
-        <Button
-          variant="secondary"
-          className="w-full"
-          onClick={handleExportFeedback}
-          disabled={isExportingFeedback}
-        >
-          {isExportingFeedback ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Download className="h-4 w-4" />
-          )}
-          {isExportingFeedback ? "Exporting..." : "Export feedback JSON"}
-        </Button>
-      </div>
+    <Card className="rounded-3xl border-slate-200/90 shadow-xs">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Database className="size-4 text-emerald-600" />
+          <CardTitle className="text-base">Data Export & Portability</CardTitle>
+        </div>
+        <CardDescription>
+          Download your full records anytime in standard open formats.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-white shadow-2xs text-emerald-600 shrink-0">
+              <FileSpreadsheet className="size-4.5" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-slate-900">
+                Application Pipeline (.CSV)
+              </div>
+              <div className="text-xs text-slate-500">
+                Includes all job statuses, companies, roles, and interview rounds.
+              </div>
+            </div>
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleExportJobs}
+            disabled={isExportingJobs}
+            className="w-full sm:w-auto"
+          >
+            <Download className="size-3.5" />
+            {isExportingJobs ? "Exporting..." : "Export CSV"}
+          </Button>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-white shadow-2xs text-teal-600 shrink-0">
+              <Database className="size-4.5" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-slate-900">
+                AI Audit History (.JSON)
+              </div>
+              <div className="text-xs text-slate-500">
+                Complete raw AI scoring reports, ATS checks, and rewrite history.
+              </div>
+            </div>
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleExportFeedback}
+            disabled={isExportingFeedback}
+            className="w-full sm:w-auto"
+          >
+            <Download className="size-3.5" />
+            {isExportingFeedback ? "Exporting..." : "Export JSON"}
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   );
 }
@@ -198,60 +274,73 @@ export function DangerZoneSettingsCard() {
 
   return (
     <>
-      <Card title="Danger zone" icon={<AlertTriangle className="h-4 w-4" />}>
-        <div className="text-sm text-zinc-600">
-          Deleting account data will remove resumes, jobs, and feedback from your workspace.
-        </div>
-        <div className="mt-4">
-          <Button variant="danger" onClick={() => setIsDeleteModalOpen(true)}>
-            <Trash2 className="h-4 w-4" />
-            Delete account data
-          </Button>
-        </div>
+      <Card className="rounded-3xl border-rose-200/80 bg-rose-50/30 shadow-xs">
+        <CardHeader>
+          <div className="flex items-center gap-2 text-rose-600">
+            <AlertTriangle className="size-4" />
+            <CardTitle className="text-base text-rose-900">Danger Zone</CardTitle>
+          </div>
+          <CardDescription className="text-rose-700/80">
+            Irreversible account actions and data purging.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-xs text-rose-700 leading-relaxed">
+            Deleting your account data permanently removes all uploaded resumes, extracted text, AI audit history, and application pipeline jobs.
+          </p>
+          <div className="mt-4">
+            <Button variant="danger" size="sm" onClick={() => setIsDeleteModalOpen(true)} className="w-full sm:w-auto">
+              <Trash2 className="size-3.5" />
+              Purge Account Data
+            </Button>
+          </div>
+        </CardContent>
       </Card>
 
-      {isDeleteModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">
-              Delete account data?
-            </div>
-            <div className="mt-2 text-sm text-zinc-600">
-              Type <span className="font-medium text-zinc-900">DELETE</span> to confirm.
-            </div>
-            <input
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent className="w-[95vw] sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-rose-900">Purge Account Data?</DialogTitle>
+            <DialogDescription>
+              This action cannot be reversed. To confirm, type{" "}
+              <span className="font-bold text-slate-900 font-mono">DELETE</span> below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="pt-2">
+            <Input
               value={confirmationText}
-              onChange={(event) => setConfirmationText(event.target.value)}
-              className="mt-3 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+              onChange={(e) => setConfirmationText(e.target.value)}
+              placeholder="Type DELETE to confirm"
             />
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setIsDeleteModalOpen(false);
-                  setConfirmationText("");
-                }}
-                disabled={isDeleting}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="danger"
-                onClick={handleDeleteAccountData}
-                disabled={isDeleting || confirmationText !== "DELETE"}
-              >
-                {isDeleting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="h-4 w-4" />
-                )}
-                {isDeleting ? "Deleting..." : "Confirm delete"}
-              </Button>
-            </div>
           </div>
-        </div>
-      ) : null}
-
+          <DialogFooter className="mt-4 flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsDeleteModalOpen(false);
+                setConfirmationText("");
+              }}
+              disabled={isDeleting}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleDeleteAccountData}
+              disabled={isDeleting || confirmationText !== "DELETE"}
+              className="w-full sm:w-auto"
+            >
+              {isDeleting ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="size-3.5" />
+              )}
+              {isDeleting ? "Purging..." : "Confirm Purge"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

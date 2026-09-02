@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
 import { AddJobModal } from "@/components/dashboard/jobs-sections";
 import { DashboardPageError, DashboardPageLoading } from "@/components/dashboard/page-state";
 import { useToast } from "@/components/providers/toast-provider";
@@ -13,6 +14,16 @@ import {
 } from "@/components/dashboard/job-details-sections";
 import { useDeleteJob, useJob, useUpdateJob } from "@/hooks/queries";
 import { Button } from "@/components/ui/button";
+import { Input, Textarea } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import type { Job, JobDetail, JobStatus } from "@/lib/mock-data";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
@@ -105,14 +116,15 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
     [rawJob],
   );
 
-  useEffect(() => {
-    if (!rawJob) return;
+  const [prevJobId, setPrevJobId] = useState<string | null>(null);
+  if (rawJob && prevJobId !== rawJob.id) {
+    setPrevJobId(rawJob.id);
     setNotesDraft(rawJob.notes ?? "");
     setStatusDraft(rawJob.status);
     setContactNameDraft(rawJob.contactName ?? "");
     setContactEmailDraft(rawJob.contactEmail ?? "");
     setRoundsDraft(toInterviewRounds(rawJob.interviewRounds));
-  }, [rawJob?.id, rawJob?.notes, rawJob?.status]);
+  }
 
   async function refreshQueries() {
     await Promise.all([
@@ -290,6 +302,7 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
           isSavingNotes={updateJob.isPending}
           onCopyNotes={handleCopyNotes}
           onEditRounds={() => setIsRoundsModalOpen(true)}
+          status={statusDraft}
         />
         <JobDetailsSidebar
           details={details}
@@ -305,190 +318,158 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
         />
       </div>
 
-      {isContactModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Edit contact</div>
-            <div className="mt-1 text-sm text-zinc-600">Update recruiter details.</div>
-            <div className="mt-4 grid grid-cols-1 gap-3">
-              <div>
-                <label className="text-xs font-medium text-zinc-600">Contact name</label>
-                <input
-                  value={contactNameDraft}
-                  onChange={(event) => setContactNameDraft(event.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-                  placeholder="Recruiter name"
+      {/* Edit Contact Modal */}
+      <Dialog open={isContactModalOpen} onOpenChange={setIsContactModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Key Contact</DialogTitle>
+            <DialogDescription>Update recruiter or hiring manager details.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Contact Name</label>
+              <Input
+                value={contactNameDraft}
+                onChange={(e) => setContactNameDraft(e.target.value)}
+                placeholder="Recruiter or Referrer Name"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Contact Email</label>
+              <Input
+                type="email"
+                value={contactEmailDraft}
+                onChange={(e) => setContactEmailDraft(e.target.value)}
+                placeholder="recruiter@company.com"
+                className="mt-1"
+              />
+            </div>
+          </div>
+          <DialogFooter className="mt-4">
+            <Button variant="secondary" onClick={() => setIsContactModalOpen(false)} disabled={updateJob.isPending}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveContact} disabled={updateJob.isPending}>
+              {updateJob.isPending ? "Saving..." : "Save Contact"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Interview Rounds Modal */}
+      <Dialog open={isRoundsModalOpen} onOpenChange={setIsRoundsModalOpen}>
+        <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Configure Interview Rounds</DialogTitle>
+            <DialogDescription>Update the stages and statuses for this application pipeline.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            {roundsDraft.map((round, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input
+                  value={round.name}
+                  onChange={(e) =>
+                    setRoundsDraft((prev) =>
+                      prev.map((item, itemIndex) =>
+                        itemIndex === index ? { ...item, name: e.target.value } : item,
+                      ),
+                    )
+                  }
+                  placeholder="Round Name (e.g. Technical Screen)"
+                  className="flex-1"
                 />
+                <select
+                  value={round.status}
+                  onChange={(e) =>
+                    setRoundsDraft((prev) =>
+                      prev.map((item, itemIndex) =>
+                        itemIndex === index
+                          ? {
+                              ...item,
+                              status: e.target.value as "Done" | "Upcoming" | "Pending",
+                            }
+                          : item,
+                      ),
+                    )
+                  }
+                  className="h-10 rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-700 outline-none"
+                >
+                  <option value="Done">Done</option>
+                  <option value="Upcoming">Upcoming</option>
+                  <option value="Pending">Pending</option>
+                </select>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() =>
+                    setRoundsDraft((prev) => prev.filter((_, itemIndex) => itemIndex !== index))
+                  }
+                  className="text-slate-400 hover:text-rose-600"
+                  title="Remove round"
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
               </div>
-              <div>
-                <label className="text-xs font-medium text-zinc-600">Contact email</label>
-                <input
-                  value={contactEmailDraft}
-                  onChange={(event) => setContactEmailDraft(event.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-                  placeholder="recruiter@company.com"
-                />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsContactModalOpen(false)}
-                disabled={updateJob.isPending}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
-                onClick={handleSaveContact}
-                disabled={updateJob.isPending}
-              >
-                {updateJob.isPending ? "Saving..." : "Save"}
-              </button>
-            </div>
+            ))}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() =>
+                setRoundsDraft((prev) => [...prev, { name: "", status: "Pending" }])
+              }
+            >
+              <Plus className="size-3.5" />
+              Add Round
+            </Button>
           </div>
-        </div>
-      ) : null}
+          <DialogFooter className="mt-4">
+            <Button variant="secondary" onClick={() => setIsRoundsModalOpen(false)} disabled={updateJob.isPending}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveRounds} disabled={updateJob.isPending}>
+              {updateJob.isPending ? "Saving..." : "Save Rounds"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {isRoundsModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-xl rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Edit interview rounds</div>
-            <div className="mt-1 text-sm text-zinc-600">Update your current interview pipeline.</div>
-            <div className="mt-4 space-y-2">
-              {roundsDraft.map((round, index) => (
-                <div key={index} className="grid grid-cols-[1fr_140px_40px] gap-2">
-                  <input
-                    value={round.name}
-                    onChange={(event) =>
-                      setRoundsDraft((prev) =>
-                        prev.map((item, itemIndex) =>
-                          itemIndex === index ? { ...item, name: event.target.value } : item,
-                        ),
-                      )
-                    }
-                    className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-                    placeholder="Technical round"
-                  />
-                  <select
-                    value={round.status}
-                    onChange={(event) =>
-                      setRoundsDraft((prev) =>
-                        prev.map((item, itemIndex) =>
-                          itemIndex === index
-                            ? {
-                                ...item,
-                                status: event.target.value as "Done" | "Upcoming" | "Pending",
-                              }
-                            : item,
-                        ),
-                      )
-                    }
-                    className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-                  >
-                    <option>Done</option>
-                    <option>Upcoming</option>
-                    <option>Pending</option>
-                  </select>
-                  <button
-                    className="rounded-2xl border border-zinc-200 bg-white px-2 py-2 text-sm text-zinc-600 hover:bg-zinc-50"
-                    onClick={() =>
-                      setRoundsDraft((prev) => prev.filter((_, itemIndex) => itemIndex !== index))
-                    }
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-              <Button
-                variant="secondary"
-                className="px-3"
-                onClick={() =>
-                  setRoundsDraft((prev) => [...prev, { name: "", status: "Pending" }])
-                }
-              >
-                Add round
-              </Button>
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsRoundsModalOpen(false)}
-                disabled={updateJob.isPending}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
-                onClick={handleSaveRounds}
-                disabled={updateJob.isPending}
-              >
-                {updateJob.isPending ? "Saving..." : "Save"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {/* Delete Job Modal */}
+      <ConfirmModal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        title="Delete Job Opportunity?"
+        description="This will permanently remove this job from your pipeline."
+        confirmText="Delete Opportunity"
+        isLoading={deleteJob.isPending}
+        onConfirm={handleConfirmDeleteJob}
+      />
 
-      {isDeleteModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Delete Job?</div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove this job from your tracker.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsDeleteModalOpen(false)}
-                disabled={deleteJob.isPending}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={handleConfirmDeleteJob}
-                disabled={deleteJob.isPending}
-              >
-                {deleteJob.isPending ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {isFollowUpModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Set Follow-up</div>
-            <div className="mt-2 text-sm text-zinc-600">
-              Add a reminder note for your next action.
-            </div>
-            <textarea
+      {/* Follow-up Date Modal */}
+      <Dialog open={isFollowUpModalOpen} onOpenChange={setIsFollowUpModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Set Next Action Reminder</DialogTitle>
+            <DialogDescription>Add a note or date to keep this opportunity active.</DialogDescription>
+          </DialogHeader>
+          <div className="pt-2">
+            <Textarea
               value={followUpDraft}
-              onChange={(event) => setFollowUpDraft(event.target.value)}
-              placeholder="e.g., Follow up next Tuesday"
-              className="mt-4 min-h-[100px] w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 outline-none focus:border-zinc-400"
+              onChange={(e) => setFollowUpDraft(e.target.value)}
+              placeholder="e.g. Email recruiter for feedback next Monday"
+              className="min-h-[100px]"
             />
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsFollowUpModalOpen(false)}
-                disabled={updateJob.isPending}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
-                onClick={handleConfirmSetFollowUp}
-                disabled={updateJob.isPending}
-              >
-                {updateJob.isPending ? "Saving..." : "Save"}
-              </button>
-            </div>
           </div>
-        </div>
-      ) : null}
+          <DialogFooter className="mt-4">
+            <Button variant="secondary" onClick={() => setIsFollowUpModalOpen(false)} disabled={updateJob.isPending}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmSetFollowUp} disabled={updateJob.isPending}>
+              {updateJob.isPending ? "Saving..." : "Save Reminder"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

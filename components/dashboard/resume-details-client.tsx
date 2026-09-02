@@ -15,6 +15,7 @@ import {
 } from "@/components/dashboard/resume-details-sections";
 import { useResumeDetails } from "@/hooks/queries";
 import { useToast } from "@/components/providers/toast-provider";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import type { ResumeReviewFeedback, ResumeReviewVersion } from "@/lib/api/resumes";
 import type { Resume, ResumeFeedback } from "@/lib/mock-data";
 import { queryKeys } from "@/lib/react-query/query-keys";
@@ -77,37 +78,23 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!detailsQuery.data) return;
+  const [prevDetailsId, setPrevDetailsId] = useState<string | null>(null);
+  if (detailsQuery.data && prevDetailsId !== detailsQuery.data.id) {
+    setPrevDetailsId(detailsQuery.data.id);
     setRoleTarget(detailsQuery.data.roleTarget ?? "Frontend Engineer");
     setTargetLevel(detailsQuery.data.targetLevel ?? "Internship");
-  }, [
-    detailsQuery.data?.id,
-    detailsQuery.data?.roleTarget,
-    detailsQuery.data?.targetLevel,
-  ]);
+  }
 
   const baseFeedback = useMemo(
     () =>
       detailsQuery.data?.feedback ? toLegacyFeedback(detailsQuery.data.feedback) : emptyFeedback,
-    [detailsQuery.data?.feedback],
+    [detailsQuery.data],
   );
 
   const reviewHistory = useMemo(() => {
     const source = detailsQuery.data?.reviewHistory ?? [];
     return source.map((item, index) => toHistoryItem(item, `v${source.length - index}`));
-  }, [detailsQuery.data?.reviewHistory]);
-
-  useEffect(() => {
-    if (!reviewHistory.length) {
-      setSelectedReviewId(null);
-      return;
-    }
-    setSelectedReviewId((current) => {
-      if (current && reviewHistory.some((item) => item.id === current)) return current;
-      return reviewHistory[0].id;
-    });
-  }, [reviewHistory]);
+  }, [detailsQuery.data]);
 
   const selectedReview =
     reviewHistory.find((item) => item.id === selectedReviewId) ?? reviewHistory[0] ?? null;
@@ -141,10 +128,10 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
     score: item.feedback.score,
   }));
 
-  async function copyToClipboard(text: string) {
+  async function copyToClipboard(text: string, message = "Copied to clipboard.") {
     try {
       await navigator.clipboard.writeText(text);
-      toast({ tone: "success", message: "Copied to clipboard." });
+      toast({ tone: "success", message });
     } catch {
       toast({ tone: "error", message: "Could not copy." });
     }
@@ -303,9 +290,14 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
           reviewHistory={reviewHistoryRows}
           selectedReviewId={selectedReviewId}
           onSelectReview={setSelectedReviewId}
-          onCopyKeywords={() => copyToClipboard(selectedFeedback.missingKeywords.join(", "))}
+          onCopyKeywords={() =>
+            copyToClipboard(
+              selectedFeedback.missingKeywords.join(", "),
+              "Missing keywords copied to clipboard.",
+            )
+          }
           onCopySuggestion={(item) =>
-            copyToClipboard(`Before: ${item.before}\nAfter: ${item.after}\nWhy: ${item.why}`)
+            copyToClipboard(item.after, "Optimized bullet copied to clipboard.")
           }
         />
         <ResumeDetailsSidebar
@@ -323,32 +315,15 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
         />
       </div>
 
-      {isDeleteModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Delete Resume?</div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove the resume, parse data, and review.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsDeleteModalOpen(false)}
-                disabled={isDeleting}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={handleConfirmDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmModal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        title="Delete Resume Version?"
+        description="This will permanently remove this resume version, its parsed content, and all associated AI feedback."
+        confirmText="Delete Document"
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
+      />
     </>
   );
 }
