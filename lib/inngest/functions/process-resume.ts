@@ -19,11 +19,16 @@ type ResumeUploadedEvent = {
 };
 
 export const processResume = inngest.createFunction(
-  { id: "process-resume" },
-  { event: "resume/uploaded" },
+  {
+    id: "process-resume",
+    triggers: [{ event: "resume/uploaded" }],
+  },
   async ({ event, step }) => {
-    const typedEvent = event as ResumeUploadedEvent;
-    const resumeId = typedEvent.data.resumeId;
+    if (event.name !== "resume/uploaded") {
+      return { ok: false, reason: "unexpected-event" };
+    }
+
+    const { resumeId } = event.data as ResumeUploadedEvent["data"];
 
     const resume = await step.run("load resume", async () => {
       return getResumeById(resumeId);
