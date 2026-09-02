@@ -13,7 +13,7 @@ export default async function HomePage() {
   const isSignedIn = Boolean(userId);
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-background">
       <LandingHeader isSignedIn={isSignedIn} />
       <HeroSection isSignedIn={isSignedIn} />
       <SocialProofSection />

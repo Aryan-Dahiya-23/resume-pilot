@@ -18,8 +18,8 @@ export default function Icon() {
           alignItems: "center",
           justifyContent: "center",
           borderRadius: 16,
-          background: "linear-gradient(135deg, #09090b 0%, #27272a 100%)",
-          color: "#ffffff",
+          background: "#3a302a",
+          color: "#fbfaf7",
           position: "relative",
           fontFamily: "Arial, sans-serif",
           fontWeight: 700,
@@ -42,8 +42,8 @@ export default function Icon() {
             width: 10,
             height: 10,
             borderRadius: 999,
-            background: "#22c55e",
-            boxShadow: "0 0 0 2px rgba(255,255,255,0.2)",
+            background: "#b45332",
+            boxShadow: "0 0 0 2px rgba(251,250,247,0.2)",
           }}
         />
       </div>

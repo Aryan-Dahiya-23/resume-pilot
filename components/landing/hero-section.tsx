@@ -1,100 +1,79 @@
 import Link from "next/link";
-import { ArrowRight, BarChart3, CheckCircle2, FileText, Shield, Wand2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, FileText, Shield } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/landing/pill";
 
 export function HeroSection({ isSignedIn = false }: { isSignedIn?: boolean }) {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+    <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+      <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:gap-16">
         <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Pill>ATS-style scoring</Pill>
-            <Pill>Bullet rewrites</Pill>
+          <div className="flex flex-wrap gap-2">
+            <Pill>Resume feedback</Pill>
+            <Pill>Version history</Pill>
             <Pill>Job pipeline</Pill>
-            <Pill>Resume versions</Pill>
           </div>
-
-          <h1 className="mt-5 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-            Improve your resume.
-            <br />
-            Track your job hunt.
-            <br />
-            Stay consistent.
+          <div className="mt-7 text-[11px] font-semibold tracking-[0.14em] text-brand uppercase">
+            Career workspace
+          </div>
+          <h1 className="mt-4 max-w-3xl text-4xl leading-[0.98] font-semibold tracking-[-0.05em] text-foreground sm:text-6xl">
+            Bring more clarity to your job search.
           </h1>
-
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-zinc-600">
-            A simple dashboard that reviews your resume with AI and helps you track job applications like a pipeline
-            no spreadsheets, no chaos.
+          <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
+            Review your resume, make the next edit count, and keep every opportunity moving without an awkward spreadsheet.
           </p>
-
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-            <Link href={isSignedIn ? "/dashboard" : "/sign-in"}>
-              <Button className="px-5 py-2.5">
-                {isSignedIn ? "Go to dashboard" : "Get started"}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href={isSignedIn ? "/dashboard/resumes" : "/dashboard"}>
-              <Button variant="secondary" className="px-5 py-2.5">
-                {isSignedIn ? "Upload resume" : "View demo"}
-              </Button>
-            </Link>
+          <div className="mt-7 flex flex-col gap-2 sm:flex-row">
+            <Button asChild>
+              <Link href={isSignedIn ? "/dashboard" : "/sign-up"}>
+                {isSignedIn ? "Go to dashboard" : "Start your workspace"}
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+            <Button variant="secondary" asChild>
+              <Link href={isSignedIn ? "/dashboard/resumes" : "/sign-in"}>
+                {isSignedIn ? "Review a resume" : "Sign in"}
+              </Link>
+            </Button>
           </div>
-
-          <div className="mt-6 flex flex-col gap-2 text-sm text-zinc-600 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4" />
-              Upload PDF and get feedback in seconds
-            </div>
-            <span className="hidden sm:inline">•</span>
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Your resume stays private
-            </div>
+          <div className="mt-8 flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:gap-5">
+            <span className="flex items-center gap-2"><CheckCircle2 className="size-4 text-emerald-700" />Prioritized feedback</span>
+            <span className="flex items-center gap-2"><Shield className="size-4 text-brand" />Private by default</span>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="text-sm text-zinc-500">Latest resume</div>
-              <div className="mt-1 text-lg font-semibold text-zinc-900">v3 — 78 ATS</div>
-              <div className="mt-1 text-sm text-zinc-600">+7 from last version</div>
-            </div>
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
-              <div className="text-xs text-zinc-500">Jobs tracked</div>
-              <div className="mt-1 text-2xl font-semibold text-zinc-900">18</div>
+        <div className="surface-card overflow-hidden">
+          <div className="border-b border-border px-5 py-4 sm:px-6">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <FileText className="size-4 text-brand" />
+              Resume review
             </div>
           </div>
-
-          <div className="mt-5 grid grid-cols-1 gap-3">
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-                <Wand2 className="h-4 w-4" />
-                Top improvement
+          <div className="p-5 sm:p-6">
+            <div className="flex items-end justify-between gap-5 border-b border-border pb-5">
+              <div>
+                <div className="text-[11px] font-semibold tracking-[0.1em] text-muted-foreground uppercase">ATS readiness</div>
+                <div className="mt-2 text-5xl font-semibold tracking-[-0.05em] text-foreground">78</div>
+                <div className="mt-1 text-sm text-emerald-700">+7 from last version</div>
               </div>
-              <div className="mt-2 text-sm text-zinc-700">Rewrite experience bullets with measurable impact.</div>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-                <BarChart3 className="h-4 w-4" />
-                Pipeline
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Applied: 9</span>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Interview: 3</span>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Offer: 1</span>
+              <div className="text-right text-sm text-muted-foreground">
+                <div className="font-semibold text-foreground">Frontend Engineer</div>
+                <div className="mt-1">Latest review</div>
               </div>
             </div>
-
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-                <FileText className="h-4 w-4" />
-                Resume versions
+            <div className="divide-y divide-border">
+              <div className="flex gap-3 py-4">
+                <span className="text-xs font-semibold text-brand">01</span>
+                <div><div className="text-sm font-semibold text-foreground">Add measurable outcomes</div><p className="mt-1 text-sm leading-5 text-muted-foreground">Strengthen two experience bullets with scope and impact.</p></div>
               </div>
-              <div className="mt-2 text-sm text-zinc-700">Track your improvement from v1 → v2 → v3.</div>
+              <div className="flex gap-3 py-4">
+                <span className="text-xs font-semibold text-brand">02</span>
+                <div><div className="text-sm font-semibold text-foreground">Review role language</div><p className="mt-1 text-sm leading-5 text-muted-foreground">Bring the strongest relevant keywords into your experience.</p></div>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <span className="text-xs font-semibold text-brand">03</span>
+                <div><div className="text-sm font-semibold text-foreground">Move the next application</div><p className="mt-1 text-sm leading-5 text-muted-foreground">Keep a deliberate next step on every opportunity.</p></div>
+              </div>
             </div>
           </div>
         </div>

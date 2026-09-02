@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   DashboardOverviewHeader,
+  DashboardMetrics,
   JobPipelineCard,
   NextActionsCard,
   ResumeOverviewCard,
@@ -159,28 +160,36 @@ export function DashboardPageClient({}: Record<string, never>) {
       ) : null}
 
       {overviewQuery.isLoading || overviewQuery.isError ? null : (
-        <>
+        <div className="space-y-6 sm:space-y-8">
           <DashboardOverviewHeader
             onUploadClick={openUploadModal}
             onAddJobClick={() => setAddJobModalOpen(true)}
           />
 
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <DashboardMetrics
+            score={latestResume.score}
+            delta={delta}
+            weeklyApplications={weeklyApplications}
+            interviewRate={interviewRate}
+            hasResume={Boolean(latestResume.id)}
+          />
+
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]">
             <ResumeOverviewCard
               latestResume={latestResume}
               delta={delta}
               nextActions={nextActions}
               onUploadResume={openUploadModal}
             />
+            <NextActionsCard items={nextActions} />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]">
             <JobPipelineCard
               jobs={jobs}
               jobsByStatus={jobsByStatus}
               interviewRate={interviewRate}
             />
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-            <NextActionsCard items={nextActions} />
             <WeeklySnapshotCard
               jobsAdded={weeklyJobsAdded}
               applications={weeklyApplications}
@@ -188,7 +197,7 @@ export function DashboardPageClient({}: Record<string, never>) {
               summary={weeklySummary}
             />
           </div>
-        </>
+        </div>
       )}
 
       <ResumeUploadModal

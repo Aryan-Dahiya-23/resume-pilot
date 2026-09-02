@@ -2,16 +2,18 @@
 
 import { AlertTriangle, Loader2 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+
 export function DashboardPageLoading({
   label = "Loading...",
 }: {
   label?: string;
 }) {
   return (
-    <div className="relative min-h-[60vh] w-full">
-      <div className="absolute left-1/2 top-[56%] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-3 text-zinc-700">
-        <Loader2 className="h-5 w-5 animate-spin" />
-        <span className="text-sm font-medium">{label}</span>
+    <div className="grid min-h-[52vh] place-items-center">
+      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+        <Loader2 className="size-4 animate-spin text-brand" />
+        <span>{label}</span>
       </div>
     </div>
   );
@@ -27,22 +29,19 @@ export function DashboardPageError({
   onRetry?: () => void;
 }) {
   return (
-    <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 shadow-sm">
+    <div className="surface-card border-l-2 border-l-destructive p-6">
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 rounded-xl bg-rose-100 p-2 text-rose-700">
-          <AlertTriangle className="h-4 w-4" />
-        </div>
+        <AlertTriangle className="mt-0.5 size-5 shrink-0 text-destructive" />
         <div>
-          <div className="text-sm font-semibold text-rose-800">{title}</div>
-          <div className="mt-1 text-sm text-rose-700">{message}</div>
+          <div className="font-heading text-2xl font-medium tracking-[-0.025em] text-foreground">
+            {title}
+          </div>
+          <div className="mt-2 text-sm leading-6 text-muted-foreground">{message}</div>
           {onRetry ? (
             <div className="mt-4">
-              <button
-                className="rounded-2xl bg-rose-700 px-4 py-2 text-sm font-medium text-white hover:bg-rose-600"
-                onClick={onRetry}
-              >
+              <Button variant="secondary" onClick={onRetry}>
                 Try again
-              </button>
+              </Button>
             </div>
           ) : null}
         </div>

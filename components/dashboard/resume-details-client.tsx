@@ -3,7 +3,7 @@
 import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import {
   DashboardPageError,
   DashboardPageLoading,
@@ -13,6 +13,15 @@ import {
   ResumeDetailsSidebar,
   ResumeFeedbackHeader,
 } from "@/components/dashboard/resume-details-sections";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useResumeDetails } from "@/hooks/queries";
 import { useToast } from "@/components/providers/toast-provider";
 import type { ResumeReviewFeedback, ResumeReviewVersion } from "@/lib/api/resumes";
@@ -72,46 +81,25 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSavingRole, setIsSavingRole] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [roleTarget, setRoleTarget] = useState("Frontend Engineer");
-  const [targetLevel, setTargetLevel] = useState("Internship");
+  const [roleTarget, setRoleTarget] = useState<string | null>(null);
+  const [targetLevel, setTargetLevel] = useState<string | null>(null);
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!detailsQuery.data) return;
-    setRoleTarget(detailsQuery.data.roleTarget ?? "Frontend Engineer");
-    setTargetLevel(detailsQuery.data.targetLevel ?? "Internship");
-  }, [
-    detailsQuery.data?.id,
-    detailsQuery.data?.roleTarget,
-    detailsQuery.data?.targetLevel,
-  ]);
-
-  const baseFeedback = useMemo(
-    () =>
-      detailsQuery.data?.feedback ? toLegacyFeedback(detailsQuery.data.feedback) : emptyFeedback,
-    [detailsQuery.data?.feedback],
+  const baseFeedback = detailsQuery.data?.feedback
+    ? toLegacyFeedback(detailsQuery.data.feedback)
+    : emptyFeedback;
+  const reviewHistory = (detailsQuery.data?.reviewHistory ?? []).map(
+    (item, index, source) => toHistoryItem(item, `v${source.length - index}`),
   );
-
-  const reviewHistory = useMemo(() => {
-    const source = detailsQuery.data?.reviewHistory ?? [];
-    return source.map((item, index) => toHistoryItem(item, `v${source.length - index}`));
-  }, [detailsQuery.data?.reviewHistory]);
-
-  useEffect(() => {
-    if (!reviewHistory.length) {
-      setSelectedReviewId(null);
-      return;
-    }
-    setSelectedReviewId((current) => {
-      if (current && reviewHistory.some((item) => item.id === current)) return current;
-      return reviewHistory[0].id;
-    });
-  }, [reviewHistory]);
 
   const selectedReview =
     reviewHistory.find((item) => item.id === selectedReviewId) ?? reviewHistory[0] ?? null;
   const selectedFeedback = selectedReview?.feedback ?? baseFeedback;
+  const selectedRoleTarget =
+    roleTarget ?? detailsQuery.data?.roleTarget ?? "Frontend Engineer";
+  const selectedTargetLevel =
+    targetLevel ?? detailsQuery.data?.targetLevel ?? "Internship";
   const selectedResume: Resume = {
     id: detailsQuery.data?.id ?? "",
     version: selectedReview?.versionLabel ?? "v1",
@@ -240,7 +228,7 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
     try {
       await axios.patch(
         `/api/resumes/${resumeId}`,
-        { roleTarget, targetLevel },
+        { roleTarget: selectedRoleTarget, targetLevel: selectedTargetLevel },
         { withCredentials: true },
       );
       await Promise.all([
@@ -286,7 +274,7 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
   }
 
   return (
-    <>
+    <div className="space-y-6 sm:space-y-8">
       <ResumeFeedbackHeader
         resume={selectedResume}
         onRerunReview={handleRerunReview}
@@ -310,8 +298,8 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
         />
         <ResumeDetailsSidebar
           feedback={selectedFeedback}
-          roleTarget={roleTarget}
-          targetLevel={targetLevel}
+          roleTarget={selectedRoleTarget}
+          targetLevel={selectedTargetLevel}
           onRoleTargetChange={setRoleTarget}
           onTargetLevelChange={setTargetLevel}
           onSaveTargetRole={handleSaveTargetRole}
@@ -323,32 +311,38 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
         />
       </div>
 
-      {isDeleteModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Delete Resume?</div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove the resume, parse data, and review.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsDeleteModalOpen(false)}
-                disabled={isDeleting}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={handleConfirmDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-    </>
+      <Dialog
+        open={isDeleteModalOpen}
+        onOpenChange={(isOpen) => {
+          if (!isOpen && !isDeleting) setIsDeleteModalOpen(false);
+        }}
+      >
+        <DialogContent className="sm:max-w-md" showCloseButton={!isDeleting}>
+          <DialogHeader>
+            <DialogTitle>Delete this resume?</DialogTitle>
+            <DialogDescription>
+              This permanently removes the resume, parse data, and every review
+              run associated with it.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => setIsDeleteModalOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting…" : "Delete resume"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

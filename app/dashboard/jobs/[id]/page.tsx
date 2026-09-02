@@ -9,7 +9,7 @@ export default function JobDetailsPage() {
 
   if (!jobId) {
     return (
-      <div className="rounded-3xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-700 shadow-sm">
+      <div className="surface-card border-l-2 border-l-destructive p-5 text-sm text-destructive">
         Invalid job id.
       </div>
     );

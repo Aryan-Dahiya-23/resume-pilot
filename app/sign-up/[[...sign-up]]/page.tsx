@@ -1,4 +1,5 @@
 import { SignUp } from "@clerk/nextjs";
+import { AuthShell, clerkAppearance } from "@/components/auth/auth-shell";
 
 export default function SignUpPage() {
   const signInUrl = process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL ?? "/sign-in";
@@ -6,8 +7,12 @@ export default function SignUpPage() {
     process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL ?? "/dashboard";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-12">
-      <SignUp signInUrl={signInUrl} forceRedirectUrl={redirectUrl} />
-    </div>
+    <AuthShell>
+      <SignUp
+        signInUrl={signInUrl}
+        forceRedirectUrl={redirectUrl}
+        appearance={clerkAppearance}
+      />
+    </AuthShell>
   );
 }

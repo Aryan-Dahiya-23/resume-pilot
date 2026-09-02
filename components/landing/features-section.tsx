@@ -6,8 +6,8 @@ export function FeaturesSection() {
     <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8 lg:pb-16">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <div className="text-sm text-zinc-500">Features</div>
-          <h2 className="mt-1 text-2xl font-semibold text-zinc-900">Everything you need — nothing you don’t</h2>
+          <div className="text-[11px] font-semibold tracking-[0.14em] text-brand uppercase">The essentials</div>
+          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.035em] text-foreground sm:text-3xl">Tools that turn intent into progress.</h2>
         </div>
       </div>
 

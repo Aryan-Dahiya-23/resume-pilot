@@ -1,68 +1,63 @@
 import Link from "next/link";
-import { ArrowRight, Calendar, FileText, Sparkles } from "lucide-react";
+import { ArrowRight, Calendar, FileText } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 
 export function ProductPreviewSection({ isSignedIn = false }: { isSignedIn?: boolean }) {
+  const jobs = [
+    ["Frontend Engineer", "Stripe", "Interview"],
+    ["Software Engineer", "Notion", "Applied"],
+    ["Backend Engineer", "Ramp", "Saved"],
+  ];
+
   return (
     <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8 lg:pb-16">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-            <Sparkles className="h-4 w-4" />
-            Resume review preview
-          </div>
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-              <div className="text-xs text-zinc-500">Current score</div>
-              <div className="mt-1 text-2xl font-semibold text-zinc-900">81</div>
-            </div>
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-              <div className="text-xs text-zinc-500">Last score</div>
-              <div className="mt-1 text-2xl font-semibold text-zinc-900">72</div>
-            </div>
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-              <div className="text-xs text-zinc-500">Delta</div>
-              <div className="mt-1 text-2xl font-semibold text-emerald-700">+9</div>
+      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="surface-card overflow-hidden">
+          <div className="border-b border-border px-5 py-4 sm:px-6">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <FileText className="size-4 text-brand" />
+              What a review gives you
             </div>
           </div>
-          <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700">
-            Top suggestion: Add measurable impact to 2 experience bullets and include role-specific keywords.
+          <div className="grid divide-y divide-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            {[
+              ["81", "Current score"],
+              ["72", "Previous score"],
+              ["+9", "Change"],
+            ].map(([value, label], index) => (
+              <div key={label} className="p-5 sm:p-6">
+                <div className={index === 2 ? "text-3xl font-semibold tracking-[-0.04em] text-emerald-700" : "text-3xl font-semibold tracking-[-0.04em] text-foreground"}>{value}</div>
+                <div className="mt-2 text-sm text-muted-foreground">{label}</div>
+              </div>
+            ))}
+          </div>
+          <div className="border-t border-border bg-muted/25 px-5 py-4 text-sm leading-6 text-muted-foreground sm:px-6">
+            <span className="font-semibold text-foreground">Highest-impact fix: </span>
+            Add measurable scope and outcomes to two experience bullets.
           </div>
         </div>
 
-        <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-            <FileText className="h-4 w-4" />
-            Job pipeline preview
+        <div className="surface-card overflow-hidden">
+          <div className="border-b border-border px-5 py-4 sm:px-6">
+            <div className="text-sm font-semibold text-foreground">A pipeline you can act on</div>
           </div>
-          <div className="mt-4 space-y-2">
-            <div className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm">
-              <span className="font-medium text-zinc-900">Frontend Engineer · Stripe</span>
-              <span className="rounded-full bg-white px-2 py-1 text-xs">Interview</span>
-            </div>
-            <div className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm">
-              <span className="font-medium text-zinc-900">SWE · Notion</span>
-              <span className="rounded-full bg-white px-2 py-1 text-xs">Applied</span>
-            </div>
-            <div className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm">
-              <span className="font-medium text-zinc-900">Backend · Ramp</span>
-              <span className="rounded-full bg-white px-2 py-1 text-xs">Saved</span>
-            </div>
+          <div className="divide-y divide-border/70">
+            {jobs.map(([role, company, status]) => (
+              <div key={company} className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+                <div className="min-w-0"><div className="truncate text-sm font-semibold text-foreground">{role}</div><div className="mt-1 text-xs text-muted-foreground">{company}</div></div>
+                <span className="shrink-0 border border-border bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">{status}</span>
+              </div>
+            ))}
           </div>
-          <div className="mt-4 flex items-center justify-between rounded-2xl bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
-            <span className="inline-flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              Weekly target: 10 applications
-            </span>
-            <span className="font-medium text-zinc-900">6 / 10</span>
+          <div className="flex items-center justify-between border-t border-border bg-muted/25 px-5 py-4 text-sm text-muted-foreground sm:px-6">
+            <span className="inline-flex items-center gap-2"><Calendar className="size-4 text-brand" />Weekly target</span>
+            <span className="font-semibold text-foreground">6 / 10</span>
           </div>
-          <div className="mt-4">
-            <Link href={isSignedIn ? "/dashboard" : "/sign-in"}>
-              <Button>
-                Try dashboard
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
+          <div className="px-5 py-4 sm:px-6">
+            <Button size="sm" asChild>
+              <Link href={isSignedIn ? "/dashboard" : "/sign-up"}>Open your workspace<ArrowRight className="size-3.5" /></Link>
+            </Button>
           </div>
         </div>
       </div>

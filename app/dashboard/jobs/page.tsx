@@ -2,10 +2,18 @@
 
 import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
-import { Briefcase, Plus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AddJobModal, JobsHeader, JobsTableSection } from "@/components/dashboard/jobs-sections";
 import { DashboardPageError, DashboardPageLoading } from "@/components/dashboard/page-state";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useCreateJob, useDeleteJob, useJobs } from "@/hooks/queries";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { getJob, updateJob } from "@/lib/api/jobs";
@@ -57,12 +65,7 @@ export default function JobsPage() {
   const deleteJob = useDeleteJob();
   const isInitialLoading = jobsQuery.isLoading && !jobsQuery.data;
   const hasInitialError = jobsQuery.isError && !jobsQuery.data;
-  const hasAnyJobs = (jobsQuery.data?.totalCount ?? 0) > 0;
   const totalPages = jobsQuery.data?.totalPages ?? 1;
-
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedQuery, statusFilter, dateFilter]);
 
   const rows = useMemo(() => {
     if (jobsQuery.isFetching) return [];
@@ -86,6 +89,21 @@ export default function JobsPage() {
   function handlePageChange(nextPage: number) {
     if (nextPage < 1 || nextPage > totalPages) return;
     setPage(nextPage);
+  }
+
+  function handleQueryChange(value: string) {
+    setQuery(value);
+    setPage(1);
+  }
+
+  function handleStatusFilterChange(value: JobStatus | "All") {
+    setStatusFilter(value);
+    setPage(1);
+  }
+
+  function handleDateFilterChange(value: JobDateFilter) {
+    setDateFilter(value);
+    setPage(1);
   }
 
   function handlePrefetchJob(jobId: string) {
@@ -222,42 +240,15 @@ export default function JobsPage() {
       ) : null}
 
       {isInitialLoading || hasInitialError ? null : (
-        <>
+        <div className="space-y-6 sm:space-y-8">
           <JobsHeader onAddJobClick={() => setIsAddJobOpen(true)} />
-          <AddJobModal
-            open={isAddJobOpen}
-            onClose={() => setIsAddJobOpen(false)}
-            onSubmit={handleCreateJob}
-            isSubmitting={createJob.isPending}
-          />
-          <AddJobModal
-            open={Boolean(editingJob)}
-            onClose={() => setEditingJobId(null)}
-            onSubmit={handleEditJob}
-            isSubmitting={updatingJobId === editingJobId && Boolean(editingJobId)}
-            mode="edit"
-            initialValues={
-              editingJob
-                ? {
-                    company: editingJob.company,
-                    role: editingJob.role,
-                    status: editingJob.status,
-                    contactName: editingJob.contactName ?? "",
-                    contactEmail: editingJob.contactEmail ?? "",
-                    interviewRounds: editingJob.interviewRounds ?? [],
-                    location: editingJob.location ?? "",
-                    link: editingJob.link ?? "",
-                  }
-                : undefined
-            }
-          />
           <JobsTableSection
             query={query}
-            onQueryChange={setQuery}
+            onQueryChange={handleQueryChange}
             statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
+            onStatusFilterChange={handleStatusFilterChange}
             dateFilter={dateFilter}
-            onDateFilterChange={setDateFilter}
+            onDateFilterChange={handleDateFilterChange}
             rows={rows}
             onEditJob={setEditingJobId}
             onRequestDeleteJob={setJobToDeleteId}
@@ -269,58 +260,66 @@ export default function JobsPage() {
             onPageChange={handlePageChange}
             isLoadingRows={jobsQuery.isFetching}
           />
-          {!jobsQuery.isLoading && !hasAnyJobs ? (
-            <section className="rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-zinc-100 text-zinc-700">
-                <Briefcase className="h-5 w-5" />
-              </div>
-              <div className="mt-4 text-base font-semibold text-zinc-900">
-                No jobs found
-              </div>
-              <div className="mt-1 text-sm text-zinc-600">
-                Start tracking applications to build your pipeline and analytics.
-              </div>
-              <div className="mt-5">
-                <button
-                  className="inline-flex items-center gap-2 rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-                  onClick={() => setIsAddJobOpen(true)}
-                >
-                  <Plus className="h-4 w-4" />
-                  Add job
-                </button>
-              </div>
-            </section>
-          ) : null}
-        </>
-      )}
-      {jobToDeleteId ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">
-              Delete Job?
-            </div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove this job from your tracker.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setJobToDeleteId(null)}
-                disabled={deletingJobId === jobToDeleteId}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={() => handleDeleteJob(jobToDeleteId)}
-                disabled={deletingJobId === jobToDeleteId}
-              >
-                {deletingJobId === jobToDeleteId ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
         </div>
+      )}
+      {isAddJobOpen ? (
+        <AddJobModal
+          open
+          onClose={() => setIsAddJobOpen(false)}
+          onSubmit={handleCreateJob}
+          isSubmitting={createJob.isPending}
+        />
       ) : null}
+      {editingJob ? (
+        <AddJobModal
+          open
+          onClose={() => setEditingJobId(null)}
+          onSubmit={handleEditJob}
+          isSubmitting={updatingJobId === editingJobId && Boolean(editingJobId)}
+          mode="edit"
+          initialValues={{
+            company: editingJob.company,
+            role: editingJob.role,
+            status: editingJob.status,
+            contactName: editingJob.contactName ?? "",
+            contactEmail: editingJob.contactEmail ?? "",
+            interviewRounds: editingJob.interviewRounds ?? [],
+            location: editingJob.location ?? "",
+            link: editingJob.link ?? "",
+          }}
+        />
+      ) : null}
+      <Dialog
+        open={Boolean(jobToDeleteId)}
+        onOpenChange={(isOpen) => {
+          if (!isOpen && deletingJobId !== jobToDeleteId) setJobToDeleteId(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md" showCloseButton={deletingJobId !== jobToDeleteId}>
+          <DialogHeader>
+            <DialogTitle>Delete this job?</DialogTitle>
+            <DialogDescription>
+              This permanently removes the opportunity from your pipeline.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => setJobToDeleteId(null)}
+              disabled={deletingJobId === jobToDeleteId}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => jobToDeleteId && handleDeleteJob(jobToDeleteId)}
+              disabled={deletingJobId === jobToDeleteId}
+            >
+              {deletingJobId === jobToDeleteId ? "Deleting…" : "Delete job"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

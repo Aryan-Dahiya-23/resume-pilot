@@ -3,21 +3,48 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
-  Briefcase,
+  BriefcaseBusiness,
   CheckCircle2,
   FileText,
-  Loader2,
   Lightbulb,
+  Loader2,
   Search,
   Trash2,
-  X,
   Upload,
   Wand2,
 } from "lucide-react";
 import { useState, type DragEvent } from "react";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type { UploadResumeResponse } from "@/lib/api/resumes";
 import type { Resume } from "@/lib/mock-data";
+import { cn } from "@/lib/utils";
+
+type ResumeStatus =
+  | "All"
+  | "UPLOADED"
+  | "PARSING"
+  | "REVIEWING"
+  | "READY"
+  | "FAILED";
+type ResumeDateFilter = "All" | "today" | "7d" | "30d";
+
+function resumeStatusVariant(status?: string) {
+  if (status === "READY") return "success" as const;
+  if (status === "FAILED") return "danger" as const;
+  if (status === "PARSING" || status === "REVIEWING") return "warning" as const;
+  return "neutral" as const;
+}
 
 export function ResumesHeader() {
   return <ResumesHeaderWithAction />;
@@ -29,21 +56,24 @@ export function ResumesHeaderWithAction({
   onUploadClick?: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <div className="text-sm text-zinc-500">Resumes</div>
-        <h1 className="text-xl font-semibold text-zinc-900">
-          All resume versions
+        <div className="mb-3 text-[11px] font-semibold tracking-[0.14em] text-brand uppercase">
+          Resume library
+        </div>
+        <h1 className="font-heading text-4xl leading-[0.98] font-medium tracking-[-0.035em] text-foreground sm:text-5xl">
+          Your working drafts.
         </h1>
+        <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
+          Keep a clear record of every version, then use the feedback to make the
+          next one stronger.
+        </p>
       </div>
-
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <Button onClick={onUploadClick}>
-          <Upload className="h-4 w-4" />
-          Upload new
-        </Button>
-      </div>
-    </div>
+      <Button onClick={onUploadClick} className="sm:shrink-0">
+        <Upload className="size-4" />
+        Upload resume
+      </Button>
+    </header>
   );
 }
 
@@ -61,36 +91,33 @@ export function ResumesTableSection({
 }: {
   query: string;
   onQueryChange: (value: string) => void;
-  statusFilter: "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED";
-  onStatusFilterChange: (value: "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED") => void;
-  dateFilter: "All" | "today" | "7d" | "30d";
-  onDateFilterChange: (value: "All" | "today" | "7d" | "30d") => void;
+  statusFilter: ResumeStatus;
+  onStatusFilterChange: (value: ResumeStatus) => void;
+  dateFilter: ResumeDateFilter;
+  onDateFilterChange: (value: ResumeDateFilter) => void;
   rows: Array<Resume & { status?: string }>;
   onDeleteResume?: (resumeId: string) => void;
   deletingResumeId?: string | null;
   onHoverResume?: (resumeId: string) => void;
 }) {
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <section className="surface-card overflow-hidden">
+      <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div className="relative w-full sm:max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Search versions, file name, target role..."
-            className="w-full rounded-2xl border border-zinc-200 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
+            placeholder="Search by version, file, or target role"
+            className="h-10 w-full rounded-lg border border-input bg-card py-2 pl-10 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/15"
           />
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <select
             value={statusFilter}
-            onChange={(event) =>
-              onStatusFilterChange(
-                event.target.value as "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED",
-              )
-            }
-            className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+            onChange={(event) => onStatusFilterChange(event.target.value as ResumeStatus)}
+            className="h-10 rounded-lg border border-input bg-card px-3 text-sm text-foreground outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/15"
+            aria-label="Filter by review status"
           >
             <option value="All">All statuses</option>
             <option value="UPLOADED">Uploaded</option>
@@ -102,11 +129,10 @@ export function ResumesTableSection({
           <select
             value={dateFilter}
             onChange={(event) =>
-              onDateFilterChange(
-                event.target.value as "All" | "today" | "7d" | "30d",
-              )
+              onDateFilterChange(event.target.value as ResumeDateFilter)
             }
-            className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+            className="h-10 rounded-lg border border-input bg-card px-3 text-sm text-foreground outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/15"
+            aria-label="Filter by upload date"
           >
             <option value="All">Any date</option>
             <option value="today">Today</option>
@@ -116,87 +142,87 @@ export function ResumesTableSection({
         </div>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200">
+      <div className="border-b border-border px-5 py-2 text-xs text-muted-foreground md:hidden">
+        Swipe horizontally to view every column.
+      </div>
+      <div className="overflow-x-auto">
         <div className="min-w-[740px]">
-          <div className="grid grid-cols-[110px_1fr_120px_120px_140px] gap-0 bg-zinc-50 px-4 py-3 text-xs font-medium text-zinc-600">
+          <div className="grid grid-cols-[112px_minmax(240px,1fr)_125px_100px_108px] border-b border-border bg-muted/45 px-5 py-3 text-[11px] font-semibold tracking-[0.09em] text-muted-foreground uppercase">
             <div>Version</div>
-            <div>File</div>
+            <div>Resume</div>
             <div>Status</div>
             <div>Score</div>
-            <div className="text-right">Actions</div>
+            <div className="text-right">Open</div>
           </div>
-          <div className="divide-y divide-zinc-200">
+          <div className="divide-y divide-border/70">
             {rows.map((resume) => (
               <div
                 key={resume.id}
-                className="grid grid-cols-[110px_1fr_120px_120px_140px] items-center gap-0 px-4 py-3"
+                className="grid grid-cols-[112px_minmax(240px,1fr)_125px_100px_108px] items-center px-5 py-4 transition-colors hover:bg-muted/35"
               >
-              <div className="text-sm font-medium text-zinc-900">
-                {resume.version}
-                <div className="mt-0.5 text-xs text-zinc-500">
-                  {resume.uploadedAt}
+                <div>
+                  <div className="text-sm font-semibold text-foreground">
+                    {resume.version}
+                  </div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">
+                    {resume.uploadedAt}
+                  </div>
                 </div>
-              </div>
-
-              <div className="min-w-0">
-                <div className="truncate text-sm font-medium text-zinc-900">
-                  {resume.fileName}
+                <div className="min-w-0 pr-4">
+                  <div className="truncate text-sm font-semibold text-foreground">
+                    {resume.fileName}
+                  </div>
+                  <div className="mt-0.5 truncate text-xs text-muted-foreground">
+                    {resume.roleTarget ?? "No target role set"}
+                  </div>
                 </div>
-                <div className="truncate text-sm text-zinc-500">
-                  Target: {resume.roleTarget ?? "Not set"}
+                <div>
+                  <Badge variant={resumeStatusVariant(resume.status)}>
+                    {resume.status ?? "READY"}
+                  </Badge>
                 </div>
-              </div>
-
-              <div>
-                <span
-                  className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                    resume.status === "READY"
-                      ? "bg-emerald-50 text-emerald-700"
-                      : resume.status === "FAILED"
-                        ? "bg-rose-50 text-rose-700"
-                        : "bg-amber-50 text-amber-700"
-                  }`}
-                >
-                  {resume.status ?? "READY"}
-                </span>
-              </div>
-
-              <div>
-                <div className="text-sm font-semibold text-zinc-900">
-                  {resume.score}
+                <div>
+                  <div className="text-lg font-bold tracking-[-0.03em] text-foreground">
+                    {resume.score}
+                  </div>
+                  <div className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+                    ATS
+                  </div>
                 </div>
-                <div className="text-xs text-zinc-500">ATS</div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2">
-                <Link
-                  href={`/dashboard/resumes/${resume.id}`}
-                  onMouseEnter={() => onHoverResume?.(resume.id)}
-                  className="rounded-xl border border-zinc-200 bg-white p-2 hover:bg-zinc-50"
-                  title="View feedback"
-                >
-                  <ArrowUpRight className="h-4 w-4" />
-                </Link>
-                <button
-                  onClick={() => onDeleteResume?.(resume.id)}
-                  disabled={deletingResumeId === resume.id}
-                  className="rounded-xl border border-zinc-200 bg-white p-2 hover:bg-zinc-50"
-                  title="Delete"
-                >
-                  {deletingResumeId === resume.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
+                <div className="flex items-center justify-end gap-1">
+                  <Button variant="ghost" size="icon-sm" asChild>
+                    <Link
+                      href={`/dashboard/resumes/${resume.id}`}
+                      onMouseEnter={() => onHoverResume?.(resume.id)}
+                      aria-label={`Open feedback for ${resume.fileName}`}
+                    >
+                      <ArrowUpRight className="size-4" />
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => onDeleteResume?.(resume.id)}
+                    disabled={deletingResumeId === resume.id}
+                    aria-label={`Delete ${resume.fileName}`}
+                  >
+                    {deletingResumeId === resume.id ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="size-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
             ))}
             {rows.length === 0 ? (
-              <div className="px-4 py-8 text-center">
-                <div className="text-sm font-medium text-zinc-900">No matching resumes</div>
-                <div className="mt-1 text-sm text-zinc-600">
-                  Try changing search text or filters to see results.
+              <div className="px-5 py-12 text-center">
+                <div className="text-sm font-semibold text-foreground">
+                  No matching resumes
+                </div>
+                <div className="mt-1 text-sm text-muted-foreground">
+                  Try changing the search or filters.
                 </div>
               </div>
             ) : null}
@@ -208,44 +234,46 @@ export function ResumesTableSection({
 }
 
 export function ResumeScoreGuideCard() {
-  return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="text-sm font-medium text-zinc-900">
-        How the score works
-      </div>
-      <div className="mt-2 text-sm text-zinc-600">
-        Your ATS score is computed from structure + clarity + role match. Upload
-        a new version after edits to track improvement.
-      </div>
+  const checks = [
+    {
+      icon: CheckCircle2,
+      title: "Structure",
+      copy: "One-column layout, consistent headings, and ATS-friendly formatting.",
+    },
+    {
+      icon: Lightbulb,
+      title: "Impact",
+      copy: "Metrics, outcomes, scale, and clear ownership of your work.",
+    },
+    {
+      icon: Wand2,
+      title: "Role match",
+      copy: "Keywords and phrasing aligned with the role you are targeting.",
+    },
+  ];
 
-      <div className="mt-4 space-y-3">
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-            <CheckCircle2 className="h-4 w-4" />
-            Structure
-          </div>
-          <div className="mt-1 text-sm text-zinc-600">
-            One-column layout, consistent headings, ATS-friendly formatting.
-          </div>
+  return (
+    <section className="surface-card p-5 sm:p-6">
+      <div className="max-w-2xl">
+        <div className="text-[11px] font-semibold tracking-[0.1em] text-brand uppercase">
+          Reading the score
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-            <Lightbulb className="h-4 w-4" />
-            Impact
+        <h2 className="mt-2 font-heading text-2xl font-medium tracking-[-0.025em] text-foreground">
+          What we look for.
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          Your ATS score reflects structure, clarity, and relevance—not a generic
+          checklist. Upload a revision to see whether the changes worked.
+        </p>
+      </div>
+      <div className="mt-6 grid gap-4 md:grid-cols-3">
+        {checks.map(({ icon: Icon, title, copy }) => (
+          <div key={title} className="border-l-2 border-border pl-4">
+            <Icon className="size-4 text-brand" />
+            <div className="mt-3 text-sm font-semibold text-foreground">{title}</div>
+            <p className="mt-1 text-sm leading-5 text-muted-foreground">{copy}</p>
           </div>
-          <div className="mt-1 text-sm text-zinc-600">
-            Metrics, outcomes, scale, ownership.
-          </div>
-        </div>
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-            <Wand2 className="h-4 w-4" />
-            Role match
-          </div>
-          <div className="mt-1 text-sm text-zinc-600">
-            Keywords + phrasing aligned with the role you target.
-          </div>
-        </div>
+        ))}
       </div>
     </section>
   );
@@ -311,135 +339,129 @@ export function ResumeUploadModal({
     handlePickedFile(event.dataTransfer.files?.[0] ?? null);
   }
 
-  if (!open) return null;
   const selectedFileSize = selectedFile
     ? `${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB`
     : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/55 p-4 backdrop-blur-[2px]">
-      <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-xl">
-        <div className="p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-base font-semibold text-zinc-900">
-                Upload Resume
-              </div>
-              <button
-                onClick={onClose}
-                className="rounded-xl border border-zinc-200 bg-white p-2 text-zinc-600 hover:bg-zinc-50"
-                aria-label="Close"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
+    >
+      <DialogContent className="max-w-xl gap-0 p-0 sm:max-w-xl" showCloseButton={false}>
+        <DialogHeader className="border-b border-border px-5 py-5 sm:px-6">
+          <div className="text-[11px] font-semibold tracking-[0.1em] text-brand uppercase">
+            New version
+          </div>
+          <DialogTitle className="font-heading text-2xl tracking-[-0.025em]">
+            Add a resume to review.
+          </DialogTitle>
+          <DialogDescription>
+            Upload a PDF or Word document. We will analyze it against the role you
+            are targeting.
+          </DialogDescription>
+        </DialogHeader>
 
-            <div className="mt-4 space-y-4">
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-zinc-600">
-                  Resume File
-                </label>
-                <label
-                  htmlFor="resume-upload-input"
-                  onDragEnter={(event) => handleDragState(event, true)}
-                  onDragOver={(event) => handleDragState(event, true)}
-                  onDragLeave={(event) => handleDragState(event, false)}
-                  onDrop={handleDrop}
-                  className={`mt-2 flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed px-4 py-4 transition-colors ${
-                    isDragActive
-                      ? "border-zinc-500 bg-zinc-100"
-                      : "border-zinc-300 bg-zinc-50 hover:border-zinc-400 hover:bg-zinc-100/70"
-                  }`}
-                >
-                  <span className="rounded-xl border border-zinc-200 bg-white p-2">
-                    <FileText className="h-4 w-4 text-zinc-600" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-zinc-800">
-                      {selectedFile
-                        ? selectedFile.name
-                        : "Drop file here or click to browse"}
-                    </span>
-                    <span className="block text-xs text-zinc-500">
-                      PDF/DOCX only • Max 5MB
-                    </span>
-                  </span>
-                </label>
-                <input
-                  id="resume-upload-input"
-                  type="file"
-                  accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  onChange={(event) => handlePickedFile(event.target.files?.[0] ?? null)}
-                  className="sr-only"
-                />
-                {localFileError ? (
-                  <div className="mt-2 text-xs text-rose-600">{localFileError}</div>
-                ) : null}
-                {selectedFile ? (
-                  <div className="mt-2 text-xs text-zinc-600">
-                    Size: {selectedFileSize}
-                  </div>
-                ) : null}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="target-role-input"
-                  className="text-xs font-semibold uppercase tracking-wide text-zinc-600"
-                >
-                  Target Role
-                </label>
-                <div className="relative mt-2">
-                  <Briefcase className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                  <input
-                    id="target-role-input"
-                    value={roleTarget}
-                    onChange={(event) => onRoleTargetChange(event.target.value)}
-                    placeholder="Frontend Engineer"
-                    className="w-full rounded-2xl border border-zinc-200 bg-white py-3 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 flex items-center gap-2">
-              <Button
-                onClick={onStartUpload}
-                disabled={isUploading || !selectedFile || !roleTarget.trim()}
-              >
-                {isUploading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Upload className="h-4 w-4" />
-                )}
-                {isUploading ? "Uploading..." : "Start Upload"}
-              </Button>
-              <Button variant="secondary" onClick={onClose}>
-                Cancel
-              </Button>
-            </div>
-
-            {uploadError ? (
-              <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
-                {uploadError}
-              </div>
+        <div className="space-y-5 px-5 py-5 sm:px-6">
+          <div>
+            <label className="text-xs font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+              Resume file
+              <span className="ml-1 text-brand">*</span>
+            </label>
+            <label
+              htmlFor="resume-upload-input"
+              onDragEnter={(event) => handleDragState(event, true)}
+              onDragOver={(event) => handleDragState(event, true)}
+              onDragLeave={(event) => handleDragState(event, false)}
+              onDrop={handleDrop}
+              className={cn(
+                "mt-2 flex cursor-pointer items-center gap-4 border border-dashed p-4 transition-colors",
+                isDragActive
+                  ? "border-brand bg-brand/5"
+                  : "border-border bg-muted/30 hover:border-foreground/35 hover:bg-muted/55",
+              )}
+            >
+              <FileText className="size-5 shrink-0 text-brand" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold text-foreground">
+                  {selectedFile ? selectedFile.name : "Drop a file here, or browse"}
+                </span>
+                <span className="mt-0.5 block text-xs text-muted-foreground">
+                  PDF or DOCX · maximum 5 MB
+                </span>
+              </span>
+              {selectedFileSize ? (
+                <span className="text-xs font-medium text-muted-foreground">
+                  {selectedFileSize}
+                </span>
+              ) : null}
+            </label>
+            <input
+              id="resume-upload-input"
+              type="file"
+              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              onChange={(event) =>
+                handlePickedFile(event.target.files?.[0] ?? null)
+              }
+              className="sr-only"
+            />
+            {localFileError ? (
+              <p className="mt-2 text-xs text-destructive">{localFileError}</p>
             ) : null}
+          </div>
 
-            {uploadResult ? (
-              <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-3">
-                <div className="text-sm font-medium text-emerald-800">
-                  Upload completed
-                </div>
-                <div className="mt-1 text-sm text-emerald-700">
-                  {uploadResult.fileName} stored successfully.
-                </div>
-                <div className="mt-1 text-xs text-emerald-700">
-                  Status: {uploadResult.status} • Role target:{" "}
-                  {uploadResult.roleTarget ?? "Not set"}
-                </div>
+          <div>
+            <label
+              htmlFor="target-role-input"
+              className="text-xs font-semibold tracking-[0.08em] text-muted-foreground uppercase"
+            >
+              Target role
+            </label>
+            <div className="relative mt-2">
+              <BriefcaseBusiness className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                id="target-role-input"
+                value={roleTarget}
+                onChange={(event) => onRoleTargetChange(event.target.value)}
+                placeholder="Frontend Engineer"
+                className="h-11 w-full rounded-lg border border-input bg-card py-2 pl-10 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/15"
+              />
+            </div>
+          </div>
+
+          {uploadError ? (
+            <div className="border-l-2 border-destructive bg-destructive/5 px-4 py-3 text-sm text-destructive">
+              {uploadError}
+            </div>
+          ) : null}
+
+          {uploadResult ? (
+            <div className="border-l-2 border-emerald-600 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-800">
+              <div className="font-semibold">Upload complete</div>
+              <div className="mt-1 text-emerald-700">
+                {uploadResult.fileName} is ready for review.
               </div>
-            ) : null}
+            </div>
+          ) : null}
         </div>
-      </div>
-    </div>
+
+        <DialogFooter className="mt-0">
+          <DialogClose asChild>
+            <Button variant="secondary" onClick={onClose} disabled={isUploading}>
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button
+            onClick={onStartUpload}
+            disabled={isUploading || !selectedFile || !roleTarget.trim()}
+          >
+            {isUploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+            {isUploading ? "Uploading…" : "Start review"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
