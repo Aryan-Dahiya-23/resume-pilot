@@ -219,7 +219,7 @@ export default function JobsPage() {
           {!jobsQuery.isLoading && !hasAnyJobs ? (
             <Card className="rounded-3xl border-slate-200/90 shadow-xs">
               <CardContent className="py-12 text-center">
-                <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
                   <Briefcase className="size-6" />
                 </div>
                 <h3 className="mt-4 text-lg font-bold text-slate-900">

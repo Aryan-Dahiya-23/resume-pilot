@@ -34,20 +34,20 @@ import { statusVariant, type Job, type JobStatus } from "@/lib/mock-data";
 
 export function JobsHeader({ onAddJobClick }: { onAddJobClick?: () => void }) {
   return (
-    <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <div className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+        <div className="text-xs font-semibold uppercase tracking-wider text-emerald-600">
           Opportunity Tracking
         </div>
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           Job Application Pipeline
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-xs sm:text-sm text-slate-500">
           Track stage transitions, schedule follow-ups, and calculate your interview conversion rate.
         </p>
       </div>
 
-      <Button onClick={onAddJobClick} className="shadow-xs shadow-indigo-500/20">
+      <Button onClick={onAddJobClick} className="shadow-xs shadow-emerald-600/20 w-full sm:w-auto">
         <Plus className="size-4" />
         Track New Opportunity
       </Button>
@@ -154,7 +154,7 @@ export function AddJobModal({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] sm:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {mode === "create" ? "Add Job Opportunity" : "Edit Job Details"}
@@ -207,7 +207,7 @@ export function AddJobModal({
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as JobStatus)}
-                className="mt-1 h-10 w-full rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20"
+                className="mt-1 h-10 w-full rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500/20"
               >
                 <option value="Saved">Saved (Considering)</option>
                 <option value="Applied">Applied (Pending)</option>
@@ -297,11 +297,11 @@ export function AddJobModal({
             </div>
           ) : null}
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-            <Button variant="secondary" type="button" onClick={onClose} disabled={isSubmitting}>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-slate-100">
+            <Button variant="secondary" type="button" onClick={onClose} disabled={isSubmitting} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto shadow-xs shadow-emerald-600/20">
               {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : null}
               {isSubmitting
                 ? "Saving..."
@@ -361,9 +361,9 @@ export function JobsTableSection({
   ];
 
   return (
-    <section className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs">
+    <section className="rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs">
       {/* Search & Filters */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-slate-100">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-5 border-b border-slate-100">
         <div className="relative w-full sm:max-w-md">
           <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
           <Input
@@ -376,14 +376,14 @@ export function JobsTableSection({
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Status Filter Pills */}
-          <div className="flex flex-wrap items-center gap-1 rounded-xl border border-slate-200/80 bg-slate-50/60 p-1">
+          <div className="flex items-center gap-1 rounded-xl border border-slate-200/80 bg-slate-50/60 p-1 overflow-x-auto max-w-full no-scrollbar">
             {statusOptions.map((st) => (
               <button
                 key={st}
                 onClick={() => onStatusFilterChange(st)}
-                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
+                className={`rounded-lg px-2.5 py-1 text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   statusFilter === st
-                    ? "bg-white text-slate-900 shadow-2xs font-bold"
+                    ? "bg-white text-emerald-950 shadow-2xs font-bold"
                     : "text-slate-500 hover:text-slate-900"
                 }`}
               >
@@ -397,7 +397,7 @@ export function JobsTableSection({
             onChange={(e) =>
               onDateFilterChange(e.target.value as "All" | "today" | "7d" | "30d")
             }
-            className="h-9 rounded-xl border border-slate-200/90 bg-white px-2.5 text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20"
+            className="h-9 rounded-xl border border-slate-200/90 bg-white px-2.5 text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20"
           >
             <option value="All">All Time</option>
             <option value="today">Today</option>
@@ -407,11 +407,11 @@ export function JobsTableSection({
         </div>
       </div>
 
-      {/* Table Content */}
-      <div className="mt-6 overflow-x-auto">
-        <div className="min-w-[700px]">
+      {/* Table Content with Horizontal Scroll Support */}
+      <div className="mt-6 overflow-x-auto no-scrollbar">
+        <div className="min-w-[650px]">
           {/* Table Header */}
-          <div className="grid grid-cols-[1.5fr_1.5fr_130px_130px_100px] border-b border-slate-100 bg-slate-50/60 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 rounded-xl">
+          <div className="grid grid-cols-[1.5fr_1.5fr_130px_120px_100px] border-b border-slate-100 bg-slate-50/60 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 rounded-xl">
             <div>Company</div>
             <div>Position</div>
             <div>Stage</div>
@@ -423,7 +423,7 @@ export function JobsTableSection({
           <div className="divide-y divide-slate-100 mt-1">
             {isLoadingRows ? (
               <div className="py-12 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-                <Loader2 className="size-4 animate-spin text-indigo-600" />
+                <Loader2 className="size-4 animate-spin text-emerald-600" />
                 <span>Refreshing jobs...</span>
               </div>
             ) : null}
@@ -434,10 +434,10 @@ export function JobsTableSection({
               return (
                 <div
                   key={job.id}
-                  className="grid grid-cols-[1.5fr_1.5fr_130px_130px_100px] items-center px-4 py-3.5 transition-colors hover:bg-slate-50/70 rounded-xl"
+                  className="grid grid-cols-[1.5fr_1.5fr_130px_120px_100px] items-center px-4 py-3.5 transition-colors hover:bg-slate-50/70 rounded-xl"
                 >
                   <div className="flex items-center gap-3 min-w-0 pr-3">
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 font-bold text-xs text-indigo-700">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 font-bold text-xs text-emerald-800">
                       {companyInitial}
                     </div>
                     <span className="truncate text-sm font-semibold text-slate-900">
@@ -521,7 +521,7 @@ export function JobsTableSection({
       </div>
 
       {/* Pagination Footer */}
-      <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
+      <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 pt-4">
         <span className="text-xs text-slate-400">
           Page {Math.min(currentPage, totalPages)} of {Math.max(1, totalPages)}
         </span>

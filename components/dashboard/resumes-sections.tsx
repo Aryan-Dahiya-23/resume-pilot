@@ -5,17 +5,23 @@ import {
   ArrowUpRight,
   Briefcase,
   CheckCircle2,
+  Clock,
+  Download,
+  FileCheck2,
   FileText,
+  Filter,
   Loader2,
-  Lightbulb,
+  Plus,
+  RefreshCw,
   Search,
+  Sparkles,
   Trash2,
   Upload,
   X,
 } from "lucide-react";
 import { useState, type DragEvent } from "react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -24,12 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { UploadResumeResponse } from "@/lib/api/resumes";
 import type { Resume } from "@/lib/mock-data";
-
-export function ResumesHeader() {
-  return <ResumesHeaderWithAction />;
-}
 
 export function ResumesHeaderWithAction({
   onUploadClick,
@@ -37,20 +38,20 @@ export function ResumesHeaderWithAction({
   onUploadClick?: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <div className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+        <div className="text-xs font-semibold uppercase tracking-wider text-emerald-600">
           Document Intelligence
         </div>
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-          Resume Versions & AI Audits
+          Resume Version History
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Manage your uploaded resumes, track ATS performance trajectories, and review DeepSeek suggestions.
+        <p className="mt-1 text-xs sm:text-sm text-slate-500">
+          Upload new revisions to measure ATS score progression and unlock high-impact rewrite diffs.
         </p>
       </div>
 
-      <Button onClick={onUploadClick} className="shadow-xs shadow-indigo-500/20">
+      <Button onClick={onUploadClick} className="shadow-xs shadow-emerald-600/20 w-full sm:w-auto">
         <Upload className="size-4" />
         Upload New Resume
       </Button>
@@ -66,59 +67,46 @@ export function ResumesTableSection({
   dateFilter,
   onDateFilterChange,
   rows,
+  isLoading,
+  onHoverResume,
+  onRequestDeleteResume,
   onDeleteResume,
   deletingResumeId,
-  onHoverResume,
 }: {
   query: string;
   onQueryChange: (value: string) => void;
-  statusFilter: "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED";
-  onStatusFilterChange: (value: "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED") => void;
+  statusFilter?: string;
+  onStatusFilterChange?: (value: any) => void;
   dateFilter: "All" | "today" | "7d" | "30d";
   onDateFilterChange: (value: "All" | "today" | "7d" | "30d") => void;
   rows: Array<Resume & { status?: string }>;
+  isLoading?: boolean;
+  onHoverResume?: (resumeId: string) => void;
+  onRequestDeleteResume?: (resumeId: string) => void;
   onDeleteResume?: (resumeId: string) => void;
   deletingResumeId?: string | null;
-  onHoverResume?: (resumeId: string) => void;
 }) {
   return (
-    <section className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs">
-      {/* Controls Bar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-slate-100">
+    <section className="rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs">
+      {/* Search & Filter Toolbar */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-5 border-b border-slate-100">
         <div className="relative w-full sm:max-w-md">
           <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
           <Input
             value={query}
-            onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Search by role, version, or filename..."
+            onChange={(e) => onQueryChange(e.target.value)}
+            placeholder="Search by version, filename, or role..."
             className="pl-10"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={statusFilter}
-            onChange={(event) =>
-              onStatusFilterChange(
-                event.target.value as "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED",
-              )
-            }
-            className="h-10 rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-medium text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20"
-          >
-            <option value="All">All Statuses</option>
-            <option value="UPLOADED">Uploaded</option>
-            <option value="PARSING">Parsing</option>
-            <option value="REVIEWING">Reviewing</option>
-            <option value="READY">Ready</option>
-            <option value="FAILED">Failed</option>
-          </select>
-
+        <div className="flex items-center gap-2">
           <select
             value={dateFilter}
-            onChange={(event) =>
-              onDateFilterChange(event.target.value as "All" | "today" | "7d" | "30d")
+            onChange={(e) =>
+              onDateFilterChange(e.target.value as "All" | "today" | "7d" | "30d")
             }
-            className="h-10 rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-medium text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20"
+            className="h-10 w-full sm:w-auto rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20"
           >
             <option value="All">All Time</option>
             <option value="today">Today</option>
@@ -128,8 +116,8 @@ export function ResumesTableSection({
         </div>
       </div>
 
-      {/* Resumes Grid/Table */}
-      <div className="mt-6 space-y-3">
+      {/* Resumes List */}
+      <div className="mt-5 space-y-3">
         {rows.map((resume) => {
           const score = resume.score ?? 0;
           const scoreVariant =
@@ -138,15 +126,15 @@ export function ResumesTableSection({
           return (
             <div
               key={resume.id}
-              className="group flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 transition-all hover:border-slate-300 hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
+              className="group flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 transition-all hover:border-slate-300 hover:shadow-xs sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex items-start gap-3.5 min-w-0">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
                   <FileText className="size-5" />
                 </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-900 text-sm">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-bold text-slate-900 text-sm">
                       {resume.version}
                     </span>
                     <Badge variant={scoreVariant} withDot>
@@ -158,29 +146,43 @@ export function ResumesTableSection({
                       </Badge>
                     ) : null}
                   </div>
+
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400">
-                    <span>Target: {resume.roleTarget ?? "General"}</span>
+                    <span className="truncate max-w-[180px] sm:max-w-xs font-medium text-slate-600">
+                      {resume.fileName}
+                    </span>
+                    {resume.roleTarget ? (
+                      <>
+                        <span>•</span>
+                        <span className="truncate max-w-[160px] text-slate-500">
+                          {resume.roleTarget}
+                        </span>
+                      </>
+                    ) : null}
                     <span>•</span>
                     <span>{resume.uploadedAt}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 shrink-0 border-t border-slate-100 sm:border-t-0 pt-3 sm:pt-0">
-                <Button variant="secondary" size="sm" asChild>
-                  <Link
-                    href={`/dashboard/resumes/${resume.id}`}
-                    onMouseEnter={() => onHoverResume?.(resume.id)}
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                <Button variant="secondary" size="xs" asChild>
+                  <a
+                    href={`/api/resumes/${resume.id}/download`}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Download original file"
                   >
-                    View Audit
-                    <ArrowUpRight className="size-3.5" />
-                  </Link>
+                    <Download className="size-3.5" />
+                    <span className="hidden sm:inline">Download</span>
+                  </a>
                 </Button>
 
                 <Button
                   variant="ghost"
-                  size="icon-sm"
-                  onClick={() => onDeleteResume?.(resume.id)}
+                  size="xs"
+                  onClick={() => (onRequestDeleteResume ?? onDeleteResume)?.(resume.id)}
                   disabled={deletingResumeId === resume.id}
                   className="text-slate-400 hover:text-rose-600 hover:bg-rose-50"
                   title="Delete resume"
@@ -191,14 +193,31 @@ export function ResumesTableSection({
                     <Trash2 className="size-3.5" />
                   )}
                 </Button>
+
+                <Button size="xs" asChild className="shadow-xs shadow-emerald-600/20">
+                  <Link
+                    href={`/dashboard/resumes/${resume.id}`}
+                    onMouseEnter={() => onHoverResume?.(resume.id)}
+                  >
+                    Audit Report
+                    <ArrowUpRight className="size-3.5" />
+                  </Link>
+                </Button>
               </div>
             </div>
           );
         })}
 
-        {rows.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-200 py-10 text-center text-sm text-slate-500">
-            No matching resumes found. Try adjusting your search query or filters.
+        {isLoading ? (
+          <div className="py-12 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+            <Loader2 className="size-4 animate-spin text-emerald-600" />
+            <span>Fetching resumes...</span>
+          </div>
+        ) : null}
+
+        {!isLoading && rows.length === 0 ? (
+          <div className="py-12 text-center text-xs text-slate-400">
+            No matching resume versions found.
           </div>
         ) : null}
       </div>
@@ -208,30 +227,34 @@ export function ResumesTableSection({
 
 export function ResumeScoreGuideCard() {
   return (
-    <div className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-        <Lightbulb className="size-4 text-amber-500" />
-        <span>Scoring Methodology</span>
+    <div className="rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600">
+        <Sparkles className="size-3.5" />
+        <span>Scoring Benchmark Standard</span>
       </div>
-      <h3 className="mt-2 text-base font-bold text-slate-900">
-        How ATS Scoring Works
+      <h3 className="mt-1 text-base font-bold text-slate-900">
+        How DeepSeek ATS Scoring Works
       </h3>
       <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-        Our DeepSeek evaluation analyzes bullet point impact, quantifiable achievements, keyword coverage for your target role, and layout parsing compatibility.
+        Our evaluation models emulate modern enterprise ATS algorithms (Workday, Greenhouse, Lever, Taleo) combined with human recruiter scanning behavior.
       </p>
 
-      <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-3 text-xs">
-        <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-3">
-          <div className="font-bold text-emerald-800">80 - 100 • Ready</div>
-          <div className="mt-0.5 text-emerald-600">Top-tier candidate profile with strong metrics.</div>
+      <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-3 text-center">
+          <div className="text-xs font-bold text-emerald-800">80 – 100</div>
+          <div className="text-[11px] text-emerald-700 mt-0.5">Ready to Apply</div>
         </div>
-        <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-3">
-          <div className="font-bold text-indigo-800">60 - 79 • Good</div>
-          <div className="mt-0.5 text-indigo-600">Solid baseline; needs punchier action verbs.</div>
+        <div className="rounded-2xl border border-teal-200 bg-teal-50/50 p-3 text-center">
+          <div className="text-xs font-bold text-teal-800">60 – 79</div>
+          <div className="text-[11px] text-teal-700 mt-0.5">Competitive</div>
         </div>
-        <div className="rounded-xl border border-amber-100 bg-amber-50/50 p-3">
-          <div className="font-bold text-amber-800">Below 60 • Action Needed</div>
-          <div className="mt-0.5 text-amber-600">Missing key competencies and quantifiable outcomes.</div>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-3 text-center">
+          <div className="text-xs font-bold text-amber-800">40 – 59</div>
+          <div className="text-[11px] text-amber-700 mt-0.5">Needs Work</div>
+        </div>
+        <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-3 text-center">
+          <div className="text-xs font-bold text-rose-800">&lt; 40</div>
+          <div className="text-[11px] text-rose-700 mt-0.5">Critical Fixes</div>
         </div>
       </div>
     </div>
@@ -296,7 +319,8 @@ export function ResumeUploadModal({
     event.preventDefault();
     event.stopPropagation();
     setIsDragActive(false);
-    handlePickedFile(event.dataTransfer.files?.[0] ?? null);
+    const file = event.dataTransfer.files?.[0] ?? null;
+    handlePickedFile(file);
   }
 
   const selectedFileSize = selectedFile
@@ -305,7 +329,7 @@ export function ResumeUploadModal({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Upload Resume for AI Audit</DialogTitle>
           <DialogDescription>
@@ -326,11 +350,11 @@ export function ResumeUploadModal({
               onDrop={handleDrop}
               className={`mt-1.5 flex cursor-pointer items-center gap-3.5 rounded-2xl border-2 border-dashed p-4 transition-all ${
                 isDragActive
-                  ? "border-indigo-500 bg-indigo-50/50"
+                  ? "border-emerald-500 bg-emerald-50/50"
                   : "border-slate-200 bg-slate-50/50 hover:border-slate-300 hover:bg-slate-50"
               }`}
             >
-              <div className="flex size-10 items-center justify-center rounded-xl bg-white shadow-2xs text-indigo-600">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-white shadow-2xs text-emerald-600">
                 <FileText className="size-5" />
               </div>
               <div className="min-w-0 flex-1">
@@ -396,13 +420,14 @@ export function ResumeUploadModal({
             </div>
           ) : null}
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-            <Button variant="secondary" onClick={onClose} disabled={isUploading}>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-slate-100">
+            <Button variant="secondary" onClick={onClose} disabled={isUploading} className="w-full sm:w-auto">
               Cancel
             </Button>
             <Button
               onClick={onStartUpload}
               disabled={isUploading || !selectedFile || !roleTarget.trim()}
+              className="w-full sm:w-auto shadow-xs shadow-emerald-600/20"
             >
               {isUploading ? (
                 <Loader2 className="size-4 animate-spin" />

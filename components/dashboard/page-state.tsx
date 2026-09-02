@@ -10,8 +10,8 @@ export function DashboardPageLoading({
 }) {
   return (
     <div className="flex min-h-[50vh] w-full flex-col items-center justify-center gap-3">
-      <div className="relative flex size-12 items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50/50 shadow-xs">
-        <Loader2 className="size-6 animate-spin text-indigo-600" />
+      <div className="relative flex size-12 items-center justify-center rounded-2xl border border-emerald-100 bg-emerald-50/50 shadow-xs">
+        <Loader2 className="size-6 animate-spin text-emerald-600" />
       </div>
       <span className="text-sm font-medium text-slate-500">{label}</span>
     </div>
@@ -30,7 +30,7 @@ export function DashboardPageError({
   return (
     <div className="rounded-2xl border border-rose-200/80 bg-rose-50/60 p-6 shadow-xs">
       <div className="flex items-start gap-4">
-        <div className="rounded-xl bg-rose-100 p-2.5 text-rose-600">
+        <div className="rounded-xl bg-rose-100 p-2.5 text-rose-600 shrink-0">
           <AlertCircle className="size-5" />
         </div>
         <div className="flex-1">

@@ -21,14 +21,14 @@ export function ProgressRing({
     boundedValue >= 80
       ? "text-emerald-500 stroke-emerald-500"
       : boundedValue >= 60
-        ? "text-indigo-500 stroke-indigo-500"
+        ? "text-teal-500 stroke-teal-500"
         : boundedValue >= 40
           ? "text-amber-500 stroke-amber-500"
           : "text-rose-500 stroke-rose-500";
 
   return (
     <div
-      className={cn("relative inline-flex items-center justify-center select-none", className)}
+      className={cn("relative inline-flex items-center justify-center select-none shrink-0", className)}
       style={{ width: size, height: size }}
     >
       <svg width={size} height={size} className="rotate-[-90deg]">

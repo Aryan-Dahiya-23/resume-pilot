@@ -11,7 +11,7 @@ export default function ContactPage() {
     >
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 not-prose">
         <div className="rounded-2xl border border-slate-200/90 bg-slate-50/60 p-6">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 mb-4">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 mb-4">
             <Mail className="size-5" />
           </div>
           <h3 className="text-base font-bold text-slate-900">Email Support</h3>
@@ -21,7 +21,7 @@ export default function ContactPage() {
           <div className="mt-4">
             <a
               href="mailto:support@resumepilot.app"
-              className="text-xs font-semibold text-indigo-600 hover:underline"
+              className="text-xs font-semibold text-emerald-600 hover:underline"
             >
               support@resumepilot.app
             </a>
@@ -29,7 +29,7 @@ export default function ContactPage() {
         </div>
 
         <div className="rounded-2xl border border-slate-200/90 bg-slate-50/60 p-6">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 mb-4">
+          <div className="flex size-10 items-center justify-center rounded-xl bg-teal-50 text-teal-600 mb-4">
             <MessageSquare className="size-5" />
           </div>
           <h3 className="text-base font-bold text-slate-900">Feature Requests</h3>

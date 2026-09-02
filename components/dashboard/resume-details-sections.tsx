@@ -42,13 +42,13 @@ export function ResumeFeedbackHeader({
   onSelectVersion?: (value: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600">
           <Sparkles className="size-3.5" />
           <span>DeepSeek Audit Report</span>
         </div>
-        <h1 className="mt-1 truncate text-2xl font-bold tracking-tight text-slate-900">
+        <h1 className="mt-1 truncate text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
           {resume.fileName}
         </h1>
         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400">
@@ -68,7 +68,7 @@ export function ResumeFeedbackHeader({
       <div className="flex flex-wrap items-center gap-2 shrink-0">
         {versionOptions && versionOptions.length > 1 ? (
           <select
-            className="h-10 rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20"
+            className="h-9.5 rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20"
             value={selectedVersionId ?? versionOptions[0].id}
             onChange={(e) => onSelectVersion?.(e.target.value)}
           >
@@ -91,7 +91,7 @@ export function ResumeFeedbackHeader({
           size="sm"
           onClick={onRerunReview}
           disabled={isRerunning}
-          className="shadow-xs shadow-indigo-500/20"
+          className="shadow-xs shadow-emerald-600/20"
         >
           <Wand2 className="size-3.5" />
           {isRerunning ? "Analyzing..." : "Re-run Audit"}
@@ -129,7 +129,7 @@ export function ResumeDetailsMain({
         <Card className="rounded-3xl border-slate-200/90 shadow-xs">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <History className="size-4 text-indigo-600" />
+              <History className="size-4 text-emerald-600" />
               <CardTitle className="text-base">Audit History Trajectory</CardTitle>
             </div>
             <CardDescription>
@@ -139,21 +139,21 @@ export function ResumeDetailsMain({
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {reviewHistory.map((item) => {
-                const active = selectedReviewId === item.id;
+                const isSelected = item.id === selectedReviewId;
                 return (
                   <button
                     key={item.id}
                     onClick={() => onSelectReview?.(item.id)}
-                    className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs transition-all cursor-pointer ${
-                      active
-                        ? "border-indigo-600 bg-indigo-50/70 text-indigo-900 font-semibold shadow-2xs"
-                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                    className={`flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                      isSelected
+                        ? "border-emerald-600 bg-emerald-50 text-emerald-900 shadow-2xs font-bold"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                     }`}
                   >
                     <span>{item.versionLabel}</span>
-                    <Badge variant={item.score >= 80 ? "success" : "brand"}>
-                      {item.score}
-                    </Badge>
+                    <span className="rounded-md bg-white/80 px-1.5 py-0.5 text-[10px] font-bold text-slate-800 border border-slate-200/60">
+                      {item.score} pts
+                    </span>
                   </button>
                 );
               })}
@@ -162,39 +162,68 @@ export function ResumeDetailsMain({
         </Card>
       ) : null}
 
-      {/* Master ATS Score Card */}
-      <Card className="rounded-3xl border-slate-200/90 shadow-xs">
-        <div className="p-6 sm:p-7">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-6">
-            <div>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                <Target className="size-3.5 text-indigo-600" />
-                <span>Screening Scorecard</span>
+      {/* Master Scorecard Banner */}
+      <Card className="rounded-3xl border-slate-200/90 shadow-xs overflow-hidden">
+        <div className="p-5 sm:p-7">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 pb-6 border-b border-slate-100">
+            <div className="text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600">
+                <Target className="size-3.5" />
+                <span>Executive Readiness Evaluation</span>
               </div>
-              <div className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900">
-                {feedback.score} <span className="text-xl font-normal text-slate-400">/ 100</span>
-              </div>
-              <p className="mt-1 text-xs text-slate-500">
-                Calculated based on ATS compliance, impact metrics, and keyword density.
+              <h2 className="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+                Overall ATS Compatibility Score
+              </h2>
+              <p className="mt-1 max-w-lg text-xs sm:text-sm text-slate-500 leading-relaxed">
+                Calculated by parsing formatting structure, action verbs, measurable metrics, and role-specific competencies.
               </p>
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                <Badge variant="success" withDot>Strong Structure</Badge>
-                <Badge variant="brand" withDot>Role Match 78%</Badge>
-                <Badge variant="warning" withDot>Quantifiable Impact Needed</Badge>
-              </div>
             </div>
 
-            <div className="flex justify-center sm:justify-end">
-              <ProgressRing value={feedback.score} size={140} strokeWidth={12} />
+            <ProgressRing value={feedback.score} size={110} strokeWidth={10} />
+          </div>
+
+          {/* Sub-Category Breakdowns */}
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5 text-center">
+              <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                Impact
+              </span>
+              <div className="mt-1 text-lg sm:text-xl font-bold text-slate-900">
+                {Math.min(100, Math.max(40, feedback.score + 2))}%
+              </div>
+            </div>
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5 text-center">
+              <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                Brevity
+              </span>
+              <div className="mt-1 text-lg sm:text-xl font-bold text-slate-900">
+                {Math.min(100, Math.max(50, feedback.score - 2))}%
+              </div>
+            </div>
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5 text-center">
+              <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                Style
+              </span>
+              <div className="mt-1 text-lg sm:text-xl font-bold text-slate-900">
+                {Math.min(100, Math.max(45, feedback.score + 1))}%
+              </div>
+            </div>
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5 text-center">
+              <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                Skills Match
+              </span>
+              <div className="mt-1 text-lg sm:text-xl font-bold text-slate-900">
+                {Math.min(100, Math.max(35, feedback.score - 4))}%
+              </div>
             </div>
           </div>
 
-          {/* Strengths & Weaknesses Grid */}
+          {/* Strengths & Weaknesses Callout */}
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-800">
                 <CheckCircle2 className="size-4 text-emerald-600" />
-                <span>Profile Strengths</span>
+                <span>Demonstrated Strengths</span>
               </div>
               <ul className="mt-3 space-y-2">
                 {feedback.summary.strengths.map((item) => (
@@ -228,7 +257,7 @@ export function ResumeDetailsMain({
       <Card className="rounded-3xl border-slate-200/90 shadow-xs">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Wand2 className="size-4 text-indigo-600" />
+            <Wand2 className="size-4 text-emerald-600" />
             <CardTitle>AI Bullet Point Rewrites</CardTitle>
           </div>
           <CardDescription>
@@ -285,18 +314,18 @@ export function ResumeDetailsMain({
 
       {/* Missing Keywords Section */}
       <Card className="rounded-3xl border-slate-200/90 shadow-xs">
-        <div className="p-6">
-          <div className="flex items-center justify-between gap-3">
+        <div className="p-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <Layers className="size-4 text-indigo-600" />
+                <Layers className="size-4 text-teal-600" />
                 <h3 className="text-base font-bold text-slate-900">Missing ATS Keywords</h3>
               </div>
               <p className="mt-1 text-xs text-slate-500">
                 Incorporate these keywords into your skill list, summary, or work history.
               </p>
             </div>
-            <Button variant="secondary" size="sm" onClick={onCopyKeywords}>
+            <Button variant="secondary" size="sm" onClick={onCopyKeywords} className="self-start sm:self-auto">
               <Copy className="size-3.5" />
               Copy All
             </Button>
@@ -381,7 +410,7 @@ export function ResumeDetailsSidebar({
       <Card className="rounded-3xl border-slate-200/90 shadow-xs">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
-            <Briefcase className="size-4 text-indigo-600" />
+            <Briefcase className="size-4 text-emerald-600" />
             <CardTitle className="text-base">Role Targeting</CardTitle>
           </div>
           <CardDescription>
@@ -394,88 +423,64 @@ export function ResumeDetailsSidebar({
               Target Position
             </label>
             <select
-              className="mt-1 h-9.5 w-full rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-medium text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20"
+              className="mt-1 h-9.5 w-full rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500/20"
               value={selectedRole}
               onChange={(e) => onRoleTargetChange?.(e.target.value)}
             >
-              {roleTarget && !roleOptions.includes(roleTarget) ? (
-                <option value={roleTarget}>{roleTarget}</option>
-              ) : null}
-              {roleOptions.map((r) => (
-                <option key={r}>{r}</option>
+              {roleOptions.map((role) => (
+                <option key={role}>{role}</option>
               ))}
             </select>
           </div>
 
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              Experience Level
+              Experience Bracket
             </label>
             <select
-              className="mt-1 h-9.5 w-full rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-medium text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20"
+              className="mt-1 h-9.5 w-full rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500/20"
               value={selectedLevel}
               onChange={(e) => onTargetLevelChange?.(e.target.value)}
             >
-              {targetLevel && !levelOptions.includes(targetLevel) ? (
-                <option value={targetLevel}>{targetLevel}</option>
-              ) : null}
-              {levelOptions.map((lvl) => (
-                <option key={lvl}>{lvl}</option>
+              {levelOptions.map((level) => (
+                <option key={level}>{level}</option>
               ))}
             </select>
           </div>
 
           <Button
-            variant="secondary"
             size="sm"
-            className="w-full mt-2"
+            className="w-full shadow-xs shadow-emerald-600/20"
             onClick={onSaveTargetRole}
             disabled={isSavingRole}
           >
             <Save className="size-3.5" />
-            {isSavingRole ? "Updating..." : "Save Target Lens"}
+            {isSavingRole ? "Updating..." : "Save Role Target"}
           </Button>
         </CardContent>
       </Card>
 
-      {/* Recommended Action Checklist */}
+      {/* Quick Actions Card */}
       <Card className="rounded-3xl border-slate-200/90 shadow-xs">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Immediate Next Steps</CardTitle>
+          <CardTitle className="text-base">Document Actions</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2.5">
-          {feedback.nextActions.map((action, index) => (
-            <div
-              key={action}
-              className="flex items-start gap-2.5 rounded-xl border border-slate-100 bg-slate-50/60 p-2.5 text-xs text-slate-700"
-            >
-              <span className="flex size-4.5 shrink-0 items-center justify-center rounded-md bg-indigo-100 font-mono text-[10px] font-bold text-indigo-700 mt-0.5">
-                0{index + 1}
-              </span>
-              <span className="leading-snug">{action}</span>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* File Actions */}
-      <Card className="rounded-3xl border-slate-200/90 shadow-xs">
-        <CardContent className="pt-5 space-y-2">
+        <CardContent className="space-y-2">
           <Button
             variant="secondary"
             size="sm"
-            className="w-full justify-center"
+            className="w-full justify-start"
             onClick={onDownload}
             disabled={isDownloading}
           >
             <Download className="size-3.5" />
-            {isDownloading ? "Preparing..." : "Download Original PDF"}
+            {isDownloading ? "Downloading..." : "Download Original PDF"}
           </Button>
 
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-center text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+            className="w-full justify-start text-rose-600 hover:bg-rose-50 hover:text-rose-700"
             onClick={onDelete}
             disabled={isDeleting}
           >

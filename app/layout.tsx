@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 
 const clerkAppearance = {
   variables: {
-    colorPrimary: "#4f46e5",
+    colorPrimary: "#059669",
     colorBackground: "#ffffff",
     colorText: "#0f172a",
     colorTextSecondary: "#64748b",
@@ -43,8 +43,8 @@ const clerkAppearance = {
   elements: {
     card: "border border-slate-200/80 shadow-xl rounded-2xl",
     formButtonPrimary:
-      "bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium shadow-sm transition-all",
-    footerActionLink: "text-indigo-600 hover:text-indigo-500 font-medium",
+      "bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium shadow-xs shadow-emerald-600/20 transition-all",
+    footerActionLink: "text-emerald-600 hover:text-emerald-700 font-medium",
   },
 };
 
@@ -72,7 +72,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
         >
-          <NextTopLoader color="#4f46e5" showSpinner={false} />
+          <NextTopLoader color="#059669" showSpinner={false} />
           <QueryProvider>
             <TooltipProvider>
               <ToastProvider>{children}</ToastProvider>

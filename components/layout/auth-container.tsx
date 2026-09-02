@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { ArrowLeft, Compass, Sparkles } from "lucide-react";
+import { ArrowLeft, Compass } from "lucide-react";
 
 export function AuthContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex min-h-screen flex-col justify-center hero-mesh bg-slate-50/80 px-4 py-12 sm:px-6 lg:px-8">
+    <div className="relative flex min-h-screen flex-col justify-center hero-mesh bg-slate-50/80 px-4 py-8 sm:py-12 sm:px-6 lg:px-8">
       {/* Back to Home Link */}
-      <div className="absolute top-6 left-6">
+      <div className="sm:absolute sm:top-6 sm:left-6 mb-6 sm:mb-0 text-left">
         <Link
           href="/"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
@@ -18,7 +18,7 @@ export function AuthContainer({ children }: { children: React.ReactNode }) {
       {/* Brand Header */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
         <Link href="/" className="inline-flex items-center gap-2.5">
-          <div className="flex size-10 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-xs shadow-indigo-500/20">
+          <div className="flex size-10 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-xs shadow-emerald-600/20">
             <Compass className="size-5" />
           </div>
           <span className="text-xl font-extrabold tracking-tight text-slate-900">
@@ -27,7 +27,7 @@ export function AuthContainer({ children }: { children: React.ReactNode }) {
         </Link>
       </div>
 
-      <div className="flex justify-center">{children}</div>
+      <div className="flex justify-center w-full">{children}</div>
     </div>
   );
 }

@@ -12,21 +12,21 @@ import { FeatureCard } from "@/components/landing/feature-card";
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+    <section id="features" className="mx-auto max-w-7xl px-4 py-12 sm:py-20 lg:py-24 sm:px-6 lg:px-8">
       <div className="text-center max-w-2xl mx-auto">
-        <div className="flex items-center justify-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-indigo-600">
+        <div className="flex items-center justify-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-600">
           <Sparkles className="size-3.5" />
           <span>Core Capabilities</span>
         </div>
-        <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+        <h2 className="mt-3 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900">
           Everything You Need to Win Interviews
         </h2>
-        <p className="mt-3 text-sm text-slate-500 sm:text-base leading-relaxed">
+        <p className="mt-3 text-xs sm:text-sm text-slate-500 leading-relaxed">
           Modern recruiting systems reject over 70% of resumes before a human recruiter ever sees them. ResumePilot ensures you pass every screen.
         </p>
       </div>
 
-      <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10 sm:mt-12 grid grid-cols-1 gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <FeatureCard
           icon={<FileText className="size-5" />}
           title="DeepSeek ATS Audit"

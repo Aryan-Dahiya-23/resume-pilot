@@ -9,7 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-indigo-600 text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-500 hover:shadow-md hover:shadow-indigo-500/30 focus-visible:ring-2 focus-visible:ring-indigo-500/50",
+          "bg-emerald-600 text-white shadow-xs shadow-emerald-600/25 hover:bg-emerald-700 hover:shadow-md hover:shadow-emerald-600/30 focus-visible:ring-2 focus-visible:ring-emerald-500/50",
         secondary:
           "bg-white text-slate-800 border border-slate-200/90 shadow-xs hover:bg-slate-50 hover:border-slate-300 focus-visible:ring-2 focus-visible:ring-slate-300",
         outline:
@@ -19,7 +19,7 @@ const buttonVariants = cva(
         danger:
           "bg-rose-600 text-white shadow-sm hover:bg-rose-500 focus-visible:ring-2 focus-visible:ring-rose-400",
         subtle:
-          "bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100/80 focus-visible:ring-2 focus-visible:ring-indigo-300",
+          "bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100/80 focus-visible:ring-2 focus-visible:ring-emerald-300",
       },
       size: {
         default: "h-10 px-4 py-2",

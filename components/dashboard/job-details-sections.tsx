@@ -30,13 +30,13 @@ export function JobDetailsHeader({
   onEditJob?: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-indigo-600">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600">
           <Building2 className="size-3.5" />
           <span>{job.company}</span>
         </div>
-        <h1 className="mt-1 truncate text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+        <h1 className="mt-1 truncate text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
           {job.role}
         </h1>
         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400">
@@ -74,7 +74,7 @@ export function JobDetailsHeader({
           </Button>
         ) : null}
 
-        <Button size="sm" onClick={onEditJob} className="shadow-xs shadow-indigo-500/20">
+        <Button size="sm" onClick={onEditJob} className="shadow-xs shadow-emerald-600/20">
           <Pencil className="size-3.5" />
           Edit Details
         </Button>
@@ -118,7 +118,7 @@ export function JobDetailsMain({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
             {stages.map((st, idx) => {
               const isPast = currentStageIndex > idx;
               const isCurrent = currentStageIndex === idx;
@@ -128,9 +128,9 @@ export function JobDetailsMain({
                   key={st}
                   className={`rounded-2xl border p-3.5 text-center transition-all ${
                     isCurrent
-                      ? "border-indigo-600 bg-indigo-50/70 shadow-2xs font-bold text-indigo-900"
+                      ? "border-emerald-600 bg-emerald-50/70 shadow-2xs font-bold text-emerald-950"
                       : isPast
-                        ? "border-emerald-200 bg-emerald-50/50 text-emerald-800"
+                        ? "border-teal-200 bg-teal-50/50 text-teal-800"
                         : "border-slate-200 bg-slate-50/40 text-slate-400"
                   }`}
                 >
@@ -147,8 +147,8 @@ export function JobDetailsMain({
 
       {/* Interview Rounds Timeline */}
       <Card className="rounded-3xl border-slate-200/90 shadow-xs">
-        <div className="p-6">
-          <div className="flex items-center justify-between gap-3">
+        <div className="p-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h3 className="text-base font-bold text-slate-900">
                 Interview Rounds & Schedule
@@ -157,7 +157,7 @@ export function JobDetailsMain({
                 Log every conversation, technical screen, and leadership interview.
               </p>
             </div>
-            <Button variant="secondary" size="sm" onClick={onEditRounds}>
+            <Button variant="secondary" size="sm" onClick={onEditRounds} className="self-start sm:self-auto">
               <Pencil className="size-3.5" />
               Configure Rounds
             </Button>
@@ -171,7 +171,7 @@ export function JobDetailsMain({
                   className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-2xs"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="flex size-6 items-center justify-center rounded-lg bg-indigo-50 font-mono text-xs font-bold text-indigo-700">
+                    <span className="flex size-6 items-center justify-center rounded-lg bg-emerald-50 font-mono text-xs font-bold text-emerald-800">
                       {index + 1}
                     </span>
                     <span className="text-sm font-semibold text-slate-900">
@@ -217,9 +217,9 @@ export function JobDetailsMain({
             className="min-h-[140px]"
           />
 
-          <div className="mt-3 flex items-center justify-between">
+          <div className="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-2">
-              <Button size="sm" onClick={onSaveNotes} disabled={isSavingNotes}>
+              <Button size="sm" onClick={onSaveNotes} disabled={isSavingNotes} className="shadow-xs shadow-emerald-600/20">
                 <Save className="size-3.5" />
                 {isSavingNotes ? "Saving..." : "Save Notes"}
               </Button>
@@ -276,7 +276,7 @@ export function JobDetailsSidebar({
           <select
             value={status ?? "Saved"}
             onChange={(e) => onStatusChange?.(e.target.value as Job["status"])}
-            className="h-10 w-full rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20"
+            className="h-10 w-full rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500/20"
           >
             <option>Saved</option>
             <option>Applied</option>
@@ -287,7 +287,7 @@ export function JobDetailsSidebar({
 
           <Button
             size="sm"
-            className="w-full"
+            className="w-full shadow-xs shadow-emerald-600/20"
             onClick={onSaveStatus}
             disabled={isSavingStatus}
           >
@@ -301,7 +301,7 @@ export function JobDetailsSidebar({
       <Card className="rounded-3xl border-slate-200/90 shadow-xs">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
-            <Calendar className="size-4 text-indigo-600" />
+            <Calendar className="size-4 text-emerald-600" />
             <CardTitle className="text-base">Next Action Date</CardTitle>
           </div>
           <CardDescription>
@@ -311,7 +311,7 @@ export function JobDetailsSidebar({
         <CardContent className="space-y-3">
           <div className="rounded-xl border border-slate-200/70 bg-slate-50/60 p-3 text-xs font-medium text-slate-700">
             {details.followUp ? (
-              <span className="flex items-center gap-1.5 text-indigo-700 font-semibold">
+              <span className="flex items-center gap-1.5 text-emerald-700 font-semibold">
                 <Clock className="size-3.5" />
                 {details.followUp}
               </span>
@@ -338,7 +338,7 @@ export function JobDetailsSidebar({
         <div className="p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <User className="size-4 text-indigo-600" />
+              <User className="size-4 text-emerald-600" />
               <h4 className="text-sm font-bold text-slate-900">Key Contact</h4>
             </div>
             <Button variant="ghost" size="xs" onClick={onEditContact}>
@@ -360,7 +360,7 @@ export function JobDetailsSidebar({
                 {details.contact?.email ? (
                   <a
                     href={`mailto:${details.contact.email}`}
-                    className="text-indigo-600 hover:underline flex items-center gap-1 mt-0.5"
+                    className="text-emerald-600 hover:underline flex items-center gap-1 mt-0.5"
                   >
                     <Mail className="size-3" />
                     {details.contact.email}

@@ -33,15 +33,15 @@ import { queryKeys } from "@/lib/react-query/query-keys";
 
 export function SettingsHeader() {
   return (
-    <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <div className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+        <div className="text-xs font-semibold uppercase tracking-wider text-emerald-600">
           Preferences & Governance
         </div>
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           Account & Data Settings
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-xs sm:text-sm text-slate-500">
           Manage your personal profile, export your career data, or configure workspace retention.
         </p>
       </div>
@@ -88,7 +88,7 @@ export function ProfileSettingsCard() {
     <Card className="rounded-3xl border-slate-200/90 shadow-xs">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <User className="size-4 text-indigo-600" />
+          <User className="size-4 text-emerald-600" />
           <CardTitle className="text-base">Profile Information</CardTitle>
         </div>
         <CardDescription>
@@ -125,7 +125,7 @@ export function ProfileSettingsCard() {
         </div>
 
         <div className="pt-2">
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={handleSave} disabled={isSaving} className="shadow-xs shadow-emerald-600/20 w-full sm:w-auto">
             {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
             {isSaving ? "Saving..." : "Save Changes"}
           </Button>
@@ -189,7 +189,7 @@ export function DataSettingsCard() {
     <Card className="rounded-3xl border-slate-200/90 shadow-xs">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Database className="size-4 text-indigo-600" />
+          <Database className="size-4 text-emerald-600" />
           <CardTitle className="text-base">Data Export & Portability</CardTitle>
         </div>
         <CardDescription>
@@ -199,7 +199,7 @@ export function DataSettingsCard() {
       <CardContent className="space-y-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-white shadow-2xs text-indigo-600">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-white shadow-2xs text-emerald-600 shrink-0">
               <FileSpreadsheet className="size-4.5" />
             </div>
             <div>
@@ -216,6 +216,7 @@ export function DataSettingsCard() {
             size="sm"
             onClick={handleExportJobs}
             disabled={isExportingJobs}
+            className="w-full sm:w-auto"
           >
             <Download className="size-3.5" />
             {isExportingJobs ? "Exporting..." : "Export CSV"}
@@ -224,7 +225,7 @@ export function DataSettingsCard() {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-white shadow-2xs text-indigo-600">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-white shadow-2xs text-teal-600 shrink-0">
               <Database className="size-4.5" />
             </div>
             <div>
@@ -241,6 +242,7 @@ export function DataSettingsCard() {
             size="sm"
             onClick={handleExportFeedback}
             disabled={isExportingFeedback}
+            className="w-full sm:w-auto"
           >
             <Download className="size-3.5" />
             {isExportingFeedback ? "Exporting..." : "Export JSON"}
@@ -287,7 +289,7 @@ export function DangerZoneSettingsCard() {
             Deleting your account data permanently removes all uploaded resumes, extracted text, AI audit history, and application pipeline jobs.
           </p>
           <div className="mt-4">
-            <Button variant="danger" size="sm" onClick={() => setIsDeleteModalOpen(true)}>
+            <Button variant="danger" size="sm" onClick={() => setIsDeleteModalOpen(true)} className="w-full sm:w-auto">
               <Trash2 className="size-3.5" />
               Purge Account Data
             </Button>
@@ -296,7 +298,7 @@ export function DangerZoneSettingsCard() {
       </Card>
 
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[95vw] sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-rose-900">Purge Account Data?</DialogTitle>
             <DialogDescription>
@@ -311,7 +313,7 @@ export function DangerZoneSettingsCard() {
               placeholder="Type DELETE to confirm"
             />
           </div>
-          <DialogFooter className="mt-4">
+          <DialogFooter className="mt-4 flex flex-col sm:flex-row gap-2">
             <Button
               variant="secondary"
               onClick={() => {
@@ -319,6 +321,7 @@ export function DangerZoneSettingsCard() {
                 setConfirmationText("");
               }}
               disabled={isDeleting}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
@@ -326,6 +329,7 @@ export function DangerZoneSettingsCard() {
               variant="danger"
               onClick={handleDeleteAccountData}
               disabled={isDeleting || confirmationText !== "DELETE"}
+              className="w-full sm:w-auto"
             >
               {isDeleting ? "Purging..." : "Confirm Purge"}
             </Button>

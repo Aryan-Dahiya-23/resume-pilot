@@ -4,9 +4,9 @@ import { Compass } from "lucide-react";
 export function LandingFooter() {
   return (
     <footer className="border-t border-slate-200/80 bg-white">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-xs shadow-indigo-500/20">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-xs shadow-emerald-600/20">
             <Compass className="size-5" />
           </div>
           <div>
@@ -19,7 +19,7 @@ export function LandingFooter() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-6 text-xs font-semibold text-slate-500">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs font-semibold text-slate-500">
           <Link className="hover:text-slate-900 transition-colors" href="/privacy">
             Privacy Policy
           </Link>
@@ -29,7 +29,7 @@ export function LandingFooter() {
           <Link className="hover:text-slate-900 transition-colors" href="/contact">
             Contact Support
           </Link>
-          <span className="text-slate-400">
+          <span className="text-slate-400 w-full sm:w-auto">
             © {new Date().getFullYear()} ResumePilot Inc. All rights reserved.
           </span>
         </div>
