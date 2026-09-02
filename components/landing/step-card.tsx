@@ -8,16 +8,16 @@ export function StepCard({
   description: string;
 }) {
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start gap-4">
-        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-zinc-900 text-white">
-          <span className="text-sm font-semibold">{number}</span>
-        </div>
-        <div>
-          <div className="text-sm font-semibold text-zinc-900">{title}</div>
-          <div className="mt-1 text-sm text-zinc-600">{description}</div>
-        </div>
+    <div className="relative rounded-3xl border border-slate-200/90 bg-white p-7 shadow-xs">
+      <div className="flex size-10 items-center justify-center rounded-xl bg-indigo-600 font-mono text-sm font-bold text-white shadow-xs shadow-indigo-500/20">
+        0{number}
       </div>
+      <h3 className="mt-5 text-lg font-bold tracking-tight text-slate-900">
+        {title}
+      </h3>
+      <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+        {description}
+      </p>
     </div>
   );
 }

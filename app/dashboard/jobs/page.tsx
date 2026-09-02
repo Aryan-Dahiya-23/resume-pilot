@@ -6,6 +6,9 @@ import { Briefcase, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AddJobModal, JobsHeader, JobsTableSection } from "@/components/dashboard/jobs-sections";
 import { DashboardPageError, DashboardPageLoading } from "@/components/dashboard/page-state";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { useCreateJob, useDeleteJob, useJobs } from "@/hooks/queries";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { getJob, updateJob } from "@/lib/api/jobs";
@@ -24,11 +27,11 @@ function toRelativeDayLabel(dateInput: string) {
 
   if (dayDiff <= 0) return "Today";
   if (dayDiff === 1) return "Yesterday";
-  if (dayDiff < 7) return `${dayDiff} days ago`;
+  if (dayDiff < 7) return `${dayDiff}d ago`;
 
   const weekDiff = Math.floor(dayDiff / 7);
-  if (weekDiff === 1) return "1 week ago";
-  return `${weekDiff} weeks ago`;
+  if (weekDiff === 1) return "1w ago";
+  return `${weekDiff}w ago`;
 }
 
 type JobDateFilter = "All" | "today" | "7d" | "30d";
@@ -46,6 +49,7 @@ export default function JobsPage() {
   const [updatingJobId, setUpdatingJobId] = useState<string | null>(null);
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
   const debouncedQuery = useDebouncedValue(query, 400);
+
   const jobsQuery = useJobs({
     q: debouncedQuery.trim() || undefined,
     status: statusFilter === "All" ? undefined : statusFilter,
@@ -53,6 +57,7 @@ export default function JobsPage() {
     page,
     limit: JOBS_PAGE_SIZE,
   });
+
   const createJob = useCreateJob();
   const deleteJob = useDeleteJob();
   const isInitialLoading = jobsQuery.isLoading && !jobsQuery.data;
@@ -68,14 +73,14 @@ export default function JobsPage() {
     if (jobsQuery.isFetching) return [];
     const jobs = jobsQuery.data?.jobs ?? [];
     return jobs.map((job) => ({
-        id: job.id,
-        company: job.company,
-        role: job.role,
-        status: job.status,
-        when: toRelativeDayLabel(job.createdAt),
-        link: job.link ?? undefined,
-        location: job.location ?? undefined,
-      }));
+      id: job.id,
+      company: job.company,
+      role: job.role,
+      status: job.status,
+      when: toRelativeDayLabel(job.createdAt),
+      link: job.link ?? undefined,
+      location: job.location ?? undefined,
+    }));
   }, [jobsQuery.data, jobsQuery.isFetching]);
 
   const editingJob = useMemo(
@@ -106,36 +111,11 @@ export default function JobsPage() {
     location: string;
     link: string;
   }) {
-    try {
-      await createJob.mutateAsync({
-        company: input.company,
-        role: input.role,
-        status: input.status,
-        contactName: input.contactName || undefined,
-        contactEmail: input.contactEmail || undefined,
-        interviewRounds: input.interviewRounds,
-        location: input.location || undefined,
-        link: input.link || undefined,
-      });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.jobs.list(),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.overview(),
-      });
-      setIsAddJobOpen(false);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(
-          (error.response?.data as { error?: string } | undefined)?.error ??
-            "Could not create job.",
-        );
-      }
-      throw error;
-    }
+    await createJob.mutateAsync(input);
+    setIsAddJobOpen(false);
   }
 
-  async function handleEditJob(input: {
+  async function handleUpdateJob(input: {
     company: string;
     role: string;
     status: JobStatus;
@@ -147,37 +127,22 @@ export default function JobsPage() {
   }) {
     if (!editingJobId) return;
     setUpdatingJobId(editingJobId);
+
     try {
       await updateJob(editingJobId, {
         company: input.company,
         role: input.role,
         status: input.status,
-        contactName: input.contactName || null,
-        contactEmail: input.contactEmail || null,
+        contactName: input.contactName,
+        contactEmail: input.contactEmail,
         interviewRounds: input.interviewRounds,
-        location: input.location || null,
-        link: input.link || null,
+        location: input.location,
+        link: input.link,
       });
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.jobs.list(),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.jobs.detail(editingJobId),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.dashboard.overview(),
-        }),
-      ]);
+
+      await queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      await queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
       setEditingJobId(null);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(
-          (error.response?.data as { error?: string } | undefined)?.error ??
-            "Could not update job.",
-        );
-      }
-      throw error;
     } finally {
       setUpdatingJobId(null);
     }
@@ -187,22 +152,7 @@ export default function JobsPage() {
     setDeletingJobId(jobId);
     try {
       await deleteJob.mutateAsync(jobId);
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.jobs.list(),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.overview(),
-      });
       setJobToDeleteId(null);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        alert(
-          (error.response?.data as { error?: string } | undefined)?.error ??
-            "Could not delete job.",
-        );
-      } else {
-        alert("Could not delete job.");
-      }
     } finally {
       setDeletingJobId(null);
     }
@@ -210,32 +160,27 @@ export default function JobsPage() {
 
   return (
     <>
-      {isInitialLoading ? <DashboardPageLoading label="Loading jobs..." /> : null}
-      {hasInitialError ? (
+      {isInitialLoading ? (
+        <DashboardPageLoading label="Loading application pipeline..." />
+      ) : hasInitialError ? (
         <DashboardPageError
-          title="Could not load jobs"
-          message="We could not fetch your jobs right now."
-          onRetry={() => {
-            void jobsQuery.refetch();
-          }}
+          title="Could not load job tracker"
+          message="Failed to fetch your saved jobs and applications. Please try again."
+          onRetry={() => jobsQuery.refetch()}
         />
-      ) : null}
-
-      {isInitialLoading || hasInitialError ? null : (
+      ) : (
         <>
           <JobsHeader onAddJobClick={() => setIsAddJobOpen(true)} />
+
           <AddJobModal
-            open={isAddJobOpen}
-            onClose={() => setIsAddJobOpen(false)}
-            onSubmit={handleCreateJob}
-            isSubmitting={createJob.isPending}
-          />
-          <AddJobModal
-            open={Boolean(editingJob)}
-            onClose={() => setEditingJobId(null)}
-            onSubmit={handleEditJob}
-            isSubmitting={updatingJobId === editingJobId && Boolean(editingJobId)}
-            mode="edit"
+            open={isAddJobOpen || Boolean(editingJobId)}
+            onClose={() => {
+              setIsAddJobOpen(false);
+              setEditingJobId(null);
+            }}
+            mode={editingJobId ? "edit" : "create"}
+            onSubmit={editingJobId ? handleUpdateJob : handleCreateJob}
+            isSubmitting={createJob.isPending || updatingJobId !== null}
             initialValues={
               editingJob
                 ? {
@@ -251,6 +196,7 @@ export default function JobsPage() {
                 : undefined
             }
           />
+
           <JobsTableSection
             query={query}
             onQueryChange={setQuery}
@@ -269,58 +215,44 @@ export default function JobsPage() {
             onPageChange={handlePageChange}
             isLoadingRows={jobsQuery.isFetching}
           />
+
           {!jobsQuery.isLoading && !hasAnyJobs ? (
-            <section className="rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-zinc-100 text-zinc-700">
-                <Briefcase className="h-5 w-5" />
-              </div>
-              <div className="mt-4 text-base font-semibold text-zinc-900">
-                No jobs found
-              </div>
-              <div className="mt-1 text-sm text-zinc-600">
-                Start tracking applications to build your pipeline and analytics.
-              </div>
-              <div className="mt-5">
-                <button
-                  className="inline-flex items-center gap-2 rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-                  onClick={() => setIsAddJobOpen(true)}
-                >
-                  <Plus className="h-4 w-4" />
-                  Add job
-                </button>
-              </div>
-            </section>
+            <Card className="rounded-3xl border-slate-200/90 shadow-xs">
+              <CardContent className="py-12 text-center">
+                <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                  <Briefcase className="size-6" />
+                </div>
+                <h3 className="mt-4 text-lg font-bold text-slate-900">
+                  No Job Applications Yet
+                </h3>
+                <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">
+                  Track your job search like a high-performance sales pipeline. Log applications and monitor interview invitations.
+                </p>
+                <div className="mt-6 flex justify-center">
+                  <Button onClick={() => setIsAddJobOpen(true)}>
+                    <Plus className="size-4" />
+                    Track First Opportunity
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           ) : null}
         </>
       )}
-      {jobToDeleteId ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">
-              Delete Job?
-            </div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove this job from your tracker.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setJobToDeleteId(null)}
-                disabled={deletingJobId === jobToDeleteId}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={() => handleDeleteJob(jobToDeleteId)}
-                disabled={deletingJobId === jobToDeleteId}
-              >
-                {deletingJobId === jobToDeleteId ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+
+      <ConfirmModal
+        open={Boolean(jobToDeleteId)}
+        onOpenChange={(open) => {
+          if (!open) setJobToDeleteId(null);
+        }}
+        title="Delete Job Opportunity?"
+        description="This will remove this job and its interview stage history from your pipeline."
+        confirmText="Delete Opportunity"
+        isLoading={deletingJobId !== null}
+        onConfirm={() => {
+          if (jobToDeleteId) void handleDeleteJob(jobToDeleteId);
+        }}
+      />
     </>
   );
 }

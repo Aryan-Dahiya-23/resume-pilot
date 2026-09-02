@@ -1,100 +1,142 @@
 import Link from "next/link";
-import { ArrowRight, BarChart3, CheckCircle2, FileText, Shield, Wand2 } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
+  FileCheck2,
+  Layers,
+  Shield,
+  Sparkles,
+  TrendingUp,
+  Upload,
+  Wand2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Pill } from "@/components/landing/pill";
+import { ProgressRing } from "@/components/ui/progress-ring";
 
 export function HeroSection({ isSignedIn = false }: { isSignedIn?: boolean }) {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Pill>ATS-style scoring</Pill>
-            <Pill>Bullet rewrites</Pill>
-            <Pill>Job pipeline</Pill>
-            <Pill>Resume versions</Pill>
-          </div>
+    <section className="relative overflow-hidden hero-mesh py-16 sm:py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+          {/* Left Column: Copy & CTAs */}
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Pill>AI Resume Audit v2.0</Pill>
+              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-2xs">
+                <Sparkles className="size-3 text-indigo-600" />
+                DeepSeek Powered
+              </span>
+            </div>
 
-          <h1 className="mt-5 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-            Improve your resume.
-            <br />
-            Track your job hunt.
-            <br />
-            Stay consistent.
-          </h1>
+            <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl leading-[1.1]">
+              Precision Resume Intelligence.{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600">
+                Accelerated Career Velocity.
+              </span>
+            </h1>
 
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-zinc-600">
-            A simple dashboard that reviews your resume with AI and helps you track job applications like a pipeline
-            no spreadsheets, no chaos.
-          </p>
+            <p className="mt-5 max-w-xl text-base text-slate-600 leading-relaxed sm:text-lg">
+              Audit your resume against modern corporate applicant tracking systems, optimize bullet points with quantifiable metrics, and manage every opportunity in a unified pipeline.
+            </p>
 
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-            <Link href={isSignedIn ? "/dashboard" : "/sign-in"}>
-              <Button className="px-5 py-2.5">
-                {isSignedIn ? "Go to dashboard" : "Get started"}
-                <ArrowRight className="h-4 w-4" />
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Button size="lg" asChild className="shadow-md shadow-indigo-500/25">
+                <Link href={isSignedIn ? "/dashboard" : "/sign-up"}>
+                  {isSignedIn ? "Go to Dashboard" : "Audit Your Resume Free"}
+                  <ArrowRight className="size-4" />
+                </Link>
               </Button>
-            </Link>
-            <Link href={isSignedIn ? "/dashboard/resumes" : "/dashboard"}>
-              <Button variant="secondary" className="px-5 py-2.5">
-                {isSignedIn ? "Upload resume" : "View demo"}
+              <Button variant="secondary" size="lg" asChild>
+                <Link href={isSignedIn ? "/dashboard/resumes" : "/sign-in"}>
+                  {isSignedIn ? "Upload Document" : "Sign In to Workspace"}
+                </Link>
               </Button>
-            </Link>
-          </div>
+            </div>
 
-          <div className="mt-6 flex flex-col gap-2 text-sm text-zinc-600 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4" />
-              Upload PDF and get feedback in seconds
-            </div>
-            <span className="hidden sm:inline">•</span>
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Your resume stays private
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="text-sm text-zinc-500">Latest resume</div>
-              <div className="mt-1 text-lg font-semibold text-zinc-900">v3 — 78 ATS</div>
-              <div className="mt-1 text-sm text-zinc-600">+7 from last version</div>
-            </div>
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
-              <div className="text-xs text-zinc-500">Jobs tracked</div>
-              <div className="mt-1 text-2xl font-semibold text-zinc-900">18</div>
+            <div className="mt-8 flex flex-col gap-3 text-xs font-medium text-slate-500 sm:flex-row sm:items-center sm:gap-6">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="size-4 text-emerald-600" />
+                <span>Instant 30-Second DeepSeek Analysis</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Shield className="size-4 text-indigo-600" />
+                <span>Strict Privacy: No Data Training</span>
+              </div>
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-1 gap-3">
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-                <Wand2 className="h-4 w-4" />
-                Top improvement
-              </div>
-              <div className="mt-2 text-sm text-zinc-700">Rewrite experience bullets with measurable impact.</div>
-            </div>
+          {/* Right Column: Interactive Hero Mockup Card */}
+          <div className="relative">
+            {/* Ambient Background Glow */}
+            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-indigo-500 to-purple-600 opacity-20 blur-xl" />
 
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-                <BarChart3 className="h-4 w-4" />
-                Pipeline
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Applied: 9</span>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Interview: 3</span>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm">Offer: 1</span>
-              </div>
-            </div>
+            <div className="relative rounded-3xl border border-slate-200/90 bg-white/95 p-6 shadow-xl backdrop-blur-md sm:p-7">
+              {/* Header */}
+              <div className="flex items-start justify-between border-b border-slate-100 pb-5">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                      <FileCheck2 className="size-4" />
+                    </span>
+                    <span className="text-sm font-bold text-slate-900">
+                      Senior_Frontend_Resume.pdf
+                    </span>
+                  </div>
+                  <div className="mt-1 text-xs text-slate-400">
+                    Version 3 • Target: Senior Frontend Engineer
+                  </div>
+                </div>
 
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-                <FileText className="h-4 w-4" />
-                Resume versions
+                <Badge variant="success" withDot>
+                  +12 pts vs v2
+                </Badge>
               </div>
-              <div className="mt-2 text-sm text-zinc-700">Track your improvement from v1 → v2 → v3.</div>
+
+              {/* Scorecard Hero Strip */}
+              <div className="mt-5 flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    ATS Readiness Rating
+                  </div>
+                  <div className="mt-1 text-3xl font-extrabold text-slate-900">
+                    84 <span className="text-base font-normal text-slate-400">/ 100</span>
+                  </div>
+                  <div className="text-xs text-emerald-600 font-medium mt-0.5">
+                    Top 8% of candidate resumes
+                  </div>
+                </div>
+                <ProgressRing value={84} size={90} strokeWidth={9} />
+              </div>
+
+              {/* Bullet Rewrite Preview */}
+              <div className="mt-5 space-y-3">
+                <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                  <Wand2 className="size-3.5 text-indigo-600" />
+                  <span>DeepSeek Neural Optimization</span>
+                </div>
+
+                <div className="rounded-xl border border-rose-100 bg-rose-50/40 p-2.5 text-xs text-slate-600 font-mono">
+                  <span className="font-bold text-rose-700 block text-[10px]">ORIGINAL</span>
+                  &quot;Responsible for frontend updates and making pages faster.&quot;
+                </div>
+
+                <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-2.5 text-xs text-slate-800 font-mono">
+                  <span className="font-bold text-emerald-700 block text-[10px]">AI OPTIMIZED</span>
+                  &quot;Architected modular React micro-frontends, reducing LCP by 42% across 1.2M monthly users.&quot;
+                </div>
+              </div>
+
+              {/* Mini Pipeline Indicator */}
+              <div className="mt-5 border-t border-slate-100 pt-4 flex items-center justify-between text-xs text-slate-500">
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="size-4 text-indigo-600" />
+                  <span>Pipeline: 14 Applications • 4 Interviews</span>
+                </div>
+                <span className="font-semibold text-indigo-600">28% Rate</span>
+              </div>
             </div>
           </div>
         </div>

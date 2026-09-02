@@ -15,6 +15,7 @@ import {
 } from "@/components/dashboard/resume-details-sections";
 import { useResumeDetails } from "@/hooks/queries";
 import { useToast } from "@/components/providers/toast-provider";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import type { ResumeReviewFeedback, ResumeReviewVersion } from "@/lib/api/resumes";
 import type { Resume, ResumeFeedback } from "@/lib/mock-data";
 import { queryKeys } from "@/lib/react-query/query-keys";
@@ -323,32 +324,15 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
         />
       </div>
 
-      {isDeleteModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Delete Resume?</div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove the resume, parse data, and review.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsDeleteModalOpen(false)}
-                disabled={isDeleting}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={handleConfirmDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmModal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        title="Delete Resume Version?"
+        description="This will permanently remove this resume version, its parsed content, and all associated AI feedback."
+        confirmText="Delete Document"
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
+      />
     </>
   );
 }

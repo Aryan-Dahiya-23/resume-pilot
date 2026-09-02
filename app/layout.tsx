@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 import "./globals.css";
 
@@ -18,12 +19,32 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ResumePilot",
-  description: "AI Resume Reviewer + Job Tracker",
+  title: "ResumePilot • AI Resume Reviewer & Job Tracker",
+  description:
+    "Accelerate your career velocity with intelligent AI resume audits, ATS compatibility scoring, and unified application pipeline tracking.",
   icons: {
     icon: "/icon",
     shortcut: "/icon",
     apple: "/icon",
+  },
+};
+
+const clerkAppearance = {
+  variables: {
+    colorPrimary: "#4f46e5",
+    colorBackground: "#ffffff",
+    colorText: "#0f172a",
+    colorTextSecondary: "#64748b",
+    colorInputBackground: "#ffffff",
+    colorInputText: "#0f172a",
+    borderRadius: "0.75rem",
+    fontFamily: "var(--font-geist-sans), sans-serif",
+  },
+  elements: {
+    card: "border border-slate-200/80 shadow-xl rounded-2xl",
+    formButtonPrimary:
+      "bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium shadow-sm transition-all",
+    footerActionLink: "text-indigo-600 hover:text-indigo-500 font-medium",
   },
 };
 
@@ -45,14 +66,17 @@ export default function RootLayout({
       signUpUrl={signUpUrl}
       signInFallbackRedirectUrl={signInFallbackRedirectUrl}
       signUpFallbackRedirectUrl={signUpFallbackRedirectUrl}
+      appearance={clerkAppearance}
     >
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
         >
-          <NextTopLoader showSpinner={false} />
+          <NextTopLoader color="#4f46e5" showSpinner={false} />
           <QueryProvider>
-            <ToastProvider>{children}</ToastProvider>
+            <TooltipProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </TooltipProvider>
           </QueryProvider>
         </body>
       </html>

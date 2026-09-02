@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
-import { FileText, Upload } from "lucide-react";
+import { FileText, Plus, Upload } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
   DashboardPageError,
@@ -14,6 +14,9 @@ import {
   ResumesHeaderWithAction,
   ResumesTableSection,
 } from "@/components/dashboard/resumes-sections";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { useResumes, useUploadResume } from "@/hooks/queries";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { getResumeDetails } from "@/lib/api/resumes";
@@ -35,11 +38,13 @@ export default function ResumesPage() {
   const [resumeToDelete, setResumeToDelete] = useState<string | null>(null);
   const [isDeletingResume, setIsDeletingResume] = useState(false);
   const debouncedQuery = useDebouncedValue(query, 400);
+
   const resumesQuery = useResumes({
     q: debouncedQuery.trim() || undefined,
     status: statusFilter === "All" ? undefined : statusFilter,
     dateRange: dateFilter === "All" ? undefined : dateFilter,
   });
+
   const uploadResume = useUploadResume();
   const isInitialLoading = resumesQuery.isLoading && !resumesQuery.data;
   const hasInitialError = resumesQuery.isError && !resumesQuery.data;
@@ -75,34 +80,24 @@ export default function ResumesPage() {
   }
 
   async function handleStartUpload() {
-    if (!selectedFile) {
-      setUploadError("Please select a PDF or DOCX file.");
-      return;
-    }
+    if (!selectedFile) return;
     setUploadError(null);
 
     try {
       await uploadResume.mutateAsync({
         file: selectedFile,
-        roleTarget,
+        roleTarget: roleTarget.trim(),
       });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.resumes.list(),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.overview(),
-      });
-      setUploadModalOpen(false);
-      setSelectedFile(null);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const message =
-          (error.response?.data as { error?: string } | undefined)?.error ??
-          "Upload failed. Please try again.";
-        setUploadError(message);
+      void queryClient.invalidateQueries({ queryKey: ["resumes"] });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setUploadError(
+          err.response?.data?.message || err.response?.data?.error || "Failed to upload resume.",
+        );
         return;
       }
-      setUploadError("Upload failed. Please try again.");
+      setUploadError("An unexpected error occurred during upload.");
     }
   }
 
@@ -110,16 +105,12 @@ export default function ResumesPage() {
     if (!resumeToDelete) return;
     setIsDeletingResume(true);
     try {
-      await axios.delete(`/api/resumes/${resumeToDelete}`, {
-        withCredentials: true,
-      });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.resumes.list(),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.overview(),
-      });
+      await axios.delete(`/api/resumes/${resumeToDelete}`);
+      void queryClient.invalidateQueries({ queryKey: ["resumes"] });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
       setResumeToDelete(null);
+    } catch {
+      // Keep state for error or retry
     } finally {
       setIsDeletingResume(false);
     }
@@ -127,20 +118,18 @@ export default function ResumesPage() {
 
   return (
     <>
-      {isInitialLoading ? <DashboardPageLoading label="Loading resumes..." /> : null}
-      {hasInitialError ? (
+      {isInitialLoading ? (
+        <DashboardPageLoading label="Loading resume library..." />
+      ) : hasInitialError ? (
         <DashboardPageError
           title="Could not load resumes"
-          message="We could not fetch your resumes right now."
-          onRetry={() => {
-            void resumesQuery.refetch();
-          }}
+          message="There was an issue fetching your resume collection. Please try again."
+          onRetry={() => resumesQuery.refetch()}
         />
-      ) : null}
-
-      {isInitialLoading || hasInitialError ? null : (
+      ) : (
         <>
           <ResumesHeaderWithAction onUploadClick={handleUploadClick} />
+
           <ResumeUploadModal
             open={uploadModalOpen}
             onClose={() => setUploadModalOpen(false)}
@@ -169,61 +158,43 @@ export default function ResumesPage() {
                 onHoverResume={handlePrefetchResume}
               />
             ) : (
-              <section className="rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
-                <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-zinc-100 text-zinc-700">
-                  <FileText className="h-5 w-5" />
-                </div>
-                <div className="mt-4 text-base font-semibold text-zinc-900">
-                  No resumes yet
-                </div>
-                <div className="mt-1 text-sm text-zinc-600">
-                  Upload your first resume to start AI analysis and version tracking.
-                </div>
-                <div className="mt-5">
-                  <button
-                    className="inline-flex items-center gap-2 rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-                    onClick={handleUploadClick}
-                  >
-                    <Upload className="h-4 w-4" />
-                    Upload resume
-                  </button>
-                </div>
-              </section>
+              <Card className="rounded-3xl border-slate-200/90 shadow-xs">
+                <CardContent className="py-12 text-center">
+                  <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                    <FileText className="size-6" />
+                  </div>
+                  <h3 className="mt-4 text-lg font-bold text-slate-900">
+                    No Resumes Uploaded Yet
+                  </h3>
+                  <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">
+                    Upload your first resume in PDF or Word format to receive instant ATS readiness scores and AI feedback.
+                  </p>
+                  <div className="mt-6 flex justify-center">
+                    <Button onClick={handleUploadClick}>
+                      <Upload className="size-4" />
+                      Upload First Resume
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             )}
+
             <ResumeScoreGuideCard />
           </div>
         </>
       )}
 
-      {resumeToDelete ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">
-              Delete Resume?
-            </div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove the resume and its parsed/reviewed data.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setResumeToDelete(null)}
-                disabled={isDeletingResume}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={handleDeleteResume}
-                disabled={isDeletingResume}
-              >
-                {isDeletingResume ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
+      <ConfirmModal
+        open={Boolean(resumeToDelete)}
+        onOpenChange={(open) => {
+          if (!open) setResumeToDelete(null);
+        }}
+        title="Delete Resume Version?"
+        description="This will permanently remove this resume version, its parsed content, and all associated AI feedback."
+        confirmText="Delete Document"
+        isLoading={isDeletingResume}
+        onConfirm={handleDeleteResume}
+      />
     </>
   );
 }

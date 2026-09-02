@@ -1,32 +1,56 @@
+"use client";
+
 import Link from "next/link";
 import {
   ArrowUpRight,
+  Briefcase,
+  Building2,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Globe,
   Loader2,
+  MapPin,
   Pencil,
   Plus,
   Search,
   Trash2,
+  User,
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input, Textarea } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { statusVariant, type Job, type JobStatus } from "@/lib/mock-data";
 
 export function JobsHeader({ onAddJobClick }: { onAddJobClick?: () => void }) {
   return (
-    <div className="flex flex-col gap-3 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <div className="text-sm text-zinc-500">Jobs</div>
-        <h1 className="text-xl font-semibold text-zinc-900">Job application tracker</h1>
+        <div className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+          Opportunity Tracking
+        </div>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          Job Application Pipeline
+        </h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Track stage transitions, schedule follow-ups, and calculate your interview conversion rate.
+        </p>
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <Button onClick={onAddJobClick}>
-          <Plus className="h-4 w-4" />
-          Add job
-        </Button>
-      </div>
+      <Button onClick={onAddJobClick} className="shadow-xs shadow-indigo-500/20">
+        <Plus className="size-4" />
+        Track New Opportunity
+      </Button>
     </div>
   );
 }
@@ -91,12 +115,10 @@ export function AddJobModal({
     setError(null);
   }, [open, initialValues]);
 
-  if (!open) return null;
-
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (!company.trim() || !role.trim()) {
-      setError("Company and role are required.");
+      setError("Company name and target role are required.");
       return;
     }
 
@@ -118,166 +140,179 @@ export function AddJobModal({
       .filter((round) => round.name);
 
     setError(null);
-    try {
-      await onSubmit({
-        company: company.trim(),
-        role: role.trim(),
-        status,
-        contactName: contactName.trim(),
-        contactEmail: contactEmail.trim(),
-        interviewRounds,
-        location: location.trim(),
-        link: link.trim(),
-      });
-      setCompany("");
-      setRole("");
-      setStatus("Saved");
-      setContactName("");
-      setContactEmail("");
-      setRoundsText("");
-      setLocation("");
-      setLink("");
-    } catch (submitError) {
-      if (submitError instanceof Error) {
-        setError(submitError.message);
-      } else {
-        setError("Could not create job.");
-      }
-    }
+    await onSubmit({
+      company: company.trim(),
+      role: role.trim(),
+      status,
+      contactName: contactName.trim(),
+      contactEmail: contactEmail.trim(),
+      interviewRounds,
+      location: location.trim(),
+      link: link.trim(),
+    });
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/55 p-0 backdrop-blur-[2px] sm:items-center sm:p-4">
-      <div className="flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-zinc-200 bg-white shadow-xl sm:max-h-[90dvh] sm:max-w-xl sm:rounded-3xl">
-        <div className="flex items-start justify-between gap-3 border-b border-zinc-200 px-4 py-4 sm:px-5 sm:py-5">
-          <div>
-            <div className="text-base font-semibold text-zinc-900">
-              {mode === "edit" ? "Edit job" : "Add job"}
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {mode === "create" ? "Add Job Opportunity" : "Edit Job Details"}
+          </DialogTitle>
+          <DialogDescription>
+            Keep your recruitment pipeline organized with real-time status updates.
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Company Name *
+              </label>
+              <div className="relative mt-1">
+                <Building2 className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                <Input
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  placeholder="e.g. Stripe"
+                  className="pl-10"
+                  required
+                />
+              </div>
             </div>
-            <div className="mt-1 text-sm text-zinc-500">
-              {mode === "edit"
-                ? "Update this job in your pipeline."
-                : "Track a new application in your pipeline."}
+
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Job Title *
+              </label>
+              <div className="relative mt-1">
+                <Briefcase className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                <Input
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  placeholder="e.g. Senior Frontend Engineer"
+                  className="pl-10"
+                  required
+                />
+              </div>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-xl border border-zinc-200 bg-white p-2 text-zinc-600 hover:bg-zinc-50"
-            aria-label="Close"
-            disabled={isSubmitting}
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-xs font-medium text-zinc-600">Company</label>
-              <input
-                value={company}
-                onChange={(event) => setCompany(event.target.value)}
-                className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-                placeholder="Stripe"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-zinc-600">Role</label>
-              <input
-                value={role}
-                onChange={(event) => setRole(event.target.value)}
-                className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-                placeholder="Frontend Engineer"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-zinc-600">Status</label>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Current Pipeline Stage
+              </label>
               <select
                 value={status}
-                onChange={(event) => setStatus(event.target.value as JobStatus)}
-                className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+                onChange={(e) => setStatus(e.target.value as JobStatus)}
+                className="mt-1 h-10 w-full rounded-xl border border-slate-200/90 bg-white px-3 text-xs font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20"
               >
-                <option>Saved</option>
-                <option>Applied</option>
-                <option>Interview</option>
-                <option>Offer</option>
-                <option>Rejected</option>
+                <option value="Saved">Saved (Considering)</option>
+                <option value="Applied">Applied (Pending)</option>
+                <option value="Interview">Interview (Active)</option>
+                <option value="Offer">Offer (Received)</option>
+                <option value="Rejected">Rejected (Archived)</option>
               </select>
             </div>
+
             <div>
-              <label className="text-xs font-medium text-zinc-600">Location</label>
-              <input
-                value={location}
-                onChange={(event) => setLocation(event.target.value)}
-                className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-                placeholder="Remote"
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Location / Remote
+              </label>
+              <div className="relative mt-1">
+                <MapPin className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                <Input
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Remote / San Francisco, CA"
+                  className="pl-10"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              Job Post / Application URL
+            </label>
+            <div className="relative mt-1">
+              <Globe className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                placeholder="https://jobs.lever.co/..."
+                className="pl-10"
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-xs font-medium text-zinc-600">Contact name</label>
-              <input
-                value={contactName}
-                onChange={(event) => setContactName(event.target.value)}
-                className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-                placeholder="Recruiter name"
-              />
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Recruiter / Contact Name
+              </label>
+              <div className="relative mt-1">
+                <User className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                <Input
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  placeholder="Jane Smith"
+                  className="pl-10"
+                />
+              </div>
             </div>
+
             <div>
-              <label className="text-xs font-medium text-zinc-600">Contact email</label>
-              <input
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Recruiter Contact Email
+              </label>
+              <Input
+                type="email"
                 value={contactEmail}
-                onChange={(event) => setContactEmail(event.target.value)}
-                className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+                onChange={(e) => setContactEmail(e.target.value)}
                 placeholder="recruiter@company.com"
+                className="mt-1"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-medium text-zinc-600">Job link</label>
-            <input
-              value={link}
-              onChange={(event) => setLink(event.target.value)}
-              className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-              placeholder="https://..."
-            />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-zinc-600">
-              Interview rounds (one per line: `Name | Status`)
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              Interview Rounds (Optional • One per line: Name | Status)
             </label>
-            <textarea
+            <Textarea
               value={roundsText}
-              onChange={(event) => setRoundsText(event.target.value)}
-              className="mt-1 min-h-[90px] w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-              placeholder={"Recruiter Screen | Done\nTechnical Round | Upcoming"}
+              onChange={(e) => setRoundsText(e.target.value)}
+              placeholder={"Recruiter Screen | Done\nTechnical Round | Upcoming\nFinal Leadership | Pending"}
+              className="mt-1 font-mono text-xs"
+              rows={3}
             />
           </div>
 
           {error ? (
-            <div className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
               {error}
             </div>
           ) : null}
 
-          <div className="flex flex-col-reverse gap-2 border-t border-zinc-200 pt-4 sm:flex-row sm:items-center sm:justify-end">
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {mode === "edit" ? "Saving..." : "Creating..."}
-                </>
-              ) : (
-                mode === "edit" ? "Save changes" : "Create job"
-              )}
-            </Button>
-            <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+            <Button variant="secondary" type="button" onClick={onClose} disabled={isSubmitting}>
               Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : null}
+              {isSubmitting
+                ? "Saving..."
+                : mode === "create"
+                  ? "Track Opportunity"
+                  : "Save Changes"}
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -289,181 +324,229 @@ export function JobsTableSection({
   dateFilter,
   onDateFilterChange,
   rows,
-  onEditJob,
-  onRequestDeleteJob,
-  updatingJobId,
-  deletingJobId,
-  onHoverJob,
   currentPage,
   totalPages,
   onPageChange,
   isLoadingRows,
+  onHoverJob,
+  onEditJob,
+  onRequestDeleteJob,
+  deletingJobId,
+  updatingJobId,
 }: {
   query: string;
   onQueryChange: (value: string) => void;
-  statusFilter: JobStatus | "All";
-  onStatusFilterChange: (value: JobStatus | "All") => void;
+  statusFilter: "All" | JobStatus;
+  onStatusFilterChange: (value: "All" | JobStatus) => void;
   dateFilter: "All" | "today" | "7d" | "30d";
   onDateFilterChange: (value: "All" | "today" | "7d" | "30d") => void;
-  rows: Job[];
-  onEditJob?: (jobId: string) => void;
-  onRequestDeleteJob?: (jobId: string) => void;
-  updatingJobId?: string | null;
-  deletingJobId?: string | null;
-  onHoverJob?: (jobId: string) => void;
+  rows: Array<Job & { location?: string | null }>;
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
   isLoadingRows?: boolean;
+  onHoverJob?: (jobId: string) => void;
+  onEditJob?: (jobId: string) => void;
+  onRequestDeleteJob?: (jobId: string) => void;
+  deletingJobId?: string | null;
+  updatingJobId?: string | null;
 }) {
+  const statusOptions: Array<"All" | JobStatus> = [
+    "All",
+    "Saved",
+    "Applied",
+    "Interview",
+    "Offer",
+    "Rejected",
+  ];
+
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:w-[360px]">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-          <input
+    <section className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs">
+      {/* Search & Filters */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-6 border-b border-slate-100">
+        <div className="relative w-full sm:max-w-md">
+          <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+          <Input
             value={query}
-            onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Search company, role, location..."
-            className="w-full rounded-2xl border border-zinc-200 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
+            onChange={(e) => onQueryChange(e.target.value)}
+            placeholder="Search company, title, or location..."
+            className="pl-10"
           />
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <select
-            value={statusFilter}
-            onChange={(event) =>
-              onStatusFilterChange(event.target.value as JobStatus | "All")
-            }
-            className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-          >
-            <option value="All">All statuses</option>
-            <option value="Saved">Saved</option>
-            <option value="Applied">Applied</option>
-            <option value="Interview">Interview</option>
-            <option value="Offer">Offer</option>
-            <option value="Rejected">Rejected</option>
-          </select>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Status Filter Pills */}
+          <div className="flex flex-wrap items-center gap-1 rounded-xl border border-slate-200/80 bg-slate-50/60 p-1">
+            {statusOptions.map((st) => (
+              <button
+                key={st}
+                onClick={() => onStatusFilterChange(st)}
+                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
+                  statusFilter === st
+                    ? "bg-white text-slate-900 shadow-2xs font-bold"
+                    : "text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                {st}
+              </button>
+            ))}
+          </div>
+
           <select
             value={dateFilter}
-            onChange={(event) =>
-              onDateFilterChange(
-                event.target.value as "All" | "today" | "7d" | "30d",
-              )
+            onChange={(e) =>
+              onDateFilterChange(e.target.value as "All" | "today" | "7d" | "30d")
             }
-            className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+            className="h-9 rounded-xl border border-slate-200/90 bg-white px-2.5 text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20"
           >
-            <option value="All">Any date</option>
+            <option value="All">All Time</option>
             <option value="today">Today</option>
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
+            <option value="7d">Last 7 Days</option>
+            <option value="30d">Last 30 Days</option>
           </select>
         </div>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200">
-        <div className="min-w-[780px]">
-          <div className="grid grid-cols-[1.2fr_1.4fr_160px_140px_80px] bg-zinc-50 px-4 py-3 text-xs font-medium text-zinc-600">
+      {/* Table Content */}
+      <div className="mt-6 overflow-x-auto">
+        <div className="min-w-[700px]">
+          {/* Table Header */}
+          <div className="grid grid-cols-[1.5fr_1.5fr_130px_130px_100px] border-b border-slate-100 bg-slate-50/60 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 rounded-xl">
             <div>Company</div>
-            <div>Role</div>
-            <div>Status</div>
-            <div>Date</div>
-            <div className="text-right">...</div>
+            <div>Position</div>
+            <div>Stage</div>
+            <div>Tracked</div>
+            <div className="text-right">Actions</div>
           </div>
-          <div className="divide-y divide-zinc-200">
+
+          {/* Table Body */}
+          <div className="divide-y divide-slate-100 mt-1">
             {isLoadingRows ? (
-              <div className="px-4 py-8 text-center">
-                <div className="inline-flex items-center gap-2 text-sm text-zinc-600">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Loading jobs...
-                </div>
+              <div className="py-12 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+                <Loader2 className="size-4 animate-spin text-indigo-600" />
+                <span>Refreshing jobs...</span>
               </div>
             ) : null}
-            {rows.map((job) => (
-              <div
-                key={job.id}
-                className="grid grid-cols-[1.2fr_1.4fr_160px_140px_80px] items-center px-4 py-3"
-              >
-              <div className="truncate text-left text-sm font-medium text-zinc-900">
-                {job.company}
-              </div>
-              <div className="truncate text-sm text-zinc-700">{job.role}</div>
-              <div>
-                <Badge variant={statusVariant(job.status)}>{job.status}</Badge>
-              </div>
-              <div className="text-sm text-zinc-600">{job.when}</div>
-              <div className="flex items-center justify-end gap-2">
-                <Link
-                  href={`/dashboard/jobs/${job.id}`}
-                  onMouseEnter={() => onHoverJob?.(job.id)}
-                  className="rounded-xl border border-zinc-200 bg-white p-2 hover:bg-zinc-50"
-                  title="View details"
+
+            {rows.map((job) => {
+              const companyInitial = job.company.charAt(0).toUpperCase();
+
+              return (
+                <div
+                  key={job.id}
+                  className="grid grid-cols-[1.5fr_1.5fr_130px_130px_100px] items-center px-4 py-3.5 transition-colors hover:bg-slate-50/70 rounded-xl"
                 >
-                  <ArrowUpRight className="h-4 w-4" />
-                </Link>
-                <button
-                  className="rounded-xl border border-zinc-200 bg-white p-2 hover:bg-zinc-50"
-                  title="Edit"
-                  onClick={() => onEditJob?.(job.id)}
-                  disabled={updatingJobId === job.id || deletingJobId === job.id}
-                >
-                  {updatingJobId === job.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Pencil className="h-4 w-4" />
-                  )}
-                </button>
-                <button
-                  className="rounded-xl border border-zinc-200 bg-white p-2 hover:bg-zinc-50"
-                  title="Delete"
-                  onClick={() => onRequestDeleteJob?.(job.id)}
-                  disabled={deletingJobId === job.id || updatingJobId === job.id}
-                >
-                  {deletingJobId === job.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              </div>
-            ))}
-            {rows.length === 0 && !isLoadingRows ? (
-              <div className="px-4 py-8 text-center">
-                <div className="text-sm font-medium text-zinc-900">No matching jobs</div>
-                <div className="mt-1 text-sm text-zinc-600">
-                  Try changing search text or filters to see results.
+                  <div className="flex items-center gap-3 min-w-0 pr-3">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 font-bold text-xs text-indigo-700">
+                      {companyInitial}
+                    </div>
+                    <span className="truncate text-sm font-semibold text-slate-900">
+                      {job.company}
+                    </span>
+                  </div>
+
+                  <div className="min-w-0 pr-3">
+                    <div className="truncate text-xs font-medium text-slate-800">
+                      {job.role}
+                    </div>
+                    {job.location ? (
+                      <div className="truncate text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+                        <MapPin className="size-3 text-slate-300" />
+                        {job.location}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div>
+                    <Badge variant={statusVariant(job.status)} withDot>
+                      {job.status}
+                    </Badge>
+                  </div>
+
+                  <div className="text-xs text-slate-400">
+                    {job.when}
+                  </div>
+
+                  <div className="flex items-center justify-end gap-1">
+                    <Button variant="ghost" size="icon-xs" asChild>
+                      <Link
+                        href={`/dashboard/jobs/${job.id}`}
+                        onMouseEnter={() => onHoverJob?.(job.id)}
+                        title="View details"
+                      >
+                        <ArrowUpRight className="size-3.5" />
+                      </Link>
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => onEditJob?.(job.id)}
+                      disabled={updatingJobId === job.id || deletingJobId === job.id}
+                      title="Edit job"
+                    >
+                      {updatingJobId === job.id ? (
+                        <Loader2 className="size-3 animate-spin" />
+                      ) : (
+                        <Pencil className="size-3.5" />
+                      )}
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={() => onRequestDeleteJob?.(job.id)}
+                      disabled={deletingJobId === job.id || updatingJobId === job.id}
+                      className="text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                      title="Delete job"
+                    >
+                      {deletingJobId === job.id ? (
+                        <Loader2 className="size-3 animate-spin" />
+                      ) : (
+                        <Trash2 className="size-3.5" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
+              );
+            })}
+
+            {rows.length === 0 && !isLoadingRows ? (
+              <div className="py-12 text-center text-xs text-slate-400">
+                No matching opportunities found.
               </div>
             ) : null}
           </div>
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
-        <div className="text-sm text-zinc-500">
-          Page {Math.min(currentPage, totalPages)} of {totalPages}
-        </div>
-        <div className="flex items-center gap-2">
+      {/* Pagination Footer */}
+      <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
+        <span className="text-xs text-slate-400">
+          Page {Math.min(currentPage, totalPages)} of {Math.max(1, totalPages)}
+        </span>
+
+        <div className="flex items-center gap-1.5">
           <Button
             variant="secondary"
-            className="px-3"
+            size="xs"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage <= 1 || isLoadingRows}
           >
-            Previous
+            <ChevronLeft className="size-3.5" />
+            Prev
           </Button>
           <Button
             variant="secondary"
-            className="px-3"
+            size="xs"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage >= totalPages || isLoadingRows}
           >
             Next
+            <ChevronRight className="size-3.5" />
           </Button>
         </div>
       </div>
-
-      <div className="mt-4 text-sm text-zinc-600">Pro tip: treat your job hunt like a pipeline. Track status changes.</div>
     </section>
   );
 }

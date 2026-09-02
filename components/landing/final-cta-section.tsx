@@ -4,34 +4,46 @@ import { Button } from "@/components/ui/button";
 
 export function FinalCtaSection({ isSignedIn = false }: { isSignedIn?: boolean }) {
   return (
-    <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8 lg:pb-16">
-      <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-700">
-              <Sparkles className="h-3.5 w-3.5" />
-              Built for focused job search
+    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 p-8 sm:p-14 shadow-xl text-white">
+        {/* Ambient Decorative Blur */}
+        <div className="absolute -top-24 -right-24 size-72 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-200">
+              <Sparkles className="size-3.5" />
+              Start For Free • Instant Setup
             </div>
-            <h2 className="mt-3 text-2xl font-semibold text-zinc-900 sm:text-3xl">
-              Ready to improve faster?
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Take the Guesswork Out of Your Resume Today.
             </h2>
-            <p className="mt-2 max-w-xl text-sm text-zinc-600">
-              Upload your resume, get actionable feedback, and keep your applications organized in one dashboard.
+            <p className="mt-3 text-sm sm:text-base text-slate-300 leading-relaxed">
+              Join thousands of engineers and professionals improving their interview callback ratios with ResumePilot&apos;s intelligent audits.
             </p>
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Link href={isSignedIn ? "/dashboard" : "/sign-in"}>
-              <Button className="px-5 py-2.5">
-                {isSignedIn ? "Go to dashboard" : "Get started"}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href={isSignedIn ? "/dashboard/resumes" : "/dashboard"}>
-              <Button variant="secondary" className="px-5 py-2.5">
-                {isSignedIn ? "Upload resume" : "View demo"}
-              </Button>
-            </Link>
+          <div className="flex flex-col gap-3 sm:flex-row shrink-0">
+            <Button
+              size="lg"
+              asChild
+              className="bg-white text-slate-950 hover:bg-slate-100 shadow-md"
+            >
+              <Link href={isSignedIn ? "/dashboard" : "/sign-up"}>
+                {isSignedIn ? "Go to Dashboard" : "Audit Resume Free"}
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              asChild
+              className="border-slate-700 text-white hover:bg-slate-800"
+            >
+              <Link href={isSignedIn ? "/dashboard/resumes" : "/sign-in"}>
+                {isSignedIn ? "Upload Document" : "Sign In"}
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
