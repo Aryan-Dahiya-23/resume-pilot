@@ -2,11 +2,15 @@ import { StepCard } from "@/components/landing/step-card";
 
 export function HowItWorksSection() {
   return (
-    <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8 lg:pb-16">
+    <section className="mx-auto max-w-6xl px-4 pb-12 sm:px-6 lg:px-8 lg:pb-16">
       <div>
-        <div className="text-sm text-zinc-500">How it works</div>
-        <h2 className="mt-1 text-2xl font-semibold text-zinc-900">Upload. Review. Improve.</h2>
-        <p className="mt-2 max-w-2xl text-sm text-zinc-600">
+        <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          How it works
+        </div>
+        <h2 className="mt-2 font-heading text-3xl text-foreground sm:text-4xl">
+          Upload. Review. Improve.
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
           The goal is momentum. Small improvements + consistent applications.
         </p>
       </div>

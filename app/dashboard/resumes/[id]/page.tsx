@@ -9,7 +9,7 @@ export default function ResumeDetailsPage() {
 
   if (!resumeId) {
     return (
-      <div className="rounded-3xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-700 shadow-sm">
+      <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-5 text-sm text-destructive">
         Invalid resume id.
       </div>
     );

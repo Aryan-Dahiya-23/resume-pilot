@@ -6,6 +6,9 @@ import { Briefcase, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AddJobModal, JobsHeader, JobsTableSection } from "@/components/dashboard/jobs-sections";
 import { DashboardPageError, DashboardPageLoading } from "@/components/dashboard/page-state";
+import { EmptyState } from "@/components/layout/empty-state";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useCreateJob, useDeleteJob, useJobs } from "@/hooks/queries";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { getJob, updateJob } from "@/lib/api/jobs";
@@ -270,57 +273,34 @@ export default function JobsPage() {
             isLoadingRows={jobsQuery.isFetching}
           />
           {!jobsQuery.isLoading && !hasAnyJobs ? (
-            <section className="rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-zinc-100 text-zinc-700">
-                <Briefcase className="h-5 w-5" />
-              </div>
-              <div className="mt-4 text-base font-semibold text-zinc-900">
-                No jobs found
-              </div>
-              <div className="mt-1 text-sm text-zinc-600">
-                Start tracking applications to build your pipeline and analytics.
-              </div>
-              <div className="mt-5">
-                <button
-                  className="inline-flex items-center gap-2 rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-                  onClick={() => setIsAddJobOpen(true)}
-                >
+            <EmptyState
+              icon={<Briefcase className="h-5 w-5" />}
+              title="No jobs found"
+              description="Start tracking applications to build your pipeline and analytics."
+              action={
+                <Button onClick={() => setIsAddJobOpen(true)}>
                   <Plus className="h-4 w-4" />
                   Add job
-                </button>
-              </div>
-            </section>
+                </Button>
+              }
+            />
           ) : null}
         </>
       )}
-      {jobToDeleteId ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">
-              Delete Job?
-            </div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove this job from your tracker.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setJobToDeleteId(null)}
-                disabled={deletingJobId === jobToDeleteId}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={() => handleDeleteJob(jobToDeleteId)}
-                disabled={deletingJobId === jobToDeleteId}
-              >
-                {deletingJobId === jobToDeleteId ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmDialog
+        open={Boolean(jobToDeleteId)}
+        onOpenChange={(open) => {
+          if (!open) setJobToDeleteId(null);
+        }}
+        title="Delete job?"
+        description="This will permanently remove this job from your tracker."
+        confirmLabel="Delete"
+        destructive
+        isConfirming={deletingJobId === jobToDeleteId}
+        onConfirm={() => {
+          if (jobToDeleteId) void handleDeleteJob(jobToDeleteId);
+        }}
+      />
     </>
   );
 }

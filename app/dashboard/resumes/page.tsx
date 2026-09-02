@@ -8,6 +8,9 @@ import {
   DashboardPageError,
   DashboardPageLoading,
 } from "@/components/dashboard/page-state";
+import { EmptyState } from "@/components/layout/empty-state";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   ResumeUploadModal,
   ResumeScoreGuideCard,
@@ -169,60 +172,37 @@ export default function ResumesPage() {
                 onHoverResume={handlePrefetchResume}
               />
             ) : (
-              <section className="rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
-                <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-zinc-100 text-zinc-700">
-                  <FileText className="h-5 w-5" />
-                </div>
-                <div className="mt-4 text-base font-semibold text-zinc-900">
-                  No resumes yet
-                </div>
-                <div className="mt-1 text-sm text-zinc-600">
-                  Upload your first resume to start AI analysis and version tracking.
-                </div>
-                <div className="mt-5">
-                  <button
-                    className="inline-flex items-center gap-2 rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-                    onClick={handleUploadClick}
-                  >
+              <EmptyState
+                icon={<FileText className="h-5 w-5" />}
+                title="No resumes yet"
+                description="Upload your first resume to start AI analysis and version tracking."
+                action={
+                  <Button onClick={handleUploadClick}>
                     <Upload className="h-4 w-4" />
                     Upload resume
-                  </button>
-                </div>
-              </section>
+                  </Button>
+                }
+              />
             )}
             <ResumeScoreGuideCard />
           </div>
         </>
       )}
 
-      {resumeToDelete ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">
-              Delete Resume?
-            </div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove the resume and its parsed/reviewed data.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setResumeToDelete(null)}
-                disabled={isDeletingResume}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={handleDeleteResume}
-                disabled={isDeletingResume}
-              >
-                {isDeletingResume ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmDialog
+        open={Boolean(resumeToDelete)}
+        onOpenChange={(open) => {
+          if (!open) setResumeToDelete(null);
+        }}
+        title="Delete resume?"
+        description="This will permanently remove the resume and its parsed/reviewed data."
+        confirmLabel="Delete"
+        destructive
+        isConfirming={isDeletingResume}
+        onConfirm={() => {
+          void handleDeleteResume();
+        }}
+      />
 
     </>
   );

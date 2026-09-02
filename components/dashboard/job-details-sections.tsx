@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Calendar, Copy, ExternalLink, Pencil, Save, Trash2 } from "lucide-react";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { statusVariant, type Job, type JobDetail } from "@/lib/mock-data";
@@ -12,44 +13,36 @@ export function JobDetailsHeader({
   onEditJob?: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <div className="text-sm text-zinc-500">Job details</div>
-        <h1 className="text-xl font-semibold text-zinc-900">
-          {job.company} — {job.role}
-        </h1>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
+    <PageHeader
+      kicker="Job details"
+      title={`${job.company} — ${job.role}`}
+      description={`${job.location ?? "—"} • ${job.when}`}
+      actions={
+        <>
           <Badge variant={statusVariant(job.status)}>{job.status}</Badge>
-          <span>•</span>
-          <span>{job.location ?? "—"}</span>
-          <span>•</span>
-          <span>{job.when}</span>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <Link href="/dashboard/jobs">
-          <Button variant="secondary">Back to jobs</Button>
-        </Link>
-        {job.link ? (
-          <a href={job.link} target="_blank" rel="noreferrer">
-            <Button variant="secondary">
+          <Button asChild variant="secondary">
+            <Link href="/dashboard/jobs">Back to jobs</Link>
+          </Button>
+          {job.link ? (
+            <Button asChild variant="secondary">
+              <a href={job.link} target="_blank" rel="noreferrer">
+                <ExternalLink className="h-4 w-4" />
+                Open listing
+              </a>
+            </Button>
+          ) : (
+            <Button variant="secondary" disabled>
               <ExternalLink className="h-4 w-4" />
               Open listing
             </Button>
-          </a>
-        ) : (
-          <Button variant="secondary" disabled>
-            <ExternalLink className="h-4 w-4" />
-            Open listing
+          )}
+          <Button onClick={onEditJob}>
+            <Pencil className="h-4 w-4" />
+            Edit job
           </Button>
-        )}
-        <Button onClick={onEditJob}>
-          <Pencil className="h-4 w-4" />
-          Edit job
-        </Button>
-      </div>
-    </div>
+        </>
+      }
+    />
   );
 }
 
@@ -74,13 +67,13 @@ export function JobDetailsMain({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="text-sm font-medium text-zinc-900">Notes</div>
+      <section className="rounded-xl border border-border bg-card p-5 shadow-none">
+        <div className="text-sm font-medium text-foreground">Notes</div>
         <textarea
           value={currentNotes}
           onChange={(event) => onNotesChange?.(event.target.value)}
           placeholder="Add notes for this job..."
-          className="mt-3 min-h-[130px] w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700 outline-none focus:border-zinc-400"
+          className="mt-3 min-h-[130px] w-full rounded-2xl border border-border bg-muted/60 p-4 text-sm text-foreground/80 outline-none focus:border-ring"
         />
 
         <div className="mt-4 flex gap-2">
@@ -104,23 +97,23 @@ export function JobDetailsMain({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="text-sm font-medium text-zinc-900">Interview rounds</div>
+      <section className="rounded-xl border border-border bg-card p-5 shadow-none">
+        <div className="text-sm font-medium text-foreground">Interview rounds</div>
         <div className="mt-3 space-y-2">
           {details.rounds?.length ? (
             details.rounds.map((round) => (
               <div
                 key={round.name}
-                className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 p-3"
+                className="flex items-center justify-between rounded-2xl border border-border bg-muted/60 p-3"
               >
-                <div className="text-sm font-medium text-zinc-900">{round.name}</div>
+                <div className="text-sm font-medium text-foreground">{round.name}</div>
                 <Badge variant={round.status === "Done" ? "success" : round.status === "Upcoming" ? "info" : "neutral"}>
                   {round.status}
                 </Badge>
               </div>
             ))
           ) : (
-            <div className="text-sm text-zinc-600">No rounds added.</div>
+            <div className="text-sm text-muted-foreground">No rounds added.</div>
           )}
         </div>
         <div className="mt-3">
@@ -159,13 +152,13 @@ export function JobDetailsSidebar({
 }) {
   return (
     <aside className="space-y-6">
-      <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="text-sm font-medium text-zinc-900">Status</div>
+      <section className="rounded-xl border border-border bg-card p-5 shadow-none">
+        <div className="text-sm font-medium text-foreground">Status</div>
         <div className="mt-3">
           <select
             value={status ?? "Saved"}
             onChange={(event) => onStatusChange?.(event.target.value as Job["status"])}
-            className="w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+            className="w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
           >
             <option>Saved</option>
             <option>Applied</option>
@@ -182,10 +175,10 @@ export function JobDetailsSidebar({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="text-sm font-medium text-zinc-900">Follow-up</div>
-        <div className="mt-2 text-sm text-zinc-600">Set a reminder so you don’t lose momentum.</div>
-        <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700">
+      <section className="rounded-xl border border-border bg-card p-5 shadow-none">
+        <div className="text-sm font-medium text-foreground">Follow-up</div>
+        <div className="mt-2 text-sm text-muted-foreground">Set a reminder so you don’t lose momentum.</div>
+        <div className="mt-4 rounded-2xl border border-border bg-muted/60 p-3 text-sm text-foreground/80">
           {details.followUp || "Not set"}
         </div>
         <div className="mt-3">
@@ -201,16 +194,16 @@ export function JobDetailsSidebar({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="text-sm font-medium text-zinc-900">Contact</div>
-        <div className="mt-3 space-y-2 text-sm text-zinc-700">
+      <section className="rounded-xl border border-border bg-card p-5 shadow-none">
+        <div className="text-sm font-medium text-foreground">Contact</div>
+        <div className="mt-3 space-y-2 text-sm text-foreground/80">
           <div>
-            <div className="text-xs text-zinc-500">Name</div>
-            <div className="font-medium text-zinc-900">{details.contact?.name || "—"}</div>
+            <div className="text-xs text-muted-foreground">Name</div>
+            <div className="font-medium text-foreground">{details.contact?.name || "—"}</div>
           </div>
           <div>
-            <div className="text-xs text-zinc-500">Email</div>
-            <div className="font-medium text-zinc-900">{details.contact?.email || "—"}</div>
+            <div className="text-xs text-muted-foreground">Email</div>
+            <div className="font-medium text-foreground">{details.contact?.email || "—"}</div>
           </div>
         </div>
         <div className="mt-3">
@@ -221,8 +214,8 @@ export function JobDetailsSidebar({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="text-sm font-medium text-zinc-900">Danger zone</div>
+      <section className="rounded-xl border border-border bg-card p-5 shadow-none">
+        <div className="text-sm font-medium text-foreground">Danger zone</div>
         <div className="mt-3">
           <Button
             variant="danger"
