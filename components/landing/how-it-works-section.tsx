@@ -4,9 +4,9 @@ export function HowItWorksSection() {
   return (
     <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8 lg:pb-16">
       <div>
-        <div className="text-sm text-zinc-500">How it works</div>
-        <h2 className="mt-1 text-2xl font-semibold text-zinc-900">Upload. Review. Improve.</h2>
-        <p className="mt-2 max-w-2xl text-sm text-zinc-600">
+        <div className="text-[11px] font-semibold tracking-[0.14em] text-brand uppercase">How it works</div>
+        <h2 className="mt-3 text-2xl font-semibold tracking-[-0.035em] text-foreground sm:text-3xl">A simple weekly rhythm.</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
           The goal is momentum. Small improvements + consistent applications.
         </p>
       </div>

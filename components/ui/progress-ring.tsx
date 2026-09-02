@@ -14,7 +14,7 @@ export function ProgressRing({ value }: { value: number }) {
           cy={size / 2}
           r={radius}
           strokeWidth={stroke}
-          className="fill-none stroke-zinc-200"
+          className="fill-none stroke-border"
         />
         <circle
           cx={size / 2}
@@ -24,12 +24,16 @@ export function ProgressRing({ value }: { value: number }) {
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          className="fill-none stroke-zinc-900"
+          className="fill-none stroke-brand transition-[stroke-dashoffset] duration-500"
         />
       </svg>
       <div className="absolute text-center">
-        <div className="text-2xl font-semibold text-zinc-900">{pct}</div>
-        <div className="text-xs text-zinc-500">ATS</div>
+        <div className="text-2xl font-bold tracking-[-0.03em] text-foreground">
+          {pct}
+        </div>
+        <div className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+          ATS
+        </div>
       </div>
     </div>
   );

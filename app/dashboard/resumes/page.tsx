@@ -14,6 +14,15 @@ import {
   ResumesHeaderWithAction,
   ResumesTableSection,
 } from "@/components/dashboard/resumes-sections";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useResumes, useUploadResume } from "@/hooks/queries";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { getResumeDetails } from "@/lib/api/resumes";
@@ -140,21 +149,8 @@ export default function ResumesPage() {
 
       {isInitialLoading || hasInitialError ? null : (
         <>
-          <ResumesHeaderWithAction onUploadClick={handleUploadClick} />
-          <ResumeUploadModal
-            open={uploadModalOpen}
-            onClose={() => setUploadModalOpen(false)}
-            selectedFile={selectedFile}
-            roleTarget={roleTarget}
-            isUploading={uploadResume.isPending}
-            uploadError={uploadError}
-            uploadResult={uploadResume.data?.resume ?? null}
-            onFileSelect={setSelectedFile}
-            onRoleTargetChange={setRoleTarget}
-            onStartUpload={handleStartUpload}
-          />
-
-          <div className="space-y-6">
+          <div className="space-y-6 sm:space-y-8">
+            <ResumesHeaderWithAction onUploadClick={handleUploadClick} />
             {hasAnyResumes ? (
               <ResumesTableSection
                 query={query}
@@ -169,60 +165,72 @@ export default function ResumesPage() {
                 onHoverResume={handlePrefetchResume}
               />
             ) : (
-              <section className="rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
-                <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-zinc-100 text-zinc-700">
-                  <FileText className="h-5 w-5" />
-                </div>
-                <div className="mt-4 text-base font-semibold text-zinc-900">
+              <section className="surface-card border-t-2 border-t-brand px-6 py-12 text-center sm:px-10">
+                <FileText className="mx-auto size-5 text-brand" />
+                <h2 className="mt-5 font-heading text-3xl font-medium tracking-[-0.03em] text-foreground">
                   No resumes yet
-                </div>
-                <div className="mt-1 text-sm text-zinc-600">
-                  Upload your first resume to start AI analysis and version tracking.
-                </div>
+                </h2>
+                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+                  Upload your first resume to get an analysis, useful feedback,
+                  and a clear version history.
+                </p>
                 <div className="mt-5">
-                  <button
-                    className="inline-flex items-center gap-2 rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-                    onClick={handleUploadClick}
-                  >
-                    <Upload className="h-4 w-4" />
+                  <Button onClick={handleUploadClick}>
+                    <Upload className="size-4" />
                     Upload resume
-                  </button>
+                  </Button>
                 </div>
               </section>
             )}
             <ResumeScoreGuideCard />
           </div>
+          <ResumeUploadModal
+            open={uploadModalOpen}
+            onClose={() => setUploadModalOpen(false)}
+            selectedFile={selectedFile}
+            roleTarget={roleTarget}
+            isUploading={uploadResume.isPending}
+            uploadError={uploadError}
+            uploadResult={uploadResume.data?.resume ?? null}
+            onFileSelect={setSelectedFile}
+            onRoleTargetChange={setRoleTarget}
+            onStartUpload={handleStartUpload}
+          />
         </>
       )}
 
-      {resumeToDelete ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">
-              Delete Resume?
-            </div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove the resume and its parsed/reviewed data.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setResumeToDelete(null)}
-                disabled={isDeletingResume}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={handleDeleteResume}
-                disabled={isDeletingResume}
-              >
-                {isDeletingResume ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <Dialog
+        open={Boolean(resumeToDelete)}
+        onOpenChange={(isOpen) => {
+          if (!isOpen && !isDeletingResume) setResumeToDelete(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md" showCloseButton={!isDeletingResume}>
+          <DialogHeader>
+            <DialogTitle>Delete this resume?</DialogTitle>
+            <DialogDescription>
+              This permanently removes the resume, its parsed information, and
+              review history.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => setResumeToDelete(null)}
+              disabled={isDeletingResume}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleDeleteResume}
+              disabled={isDeletingResume}
+            >
+              {isDeletingResume ? "Deleting…" : "Delete resume"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </>
   );

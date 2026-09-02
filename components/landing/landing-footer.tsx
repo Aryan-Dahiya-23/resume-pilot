@@ -1,28 +1,22 @@
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-zinc-200 bg-white">
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 text-sm text-zinc-600 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-        <div className="flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-2xl bg-zinc-900 text-white">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <div>
-            <div className="font-medium text-zinc-900">ResumePilot</div>
-            <div className="text-xs text-zinc-500">Build by you. Ship fast.</div>
-          </div>
+    <footer className="border-t border-border bg-card">
+      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+        <div>
+          <div className="font-semibold text-foreground">ResumePilot</div>
+          <div className="mt-1 text-xs">A focused workspace for your job search.</div>
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
-          <Link className="hover:underline" href="/privacy">
+          <Link className="hover:text-foreground" href="/privacy">
             Privacy
           </Link>
-          <Link className="hover:underline" href="/terms">
+          <Link className="hover:text-foreground" href="/terms">
             Terms
           </Link>
-          <Link className="hover:underline" href="/contact">
+          <Link className="hover:text-foreground" href="/contact">
             Contact
           </Link>
         </div>

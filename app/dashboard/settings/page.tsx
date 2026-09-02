@@ -29,14 +29,14 @@ export default function SettingsPage() {
   }
 
   return (
-    <>
+    <div className="space-y-6 sm:space-y-8">
       <SettingsHeader />
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <ProfileSettingsCard />
         <DataSettingsCard />
         <DangerZoneSettingsCard />
       </div>
-    </>
+    </div>
   );
 }
