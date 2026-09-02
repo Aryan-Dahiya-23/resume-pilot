@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { ProgressRing } from "@/components/ui/progress-ring";
 import {
   statusVariant,
@@ -420,26 +421,25 @@ export function NextActionsCard({ items }: { items: string[] }) {
   ];
 
   return (
-    <Card className="rounded-3xl border-slate-200/90 shadow-xs flex flex-col justify-between">
-      <div>
-        <CardHeader>
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shrink-0">
-              <CheckCircle2 className="size-4" />
-            </div>
-            <div>
-              <CardTitle className="text-base">What to Do Next</CardTitle>
-              <CardDescription>
-                High-impact priority checklist generated from your latest resume evaluation.
-              </CardDescription>
-            </div>
+    <Card className="rounded-3xl border-slate-200/90 shadow-xs flex flex-col justify-between overflow-hidden">
+      <div className="p-5 sm:p-7 space-y-4 flex-1">
+        <div className="flex items-center gap-2.5">
+          <div className="flex size-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shrink-0">
+            <CheckCircle2 className="size-4" />
           </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
+          <div>
+            <CardTitle className="text-base">What to Do Next</CardTitle>
+            <CardDescription>
+              High-impact priority checklist generated from your latest resume evaluation.
+            </CardDescription>
+          </div>
+        </div>
+
+        <div className="space-y-2.5 pt-1">
           {actions.map((action, index) => (
             <div
               key={index}
-              className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5 space-y-1"
+              className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3 space-y-1"
             >
               <div className="flex items-start gap-3">
                 <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold mt-0.5">
@@ -456,15 +456,27 @@ export function NextActionsCard({ items }: { items: string[] }) {
               </div>
             </div>
           ))}
+        </div>
 
-          {/* Coaching Tip */}
-          <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-3 flex items-start gap-2">
-            <Lightbulb className="size-3.5 text-amber-500 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-slate-600 leading-relaxed">
-              <strong className="font-semibold text-slate-800">Habit:</strong> Focus on 1–2 high-impact edits each morning before submitting applications for peak callback conversions.
-            </p>
-          </div>
-        </CardContent>
+        {/* Coaching Tip */}
+        <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3 flex items-start gap-2">
+          <Lightbulb className="size-3.5 text-amber-500 shrink-0 mt-0.5" />
+          <p className="text-[11px] text-slate-600 leading-relaxed">
+            <strong className="font-semibold text-slate-800">Habit:</strong> Focus on 1–2 high-impact edits each morning before submitting applications for peak callback conversions.
+          </p>
+        </div>
+      </div>
+
+      <div className="px-5 sm:px-7 pb-5 sm:pb-6 pt-0">
+        <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+          <span className="text-[11px] text-slate-400 font-medium">Prioritized by ATS scoring impact</span>
+          <Button variant="secondary" size="sm" asChild>
+            <Link href="/dashboard/resumes">
+              Review Audits
+              <ChevronRight className="size-3.5" />
+            </Link>
+          </Button>
+        </div>
       </div>
     </Card>
   );
@@ -482,11 +494,17 @@ export function WeeklySnapshotCard({
   summary: string;
 }) {
   const hasWeeklyActivity = jobsAdded > 0 || applications > 0 || interviews > 0;
+  const weeklyTarget = 10;
+  const weeklyProgress = Math.min(
+    100,
+    Math.max(0, Math.round((applications / weeklyTarget) * 100)),
+  );
+  const remaining = Math.max(0, weeklyTarget - applications);
 
   return (
-    <Card className="rounded-3xl border-slate-200/90 shadow-xs flex flex-col justify-between">
-      <div>
-        <CardHeader>
+    <Card className="rounded-3xl border-slate-200/90 shadow-xs flex flex-col justify-between overflow-hidden">
+      <div className="p-5 sm:p-7 space-y-4 flex-1">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div className="flex size-8 items-center justify-center rounded-xl bg-teal-50 text-teal-600 shrink-0">
               <Calendar className="size-4" />
@@ -498,63 +516,104 @@ export function WeeklySnapshotCard({
               </CardDescription>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3 text-center">
-              <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                Added
-              </div>
-              <div className="mt-1 text-lg sm:text-2xl font-bold text-slate-900">
-                {jobsAdded}
-              </div>
-            </div>
 
-            <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3 text-center">
-              <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                Sent
-              </div>
-              <div className="mt-1 text-lg sm:text-2xl font-bold text-slate-900">
-                {applications}
-              </div>
-            </div>
+          <Badge variant={hasWeeklyActivity ? "success" : "neutral"} withDot>
+            {hasWeeklyActivity ? "Active Sprint" : "Sprint Inactive"}
+          </Badge>
+        </div>
 
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3 text-center">
-              <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
-                Interviews
-              </div>
-              <div className="mt-1 text-lg sm:text-2xl font-bold text-emerald-900">
-                {interviews}
-              </div>
+        {/* 3 Metrics */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3 text-center">
+            <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Added
+            </div>
+            <div className="mt-1 text-lg sm:text-2xl font-bold text-slate-900">
+              {jobsAdded}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-              <span>Weekly Executive Summary</span>
-              {hasWeeklyActivity ? (
-                <Badge variant="brand" className="text-[10px] px-1.5 py-0">
-                  Active
-                </Badge>
-              ) : (
-                <Badge variant="neutral" className="text-[10px] px-1.5 py-0">
-                  Needs Push
-                </Badge>
-              )}
+          <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3 text-center">
+            <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Sent
             </div>
-            <p className="mt-1 text-xs text-slate-600 leading-relaxed font-medium">
-              {summary}
-            </p>
+            <div className="mt-1 text-lg sm:text-2xl font-bold text-slate-900">
+              {applications}
+            </div>
           </div>
 
-          {/* Coaching Tip */}
-          <div className="rounded-2xl border border-teal-100 bg-teal-50/50 p-3 flex items-start gap-2">
-            <Lightbulb className="size-3.5 text-teal-600 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-teal-950 leading-relaxed">
-              <strong className="font-semibold text-teal-900">Consistency Rule:</strong> Submitting 5–10 tailored applications per week creates steady interview pipeline velocity without candidate burnout.
-            </p>
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3 text-center">
+            <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
+              Interviews
+            </div>
+            <div className="mt-1 text-lg sm:text-2xl font-bold text-emerald-900">
+              {interviews}
+            </div>
           </div>
-        </CardContent>
+        </div>
+
+        {/* Weekly Target Progress Bar */}
+        <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-slate-800 flex items-center gap-1.5">
+              <TrendingUp className="size-3.5 text-teal-600" />
+              Weekly Sprint Goal
+            </span>
+            <span className="font-bold text-slate-900">
+              {applications} <span className="font-normal text-slate-400">/ {weeklyTarget} sent ({weeklyProgress}%)</span>
+            </span>
+          </div>
+          <Progress value={weeklyProgress} className="h-2" />
+          <div className="flex items-center justify-between text-[11px] text-slate-500">
+            <span>
+              {applications >= weeklyTarget
+                ? "Weekly application target achieved! 🎯"
+                : `${remaining} more application${remaining === 1 ? "" : "s"} to reach optimal momentum`}
+            </span>
+            <span className="font-semibold text-teal-700">
+              {weeklyProgress >= 70 ? "Optimal Pace" : weeklyProgress > 0 ? "In Progress" : "Not Started"}
+            </span>
+          </div>
+        </div>
+
+        {/* Executive Summary */}
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+            <span>Weekly Executive Summary</span>
+            {hasWeeklyActivity ? (
+              <Badge variant="brand" className="text-[10px] px-1.5 py-0">
+                Active
+              </Badge>
+            ) : (
+              <Badge variant="neutral" className="text-[10px] px-1.5 py-0">
+                Needs Push
+              </Badge>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-slate-600 leading-relaxed font-medium">
+            {summary}
+          </p>
+        </div>
+
+        {/* Consistency Rule Callout */}
+        <div className="rounded-2xl border border-teal-100 bg-teal-50/50 p-3 flex items-start gap-2">
+          <Lightbulb className="size-3.5 text-teal-600 shrink-0 mt-0.5" />
+          <p className="text-[11px] text-teal-950 leading-relaxed">
+            <strong className="font-semibold text-teal-900">Consistency Rule:</strong> Submitting 5–10 tailored applications per week creates steady interview pipeline velocity without candidate burnout.
+          </p>
+        </div>
+      </div>
+
+      <div className="px-5 sm:px-7 pb-5 sm:pb-6 pt-0">
+        <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+          <span className="text-[11px] text-slate-400 font-medium">Sprint resets every Monday</span>
+          <Button variant="secondary" size="sm" asChild>
+            <Link href="/dashboard/jobs">
+              Track Applications
+              <ChevronRight className="size-3.5" />
+            </Link>
+          </Button>
+        </div>
       </div>
     </Card>
   );
