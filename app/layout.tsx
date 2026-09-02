@@ -1,20 +1,27 @@
 import type { Metadata } from "next";
 import NextTopLoader from "nextjs-toploader";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 import "./globals.css";
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-heading",
 });
 
 export const metadata: Metadata = {
@@ -24,6 +31,18 @@ export const metadata: Metadata = {
     icon: "/icon",
     shortcut: "/icon",
     apple: "/icon",
+  },
+};
+
+const clerkAppearance = {
+  variables: {
+    colorPrimary: "#1e4a78",
+    colorBackground: "#fffcf7",
+    colorText: "#2c241c",
+    colorTextSecondary: "#6f6559",
+    colorInputBackground: "#fffcf7",
+    borderRadius: "0.7rem",
+    fontFamily: "var(--font-sans)",
   },
 };
 
@@ -45,14 +64,17 @@ export default function RootLayout({
       signUpUrl={signUpUrl}
       signInFallbackRedirectUrl={signInFallbackRedirectUrl}
       signUpFallbackRedirectUrl={signUpFallbackRedirectUrl}
+      appearance={clerkAppearance}
     >
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased`}
         >
-          <NextTopLoader showSpinner={false} />
+          <NextTopLoader color="#1e4a78" showSpinner={false} />
           <QueryProvider>
-            <ToastProvider>{children}</ToastProvider>
+            <TooltipProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </TooltipProvider>
           </QueryProvider>
         </body>
       </html>

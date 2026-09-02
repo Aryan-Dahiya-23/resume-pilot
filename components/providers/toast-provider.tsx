@@ -1,14 +1,10 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo } from "react";
+import { toast as sonnerToast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 type ToastTone = "success" | "error";
-
-type ToastItem = {
-  id: number;
-  tone: ToastTone;
-  message: string;
-};
 
 type ToastInput = {
   tone: ToastTone;
@@ -23,15 +19,13 @@ type ToastContextValue = {
 const ToastContext = createContext<ToastContextValue | null>(null);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-
   const toast = useCallback((input: ToastInput) => {
-    const id = Date.now() + Math.floor(Math.random() * 1000);
     const duration = input.durationMs ?? 2600;
-    setToasts((prev) => [...prev, { id, tone: input.tone, message: input.message }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((item) => item.id !== id));
-    }, duration);
+    if (input.tone === "success") {
+      sonnerToast.success(input.message, { duration });
+      return;
+    }
+    sonnerToast.error(input.message, { duration });
   }, []);
 
   const value = useMemo<ToastContextValue>(() => ({ toast }), [toast]);
@@ -39,22 +33,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      {toasts.length ? (
-        <div className="pointer-events-none fixed right-4 top-4 z-[80] space-y-2">
-          {toasts.map((item) => (
-            <div
-              key={item.id}
-              className={`rounded-2xl border px-3 py-2 text-sm shadow-sm ${
-                item.tone === "success"
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  : "border-rose-200 bg-rose-50 text-rose-700"
-              }`}
-            >
-              {item.message}
-            </div>
-          ))}
-        </div>
-      ) : null}
+      <Toaster position="top-right" />
     </ToastContext.Provider>
   );
 }

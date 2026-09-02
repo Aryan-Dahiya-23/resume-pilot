@@ -5,20 +5,30 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useClerk } from "@clerk/nextjs";
 import { AlertTriangle, Download, Loader2, Save, Settings, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { PageHeader } from "@/components/layout/page-header";
+import { SectionCard } from "@/components/layout/section-card";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/providers/toast-provider";
 import { useCurrentDbUser } from "@/hooks/queries";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
 export function SettingsHeader() {
   return (
-    <div className="flex flex-col gap-3 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <div className="text-sm text-zinc-500">Settings</div>
-        <h1 className="text-xl font-semibold text-zinc-900">Account & data</h1>
-      </div>
-    </div>
+    <PageHeader
+      kicker="Settings"
+      title="Account & data"
+      description="Update your profile and export or delete workspace data."
+    />
   );
 }
 
@@ -58,26 +68,22 @@ export function ProfileSettingsCard() {
   }
 
   return (
-    <Card title="Profile" icon={<Settings className="h-4 w-4" />}>
-      <div className="text-sm text-zinc-600">
+    <SectionCard title="Profile" icon={<Settings className="h-4 w-4" />}>
+      <div className="text-sm text-muted-foreground">
         Update your profile details used across dashboard widgets.
       </div>
       <div className="mt-4 grid grid-cols-1 gap-3">
-        <div>
-          <div className="text-xs font-medium text-zinc-600">Name</div>
-          <input
+        <div className="grid gap-1.5">
+          <Label htmlFor="profile-name">Name</Label>
+          <Input
+            id="profile-name"
             value={value}
             onChange={(event) => setName(event.target.value)}
-            className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
           />
         </div>
-        <div>
-          <div className="text-xs font-medium text-zinc-600">Email</div>
-          <input
-            value={currentUser?.email ?? ""}
-            readOnly
-            className="mt-1 w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-600 outline-none"
-          />
+        <div className="grid gap-1.5">
+          <Label htmlFor="profile-email">Email</Label>
+          <Input id="profile-email" value={currentUser?.email ?? ""} readOnly />
         </div>
       </div>
       <div className="mt-4">
@@ -86,7 +92,7 @@ export function ProfileSettingsCard() {
           {isSaving ? "Saving..." : "Save changes"}
         </Button>
       </div>
-    </Card>
+    </SectionCard>
   );
 }
 
@@ -141,8 +147,8 @@ export function DataSettingsCard() {
   }
 
   return (
-    <Card title="Data" icon={<Download className="h-4 w-4" />}>
-      <div className="text-sm text-zinc-600">
+    <SectionCard title="Data" icon={<Download className="h-4 w-4" />}>
+      <div className="text-sm text-muted-foreground">
         Export your jobs and resume feedback for backups or offline analysis.
       </div>
       <div className="mt-4 flex gap-2">
@@ -173,7 +179,7 @@ export function DataSettingsCard() {
           {isExportingFeedback ? "Exporting..." : "Export feedback JSON"}
         </Button>
       </div>
-    </Card>
+    </SectionCard>
   );
 }
 
@@ -198,8 +204,8 @@ export function DangerZoneSettingsCard() {
 
   return (
     <>
-      <Card title="Danger zone" icon={<AlertTriangle className="h-4 w-4" />}>
-        <div className="text-sm text-zinc-600">
+      <SectionCard title="Danger zone" icon={<AlertTriangle className="h-4 w-4" />}>
+        <div className="text-sm text-muted-foreground">
           Deleting account data will remove resumes, jobs, and feedback from your workspace.
         </div>
         <div className="mt-4">
@@ -208,50 +214,53 @@ export function DangerZoneSettingsCard() {
             Delete account data
           </Button>
         </div>
-      </Card>
+      </SectionCard>
 
-      {isDeleteModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">
-              Delete account data?
-            </div>
-            <div className="mt-2 text-sm text-zinc-600">
-              Type <span className="font-medium text-zinc-900">DELETE</span> to confirm.
-            </div>
-            <input
-              value={confirmationText}
-              onChange={(event) => setConfirmationText(event.target.value)}
-              className="mt-3 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-            />
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setIsDeleteModalOpen(false);
-                  setConfirmationText("");
-                }}
-                disabled={isDeleting}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="danger"
-                onClick={handleDeleteAccountData}
-                disabled={isDeleting || confirmationText !== "DELETE"}
-              >
-                {isDeleting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="h-4 w-4" />
-                )}
-                {isDeleting ? "Deleting..." : "Confirm delete"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
+      <Dialog
+        open={isDeleteModalOpen}
+        onOpenChange={(open) => {
+          setIsDeleteModalOpen(open);
+          if (!open) setConfirmationText("");
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete account data?</DialogTitle>
+            <DialogDescription>
+              Type <span className="font-medium text-foreground">DELETE</span> to confirm.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={confirmationText}
+            onChange={(event) => setConfirmationText(event.target.value)}
+            placeholder="DELETE"
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDeleteModalOpen(false);
+                setConfirmationText("");
+              }}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleDeleteAccountData}
+              disabled={isDeleting || confirmationText !== "DELETE"}
+            >
+              {isDeleting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+              {isDeleting ? "Deleting..." : "Confirm delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

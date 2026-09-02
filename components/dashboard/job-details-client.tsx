@@ -13,6 +13,7 @@ import {
 } from "@/components/dashboard/job-details-sections";
 import { useDeleteJob, useJob, useUpdateJob } from "@/hooks/queries";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { Job, JobDetail, JobStatus } from "@/lib/mock-data";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
@@ -306,40 +307,40 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
       </div>
 
       {isContactModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Edit contact</div>
-            <div className="mt-1 text-sm text-zinc-600">Update recruiter details.</div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-xl">
+            <div className="text-base font-semibold text-foreground">Edit contact</div>
+            <div className="mt-1 text-sm text-muted-foreground">Update recruiter details.</div>
             <div className="mt-4 grid grid-cols-1 gap-3">
               <div>
-                <label className="text-xs font-medium text-zinc-600">Contact name</label>
+                <label className="text-xs font-medium text-muted-foreground">Contact name</label>
                 <input
                   value={contactNameDraft}
                   onChange={(event) => setContactNameDraft(event.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+                  className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
                   placeholder="Recruiter name"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-zinc-600">Contact email</label>
+                <label className="text-xs font-medium text-muted-foreground">Contact email</label>
                 <input
                   value={contactEmailDraft}
                   onChange={(event) => setContactEmailDraft(event.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+                  className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
                   placeholder="recruiter@company.com"
                 />
               </div>
             </div>
             <div className="mt-4 flex items-center justify-end gap-2">
               <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+                className="rounded-2xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
                 onClick={() => setIsContactModalOpen(false)}
                 disabled={updateJob.isPending}
               >
                 Cancel
               </button>
               <button
-                className="rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
+                className="rounded-2xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-60"
                 onClick={handleSaveContact}
                 disabled={updateJob.isPending}
               >
@@ -351,10 +352,10 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
       ) : null}
 
       {isRoundsModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-xl rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Edit interview rounds</div>
-            <div className="mt-1 text-sm text-zinc-600">Update your current interview pipeline.</div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4">
+          <div className="w-full max-w-xl rounded-xl border border-border bg-card p-5 shadow-xl">
+            <div className="text-base font-semibold text-foreground">Edit interview rounds</div>
+            <div className="mt-1 text-sm text-muted-foreground">Update your current interview pipeline.</div>
             <div className="mt-4 space-y-2">
               {roundsDraft.map((round, index) => (
                 <div key={index} className="grid grid-cols-[1fr_140px_40px] gap-2">
@@ -367,7 +368,7 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
                         ),
                       )
                     }
-                    className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+                    className="rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
                     placeholder="Technical round"
                   />
                   <select
@@ -384,14 +385,14 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
                         ),
                       )
                     }
-                    className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+                    className="rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
                   >
                     <option>Done</option>
                     <option>Upcoming</option>
                     <option>Pending</option>
                   </select>
                   <button
-                    className="rounded-2xl border border-zinc-200 bg-white px-2 py-2 text-sm text-zinc-600 hover:bg-zinc-50"
+                    className="rounded-2xl border border-border bg-card px-2 py-2 text-sm text-muted-foreground hover:bg-muted"
                     onClick={() =>
                       setRoundsDraft((prev) => prev.filter((_, itemIndex) => itemIndex !== index))
                     }
@@ -412,14 +413,14 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
             </div>
             <div className="mt-4 flex items-center justify-end gap-2">
               <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+                className="rounded-2xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
                 onClick={() => setIsRoundsModalOpen(false)}
                 disabled={updateJob.isPending}
               >
                 Cancel
               </button>
               <button
-                className="rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
+                className="rounded-2xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-60"
                 onClick={handleSaveRounds}
                 disabled={updateJob.isPending}
               >
@@ -430,56 +431,42 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
         </div>
       ) : null}
 
-      {isDeleteModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Delete Job?</div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove this job from your tracker.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsDeleteModalOpen(false)}
-                disabled={deleteJob.isPending}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={handleConfirmDeleteJob}
-                disabled={deleteJob.isPending}
-              >
-                {deleteJob.isPending ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmDialog
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        title="Delete job?"
+        description="This will permanently remove this job from your tracker."
+        confirmLabel="Delete"
+        destructive
+        isConfirming={deleteJob.isPending}
+        onConfirm={() => {
+          void handleConfirmDeleteJob();
+        }}
+      />
 
       {isFollowUpModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Set Follow-up</div>
-            <div className="mt-2 text-sm text-zinc-600">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-xl">
+            <div className="text-base font-semibold text-foreground">Set Follow-up</div>
+            <div className="mt-2 text-sm text-muted-foreground">
               Add a reminder note for your next action.
             </div>
             <textarea
               value={followUpDraft}
               onChange={(event) => setFollowUpDraft(event.target.value)}
               placeholder="e.g., Follow up next Tuesday"
-              className="mt-4 min-h-[100px] w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 outline-none focus:border-zinc-400"
+              className="mt-4 min-h-[100px] w-full rounded-2xl border border-border bg-muted/60 p-3 text-sm text-foreground/80 outline-none focus:border-ring"
             />
             <div className="mt-4 flex items-center justify-end gap-2">
               <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+                className="rounded-2xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
                 onClick={() => setIsFollowUpModalOpen(false)}
                 disabled={updateJob.isPending}
               >
                 Cancel
               </button>
               <button
-                className="rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
+                className="rounded-2xl bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-60"
                 onClick={handleConfirmSetFollowUp}
                 disabled={updateJob.isPending}
               >

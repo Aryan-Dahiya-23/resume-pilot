@@ -3,12 +3,14 @@ import { FeatureCard } from "@/components/landing/feature-card";
 
 export function FeaturesSection() {
   return (
-    <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8 lg:pb-16">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <div className="text-sm text-zinc-500">Features</div>
-          <h2 className="mt-1 text-2xl font-semibold text-zinc-900">Everything you need — nothing you don’t</h2>
+    <section className="mx-auto max-w-6xl px-4 pb-12 sm:px-6 lg:px-8 lg:pb-16">
+      <div>
+        <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          Features
         </div>
+        <h2 className="mt-2 font-heading text-3xl text-foreground sm:text-4xl">
+          Everything you need — nothing you don’t
+        </h2>
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">

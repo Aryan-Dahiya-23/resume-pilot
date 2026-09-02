@@ -8,17 +8,16 @@ export function SocialProofSection() {
   const teams = ["Indie devs", "Students", "Career switchers", "Early startups"];
 
   return (
-    <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8 lg:pb-16">
-      <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="text-sm text-zinc-500">Trusted by builders</div>
+    <section className="mx-auto max-w-6xl px-4 pb-12 sm:px-6 lg:px-8 lg:pb-16">
+      <div className="rounded-xl bg-card p-5 shadow-sm ring-1 ring-foreground/10 sm:p-6">
+        <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          Trusted by builders
+        </div>
         <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
           {metrics.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
-            >
-              <div className="text-2xl font-semibold text-zinc-900">{item.value}</div>
-              <div className="mt-1 text-sm text-zinc-600">{item.label}</div>
+            <div key={item.label} className="rounded-lg bg-muted/70 p-4">
+              <div className="font-heading text-3xl text-foreground">{item.value}</div>
+              <div className="mt-1 text-sm text-muted-foreground">{item.label}</div>
             </div>
           ))}
         </div>
@@ -26,7 +25,7 @@ export function SocialProofSection() {
           {teams.map((item) => (
             <span
               key={item}
-              className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700"
+              className="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-foreground"
             >
               {item}
             </span>

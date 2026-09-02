@@ -8,12 +8,14 @@ export function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl bg-card p-5 shadow-sm ring-1 ring-foreground/10">
       <div className="flex items-start gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-zinc-900 text-white">{icon}</div>
+        <div className="grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground">
+          {icon}
+        </div>
         <div>
-          <div className="text-sm font-semibold text-zinc-900">{title}</div>
-          <div className="mt-1 text-sm text-zinc-600">{description}</div>
+          <div className="font-heading text-xl text-foreground">{title}</div>
+          <div className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</div>
         </div>
       </div>
     </div>

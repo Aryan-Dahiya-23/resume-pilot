@@ -9,25 +9,24 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { statusVariant, type Job, type JobStatus } from "@/lib/mock-data";
 
 export function JobsHeader({ onAddJobClick }: { onAddJobClick?: () => void }) {
   return (
-    <div className="flex flex-col gap-3 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <div className="text-sm text-zinc-500">Jobs</div>
-        <h1 className="text-xl font-semibold text-zinc-900">Job application tracker</h1>
-      </div>
-
-      <div className="flex flex-col gap-2 sm:flex-row">
+    <PageHeader
+      kicker="Jobs"
+      title="Application tracker"
+      description="Move roles from saved to offer without a spreadsheet."
+      actions={
         <Button onClick={onAddJobClick}>
           <Plus className="h-4 w-4" />
           Add job
         </Button>
-      </div>
-    </div>
+      }
+    />
   );
 }
 
@@ -147,14 +146,14 @@ export function AddJobModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/55 p-0 backdrop-blur-[2px] sm:items-center sm:p-4">
-      <div className="flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-zinc-200 bg-white shadow-xl sm:max-h-[90dvh] sm:max-w-xl sm:rounded-3xl">
-        <div className="flex items-start justify-between gap-3 border-b border-zinc-200 px-4 py-4 sm:px-5 sm:py-5">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-4">
+      <div className="flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-border bg-card shadow-xl sm:max-h-[90dvh] sm:max-w-xl sm:rounded-xl">
+        <div className="flex items-start justify-between gap-3 border-b border-border px-4 py-4 sm:px-5 sm:py-5">
           <div>
-            <div className="text-base font-semibold text-zinc-900">
+            <div className="text-base font-semibold text-foreground">
               {mode === "edit" ? "Edit job" : "Add job"}
             </div>
-            <div className="mt-1 text-sm text-zinc-500">
+            <div className="mt-1 text-sm text-muted-foreground">
               {mode === "edit"
                 ? "Update this job in your pipeline."
                 : "Track a new application in your pipeline."}
@@ -162,7 +161,7 @@ export function AddJobModal({
           </div>
           <button
             onClick={onClose}
-            className="rounded-xl border border-zinc-200 bg-white p-2 text-zinc-600 hover:bg-zinc-50"
+            className="rounded-xl border border-border bg-card p-2 text-muted-foreground hover:bg-muted"
             aria-label="Close"
             disabled={isSubmitting}
           >
@@ -173,29 +172,29 @@ export function AddJobModal({
         <form onSubmit={handleSubmit} className="flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="text-xs font-medium text-zinc-600">Company</label>
+              <label className="text-xs font-medium text-muted-foreground">Company</label>
               <input
                 value={company}
                 onChange={(event) => setCompany(event.target.value)}
-                className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+                className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
                 placeholder="Stripe"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-zinc-600">Role</label>
+              <label className="text-xs font-medium text-muted-foreground">Role</label>
               <input
                 value={role}
                 onChange={(event) => setRole(event.target.value)}
-                className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+                className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
                 placeholder="Frontend Engineer"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-zinc-600">Status</label>
+              <label className="text-xs font-medium text-muted-foreground">Status</label>
               <select
                 value={status}
                 onChange={(event) => setStatus(event.target.value as JobStatus)}
-                className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+                className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
               >
                 <option>Saved</option>
                 <option>Applied</option>
@@ -205,51 +204,51 @@ export function AddJobModal({
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium text-zinc-600">Location</label>
+              <label className="text-xs font-medium text-muted-foreground">Location</label>
               <input
                 value={location}
                 onChange={(event) => setLocation(event.target.value)}
-                className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+                className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
                 placeholder="Remote"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-zinc-600">Contact name</label>
+              <label className="text-xs font-medium text-muted-foreground">Contact name</label>
               <input
                 value={contactName}
                 onChange={(event) => setContactName(event.target.value)}
-                className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+                className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
                 placeholder="Recruiter name"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-zinc-600">Contact email</label>
+              <label className="text-xs font-medium text-muted-foreground">Contact email</label>
               <input
                 value={contactEmail}
                 onChange={(event) => setContactEmail(event.target.value)}
-                className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+                className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
                 placeholder="recruiter@company.com"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-medium text-zinc-600">Job link</label>
+            <label className="text-xs font-medium text-muted-foreground">Job link</label>
             <input
               value={link}
               onChange={(event) => setLink(event.target.value)}
-              className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+              className="mt-1 w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
               placeholder="https://..."
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-zinc-600">
+            <label className="text-xs font-medium text-muted-foreground">
               Interview rounds (one per line: `Name | Status`)
             </label>
             <textarea
               value={roundsText}
               onChange={(event) => setRoundsText(event.target.value)}
-              className="mt-1 min-h-[90px] w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+              className="mt-1 min-h-[90px] w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
               placeholder={"Recruiter Screen | Done\nTechnical Round | Upcoming"}
             />
           </div>
@@ -260,7 +259,7 @@ export function AddJobModal({
             </div>
           ) : null}
 
-          <div className="flex flex-col-reverse gap-2 border-t border-zinc-200 pt-4 sm:flex-row sm:items-center sm:justify-end">
+          <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-end">
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
@@ -317,15 +316,15 @@ export function JobsTableSection({
   isLoadingRows?: boolean;
 }) {
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <section className="rounded-xl border border-border bg-card p-5 shadow-none">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:w-[360px]">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="Search company, role, location..."
-            className="w-full rounded-2xl border border-zinc-200 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
+            className="w-full rounded-2xl border border-border bg-card py-2 pl-10 pr-3 text-sm outline-none focus:border-ring"
           />
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
@@ -334,7 +333,7 @@ export function JobsTableSection({
             onChange={(event) =>
               onStatusFilterChange(event.target.value as JobStatus | "All")
             }
-            className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+            className="rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
           >
             <option value="All">All statuses</option>
             <option value="Saved">Saved</option>
@@ -350,7 +349,7 @@ export function JobsTableSection({
                 event.target.value as "All" | "today" | "7d" | "30d",
               )
             }
-            className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+            className="rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
           >
             <option value="All">Any date</option>
             <option value="today">Today</option>
@@ -360,19 +359,19 @@ export function JobsTableSection({
         </div>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200">
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-border">
         <div className="min-w-[780px]">
-          <div className="grid grid-cols-[1.2fr_1.4fr_160px_140px_80px] bg-zinc-50 px-4 py-3 text-xs font-medium text-zinc-600">
+          <div className="grid grid-cols-[1.2fr_1.4fr_160px_140px_80px] bg-muted/60 px-4 py-3 text-xs font-medium text-muted-foreground">
             <div>Company</div>
             <div>Role</div>
             <div>Status</div>
             <div>Date</div>
             <div className="text-right">...</div>
           </div>
-          <div className="divide-y divide-zinc-200">
+          <div className="divide-y divide-border">
             {isLoadingRows ? (
               <div className="px-4 py-8 text-center">
-                <div className="inline-flex items-center gap-2 text-sm text-zinc-600">
+                <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Loading jobs...
                 </div>
@@ -383,25 +382,25 @@ export function JobsTableSection({
                 key={job.id}
                 className="grid grid-cols-[1.2fr_1.4fr_160px_140px_80px] items-center px-4 py-3"
               >
-              <div className="truncate text-left text-sm font-medium text-zinc-900">
+              <div className="truncate text-left text-sm font-medium text-foreground">
                 {job.company}
               </div>
-              <div className="truncate text-sm text-zinc-700">{job.role}</div>
+              <div className="truncate text-sm text-foreground/80">{job.role}</div>
               <div>
                 <Badge variant={statusVariant(job.status)}>{job.status}</Badge>
               </div>
-              <div className="text-sm text-zinc-600">{job.when}</div>
+              <div className="text-sm text-muted-foreground">{job.when}</div>
               <div className="flex items-center justify-end gap-2">
                 <Link
                   href={`/dashboard/jobs/${job.id}`}
                   onMouseEnter={() => onHoverJob?.(job.id)}
-                  className="rounded-xl border border-zinc-200 bg-white p-2 hover:bg-zinc-50"
+                  className="rounded-xl border border-border bg-card p-2 hover:bg-muted"
                   title="View details"
                 >
                   <ArrowUpRight className="h-4 w-4" />
                 </Link>
                 <button
-                  className="rounded-xl border border-zinc-200 bg-white p-2 hover:bg-zinc-50"
+                  className="rounded-xl border border-border bg-card p-2 hover:bg-muted"
                   title="Edit"
                   onClick={() => onEditJob?.(job.id)}
                   disabled={updatingJobId === job.id || deletingJobId === job.id}
@@ -413,7 +412,7 @@ export function JobsTableSection({
                   )}
                 </button>
                 <button
-                  className="rounded-xl border border-zinc-200 bg-white p-2 hover:bg-zinc-50"
+                  className="rounded-xl border border-border bg-card p-2 hover:bg-muted"
                   title="Delete"
                   onClick={() => onRequestDeleteJob?.(job.id)}
                   disabled={deletingJobId === job.id || updatingJobId === job.id}
@@ -429,8 +428,8 @@ export function JobsTableSection({
             ))}
             {rows.length === 0 && !isLoadingRows ? (
               <div className="px-4 py-8 text-center">
-                <div className="text-sm font-medium text-zinc-900">No matching jobs</div>
-                <div className="mt-1 text-sm text-zinc-600">
+                <div className="text-sm font-medium text-foreground">No matching jobs</div>
+                <div className="mt-1 text-sm text-muted-foreground">
                   Try changing search text or filters to see results.
                 </div>
               </div>
@@ -440,7 +439,7 @@ export function JobsTableSection({
       </div>
 
       <div className="mt-4 flex items-center justify-between">
-        <div className="text-sm text-zinc-500">
+        <div className="text-sm text-muted-foreground">
           Page {Math.min(currentPage, totalPages)} of {totalPages}
         </div>
         <div className="flex items-center gap-2">
@@ -463,7 +462,7 @@ export function JobsTableSection({
         </div>
       </div>
 
-      <div className="mt-4 text-sm text-zinc-600">Pro tip: treat your job hunt like a pipeline. Track status changes.</div>
+      <div className="mt-4 text-sm text-muted-foreground">Pro tip: treat your job hunt like a pipeline. Track status changes.</div>
     </section>
   );
 }

@@ -15,6 +15,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { useState, type DragEvent } from "react";
+import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import type { UploadResumeResponse } from "@/lib/api/resumes";
 import type { Resume } from "@/lib/mock-data";
@@ -29,21 +30,17 @@ export function ResumesHeaderWithAction({
   onUploadClick?: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <div className="text-sm text-zinc-500">Resumes</div>
-        <h1 className="text-xl font-semibold text-zinc-900">
-          All resume versions
-        </h1>
-      </div>
-
-      <div className="flex flex-col gap-2 sm:flex-row">
+    <PageHeader
+      kicker="Resumes"
+      title="All versions"
+      description="Upload, score, and compare each revision."
+      actions={
         <Button onClick={onUploadClick}>
           <Upload className="h-4 w-4" />
           Upload new
         </Button>
-      </div>
-    </div>
+      }
+    />
   );
 }
 
@@ -71,15 +68,15 @@ export function ResumesTableSection({
   onHoverResume?: (resumeId: string) => void;
 }) {
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <section className="rounded-xl border border-border bg-card p-5 shadow-none">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="Search versions, file name, target role..."
-            className="w-full rounded-2xl border border-zinc-200 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
+            className="w-full rounded-2xl border border-border bg-card py-2 pl-10 pr-3 text-sm outline-none focus:border-ring"
           />
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
@@ -90,7 +87,7 @@ export function ResumesTableSection({
                 event.target.value as "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED",
               )
             }
-            className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+            className="rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
           >
             <option value="All">All statuses</option>
             <option value="UPLOADED">Uploaded</option>
@@ -106,7 +103,7 @@ export function ResumesTableSection({
                 event.target.value as "All" | "today" | "7d" | "30d",
               )
             }
-            className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+            className="rounded-2xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
           >
             <option value="All">Any date</option>
             <option value="today">Today</option>
@@ -116,33 +113,33 @@ export function ResumesTableSection({
         </div>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200">
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-border">
         <div className="min-w-[740px]">
-          <div className="grid grid-cols-[110px_1fr_120px_120px_140px] gap-0 bg-zinc-50 px-4 py-3 text-xs font-medium text-zinc-600">
+          <div className="grid grid-cols-[110px_1fr_120px_120px_140px] gap-0 bg-muted/60 px-4 py-3 text-xs font-medium text-muted-foreground">
             <div>Version</div>
             <div>File</div>
             <div>Status</div>
             <div>Score</div>
             <div className="text-right">Actions</div>
           </div>
-          <div className="divide-y divide-zinc-200">
+          <div className="divide-y divide-border">
             {rows.map((resume) => (
               <div
                 key={resume.id}
                 className="grid grid-cols-[110px_1fr_120px_120px_140px] items-center gap-0 px-4 py-3"
               >
-              <div className="text-sm font-medium text-zinc-900">
+              <div className="text-sm font-medium text-foreground">
                 {resume.version}
-                <div className="mt-0.5 text-xs text-zinc-500">
+                <div className="mt-0.5 text-xs text-muted-foreground">
                   {resume.uploadedAt}
                 </div>
               </div>
 
               <div className="min-w-0">
-                <div className="truncate text-sm font-medium text-zinc-900">
+                <div className="truncate text-sm font-medium text-foreground">
                   {resume.fileName}
                 </div>
-                <div className="truncate text-sm text-zinc-500">
+                <div className="truncate text-sm text-muted-foreground">
                   Target: {resume.roleTarget ?? "Not set"}
                 </div>
               </div>
@@ -162,17 +159,17 @@ export function ResumesTableSection({
               </div>
 
               <div>
-                <div className="text-sm font-semibold text-zinc-900">
+                <div className="text-sm font-semibold text-foreground">
                   {resume.score}
                 </div>
-                <div className="text-xs text-zinc-500">ATS</div>
+                <div className="text-xs text-muted-foreground">ATS</div>
               </div>
 
               <div className="flex items-center justify-end gap-2">
                 <Link
                   href={`/dashboard/resumes/${resume.id}`}
                   onMouseEnter={() => onHoverResume?.(resume.id)}
-                  className="rounded-xl border border-zinc-200 bg-white p-2 hover:bg-zinc-50"
+                  className="rounded-xl border border-border bg-card p-2 hover:bg-muted"
                   title="View feedback"
                 >
                   <ArrowUpRight className="h-4 w-4" />
@@ -180,7 +177,7 @@ export function ResumesTableSection({
                 <button
                   onClick={() => onDeleteResume?.(resume.id)}
                   disabled={deletingResumeId === resume.id}
-                  className="rounded-xl border border-zinc-200 bg-white p-2 hover:bg-zinc-50"
+                  className="rounded-xl border border-border bg-card p-2 hover:bg-muted"
                   title="Delete"
                 >
                   {deletingResumeId === resume.id ? (
@@ -194,8 +191,8 @@ export function ResumesTableSection({
             ))}
             {rows.length === 0 ? (
               <div className="px-4 py-8 text-center">
-                <div className="text-sm font-medium text-zinc-900">No matching resumes</div>
-                <div className="mt-1 text-sm text-zinc-600">
+                <div className="text-sm font-medium text-foreground">No matching resumes</div>
+                <div className="mt-1 text-sm text-muted-foreground">
                   Try changing search text or filters to see results.
                 </div>
               </div>
@@ -209,40 +206,40 @@ export function ResumesTableSection({
 
 export function ResumeScoreGuideCard() {
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="text-sm font-medium text-zinc-900">
+    <section className="rounded-xl border border-border bg-card p-5 shadow-none">
+      <div className="text-sm font-medium text-foreground">
         How the score works
       </div>
-      <div className="mt-2 text-sm text-zinc-600">
+      <div className="mt-2 text-sm text-muted-foreground">
         Your ATS score is computed from structure + clarity + role match. Upload
         a new version after edits to track improvement.
       </div>
 
       <div className="mt-4 space-y-3">
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
+        <div className="rounded-2xl border border-border bg-muted/60 p-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <CheckCircle2 className="h-4 w-4" />
             Structure
           </div>
-          <div className="mt-1 text-sm text-zinc-600">
+          <div className="mt-1 text-sm text-muted-foreground">
             One-column layout, consistent headings, ATS-friendly formatting.
           </div>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
+        <div className="rounded-2xl border border-border bg-muted/60 p-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <Lightbulb className="h-4 w-4" />
             Impact
           </div>
-          <div className="mt-1 text-sm text-zinc-600">
+          <div className="mt-1 text-sm text-muted-foreground">
             Metrics, outcomes, scale, ownership.
           </div>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
+        <div className="rounded-2xl border border-border bg-muted/60 p-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <Wand2 className="h-4 w-4" />
             Role match
           </div>
-          <div className="mt-1 text-sm text-zinc-600">
+          <div className="mt-1 text-sm text-muted-foreground">
             Keywords + phrasing aligned with the role you target.
           </div>
         </div>
@@ -317,16 +314,16 @@ export function ResumeUploadModal({
     : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/55 p-4 backdrop-blur-[2px]">
-      <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4 backdrop-blur-[2px]">
+      <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-card shadow-xl">
         <div className="p-5">
             <div className="flex items-center justify-between gap-3">
-              <div className="text-base font-semibold text-zinc-900">
+              <div className="text-base font-semibold text-foreground">
                 Upload Resume
               </div>
               <button
                 onClick={onClose}
-                className="rounded-xl border border-zinc-200 bg-white p-2 text-zinc-600 hover:bg-zinc-50"
+                className="rounded-xl border border-border bg-card p-2 text-muted-foreground hover:bg-muted"
                 aria-label="Close"
               >
                 <X className="h-4 w-4" />
@@ -335,7 +332,7 @@ export function ResumeUploadModal({
 
             <div className="mt-4 space-y-4">
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-zinc-600">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Resume File
                 </label>
                 <label
@@ -346,20 +343,20 @@ export function ResumeUploadModal({
                   onDrop={handleDrop}
                   className={`mt-2 flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed px-4 py-4 transition-colors ${
                     isDragActive
-                      ? "border-zinc-500 bg-zinc-100"
-                      : "border-zinc-300 bg-zinc-50 hover:border-zinc-400 hover:bg-zinc-100/70"
+                      ? "border-primary bg-muted"
+                      : "border-border bg-muted/60 hover:border-ring hover:bg-muted"
                   }`}
                 >
-                  <span className="rounded-xl border border-zinc-200 bg-white p-2">
-                    <FileText className="h-4 w-4 text-zinc-600" />
+                  <span className="rounded-xl border border-border bg-card p-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-zinc-800">
+                    <span className="block truncate text-sm font-medium text-foreground">
                       {selectedFile
                         ? selectedFile.name
                         : "Drop file here or click to browse"}
                     </span>
-                    <span className="block text-xs text-zinc-500">
+                    <span className="block text-xs text-muted-foreground">
                       PDF/DOCX only • Max 5MB
                     </span>
                   </span>
@@ -375,7 +372,7 @@ export function ResumeUploadModal({
                   <div className="mt-2 text-xs text-rose-600">{localFileError}</div>
                 ) : null}
                 {selectedFile ? (
-                  <div className="mt-2 text-xs text-zinc-600">
+                  <div className="mt-2 text-xs text-muted-foreground">
                     Size: {selectedFileSize}
                   </div>
                 ) : null}
@@ -384,18 +381,18 @@ export function ResumeUploadModal({
               <div>
                 <label
                   htmlFor="target-role-input"
-                  className="text-xs font-semibold uppercase tracking-wide text-zinc-600"
+                  className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                 >
                   Target Role
                 </label>
                 <div className="relative mt-2">
-                  <Briefcase className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                  <Briefcase className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <input
                     id="target-role-input"
                     value={roleTarget}
                     onChange={(event) => onRoleTargetChange(event.target.value)}
                     placeholder="Frontend Engineer"
-                    className="w-full rounded-2xl border border-zinc-200 bg-white py-3 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
+                    className="w-full rounded-2xl border border-border bg-card py-3 pl-10 pr-3 text-sm outline-none focus:border-ring"
                   />
                 </div>
               </div>
