@@ -11,8 +11,11 @@ import {
   FileCheck2,
   FileText,
   Flame,
+  HelpCircle,
+  Lightbulb,
   Plus,
   Sparkles,
+  Target,
   TrendingUp,
   Upload,
 } from "lucide-react";
@@ -84,7 +87,7 @@ export function ResumeOverviewCard({
 
   if (!hasResume) {
     return (
-      <Card className="rounded-3xl border-slate-200/90 shadow-xs">
+      <Card className="rounded-3xl border-slate-200/90 shadow-xs flex flex-col justify-between">
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
@@ -96,7 +99,7 @@ export function ResumeOverviewCard({
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-6 text-center">
             <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-white shadow-xs text-emerald-600 mb-3">
               <Upload className="size-6" />
@@ -108,27 +111,45 @@ export function ResumeOverviewCard({
               Receive automated DeepSeek AI analysis, ATS compatibility score, and bullet-level rewrite recommendations.
             </p>
             <div className="mt-5">
-              <Button onClick={onUploadResume} className="w-full sm:w-auto">
+              <Button onClick={onUploadResume} className="w-full sm:w-auto shadow-xs shadow-emerald-600/20">
                 <Upload className="size-4" />
                 Upload Resume PDF
               </Button>
             </div>
+          </div>
+
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3.5 flex items-start gap-2.5">
+            <Lightbulb className="size-4 text-emerald-600 shrink-0 mt-0.5" />
+            <p className="text-xs text-emerald-900 leading-relaxed font-medium">
+              <strong className="font-semibold">Quick Start Tip:</strong> Upload any PDF or DOCX resume to benchmark your baseline ATS score and reveal missing high-value keywords for your target role.
+            </p>
           </div>
         </CardContent>
       </Card>
     );
   }
 
+  // Top improvements list (from nextActions)
+  const topImprovements =
+    nextActions.length > 0
+      ? nextActions.slice(0, 3)
+      : [
+          "Quantify recent engineering achievements with measurable business impact metrics.",
+          "Incorporate missing core domain keywords into your experience bullet points.",
+          "Ensure formatting headers strictly align with standard applicant tracking parsers.",
+        ];
+
   return (
-    <Card className="rounded-3xl border-slate-200/90 shadow-xs overflow-hidden">
-      <div className="p-5 sm:p-7">
+    <Card className="rounded-3xl border-slate-200/90 shadow-xs overflow-hidden flex flex-col justify-between">
+      <div className="p-5 sm:p-7 space-y-6">
+        {/* Document Header & Score Ring */}
         <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
           <div className="min-w-0 flex-1 text-center sm:text-left w-full">
             <div className="flex items-center justify-center sm:justify-start gap-2.5">
-              <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shrink-0">
                 <FileCheck2 className="size-5" />
               </div>
-              <div className="text-left">
+              <div className="text-left min-w-0">
                 <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                   Active Document
                 </div>
@@ -138,51 +159,94 @@ export function ResumeOverviewCard({
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+            <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2">
               <Badge variant={delta >= 0 ? "success" : "danger"} withDot>
                 {delta >= 0 ? `+${delta}` : delta} pts vs previous
               </Badge>
               {latestResume.roleTarget ? (
-                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-600 truncate max-w-[180px]">
-                  {latestResume.roleTarget}
+                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 truncate max-w-[180px]">
+                  Target: {latestResume.roleTarget}
                 </span>
               ) : null}
             </div>
 
-            <div className="mt-4 truncate text-xs text-slate-400">
+            <div className="mt-2 truncate text-xs text-slate-400">
               Uploaded {latestResume.uploadedAt} • {latestResume.fileName}
             </div>
           </div>
 
-          <div className="flex flex-col items-center">
-            <ProgressRing value={latestResume.score} size={110} strokeWidth={10} />
+          <div className="flex flex-col items-center shrink-0">
+            <ProgressRing value={latestResume.score} size={105} strokeWidth={9} />
+            <span className="mt-1 text-[11px] font-semibold text-slate-500">
+              {latestResume.score >= 80
+                ? "Ready to Apply"
+                : latestResume.score >= 60
+                  ? "Competitive"
+                  : "Needs Optimization"}
+            </span>
           </div>
         </div>
 
-        {/* Priority AI Action Callout */}
-        {nextActions.length > 0 ? (
-          <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
-            <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
+        {/* Top Improvements Section (Restored & Enhanced from Main) */}
+        <div className="space-y-2.5 rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700">
               <Sparkles className="size-3.5 text-emerald-600" />
-              <span>Priority AI Recommendation</span>
+              <span>Top Recommended Improvements</span>
             </div>
-            <p className="mt-1 text-xs text-emerald-950 font-medium leading-relaxed">
-              {nextActions[0]}
-            </p>
+            <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 rounded px-1.5 py-0.5 border border-emerald-100">
+              DeepSeek AI
+            </span>
           </div>
-        ) : null}
 
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 pt-4">
-          <Button variant="secondary" size="sm" asChild className="w-full sm:w-auto">
-            <Link href="/dashboard/resumes">
-              View Version History
-              <ChevronRight className="size-3.5" />
-            </Link>
-          </Button>
+          <ul className="space-y-2 pt-1">
+            {topImprovements.map((improvement, index) => (
+              <li
+                key={index}
+                className="flex items-start gap-2.5 text-xs text-slate-700 leading-relaxed font-medium"
+              >
+                <span className="flex size-4.5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold mt-0.5">
+                  {index + 1}
+                </span>
+                <span className="break-words">{improvement}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Contextual Coaching Pro-Tip (From Main Branch) */}
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3.5 flex items-start gap-2.5">
+          <Lightbulb className="size-4 text-emerald-600 shrink-0 mt-0.5" />
+          <p className="text-xs text-emerald-950 leading-relaxed font-medium">
+            <strong className="font-semibold text-emerald-900">Pro-Tip:</strong> Upload a new version after applying edits to benchmark your ATS score progression and verify bullet point impact.
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 pt-4">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button variant="secondary" size="sm" asChild className="w-full sm:w-auto">
+              <Link href="/dashboard/resumes">
+                Version History
+                <ChevronRight className="size-3.5" />
+              </Link>
+            </Button>
+            {onUploadResume ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onUploadResume}
+                className="w-full sm:w-auto text-emerald-700 hover:bg-emerald-50"
+              >
+                <Upload className="size-3.5" />
+                Upload Revision
+              </Button>
+            ) : null}
+          </div>
 
           <Button size="sm" asChild className="w-full sm:w-auto shadow-xs shadow-emerald-600/20">
             <Link href={`/dashboard/resumes/${latestResume.id}`}>
-              Open Full Audit Report
+              Full Audit Report
               <ArrowUpRight className="size-3.5" />
             </Link>
           </Button>
@@ -196,26 +260,29 @@ export function JobPipelineCard({
   jobs,
   jobsByStatus,
   interviewRate,
+  onAddJobClick,
 }: {
   jobs: Job[];
   jobsByStatus: Record<JobStatus, number>;
   interviewRate: number;
+  onAddJobClick?: () => void;
 }) {
-  const recentJobs = jobs.slice(0, 3);
+  const recentJobs = jobs.slice(0, 4);
   const totalTracked = jobs.length;
 
   return (
-    <Card className="rounded-3xl border-slate-200/90 shadow-xs overflow-hidden">
-      <div className="p-5 sm:p-7">
+    <Card className="rounded-3xl border-slate-200/90 shadow-xs overflow-hidden flex flex-col justify-between">
+      <div className="p-5 sm:p-7 space-y-6">
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-teal-50 text-teal-600 shrink-0">
               <Briefcase className="size-5" />
             </div>
             <div>
               <CardTitle>Application Pipeline</CardTitle>
               <CardDescription>
-                {totalTracked} opportunities currently tracked
+                {totalTracked} active opportunities tracked
               </CardDescription>
             </div>
           </div>
@@ -227,7 +294,7 @@ export function JobPipelineCard({
         </div>
 
         {/* 4-Stage Metric Grid */}
-        <div className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3 text-center">
             <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">
               Saved
@@ -262,11 +329,23 @@ export function JobPipelineCard({
           </div>
         </div>
 
+        {/* Strategy Coaching Tip (From Main Branch) */}
+        <div className="rounded-2xl border border-teal-100 bg-teal-50/50 p-3.5 flex items-start gap-2.5">
+          <Lightbulb className="size-4 text-teal-600 shrink-0 mt-0.5" />
+          <p className="text-xs text-teal-950 leading-relaxed font-medium">
+            <strong className="font-semibold text-teal-900">Strategy Tip:</strong> Keep &quot;Saved&quot; jobs short and apply within 48 hours. Candidates who submit within the first 2 days receive 3x higher callback rates.
+          </p>
+        </div>
+
         {/* Recent Jobs Mini List */}
-        <div className="mt-6 space-y-2">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-            Recent Pipeline Activity
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <span>Recent Pipeline Activity</span>
+            <Link href="/dashboard/jobs" className="text-emerald-700 hover:underline capitalize">
+              View All ({totalTracked})
+            </Link>
           </div>
+
           {recentJobs.length > 0 ? (
             recentJobs.map((job) => (
               <Link
@@ -287,20 +366,34 @@ export function JobPipelineCard({
                     {job.status}
                   </Badge>
                   <span className="text-[11px] text-slate-400 hidden sm:inline">{job.when}</span>
+                  <ChevronRight className="size-3.5 text-slate-300 group-hover:text-slate-500 transition-colors" />
                 </div>
               </Link>
             ))
           ) : (
-            <div className="rounded-xl border border-dashed border-slate-200 py-6 text-center text-xs text-slate-400">
-              No jobs in tracker yet.
+            <div className="rounded-2xl border border-dashed border-slate-200 py-6 text-center text-xs text-slate-400">
+              No jobs in tracker yet. Track opportunities to monitor your interview conversion rate.
             </div>
           )}
         </div>
 
-        <div className="mt-6 flex justify-end border-t border-slate-100 pt-4">
+        {/* Actions Footer */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 pt-4">
+          {onAddJobClick ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onAddJobClick}
+              className="w-full sm:w-auto text-emerald-700 hover:bg-emerald-50"
+            >
+              <Plus className="size-3.5" />
+              Quick Add Job
+            </Button>
+          ) : <div />}
+
           <Button variant="secondary" size="sm" asChild className="w-full sm:w-auto">
             <Link href="/dashboard/jobs">
-              Go to Job Pipeline
+              Go to Full Pipeline
               <ArrowRight className="size-3.5" />
             </Link>
           </Button>
@@ -311,44 +404,68 @@ export function JobPipelineCard({
 }
 
 export function NextActionsCard({ items }: { items: string[] }) {
+  const actions =
+    items.length > 0
+      ? items.slice(0, 3)
+      : [
+          "Optimize 2 bullet points in your primary engineering role with measurable metrics.",
+          "Apply to 3 high-affinity positions from your Saved opportunity list.",
+          "Target role keywords: verify tech stack coverage in your resume summary.",
+        ];
+
+  const actionGuidance = [
+    "High Impact: Action-verb + metric rewrites yield the fastest ATS score boost.",
+    "Pipeline Momentum: Early applications enjoy significantly higher recruiter visibility.",
+    "Keyword Precision: Exact skill matches satisfy enterprise ATS filter thresholds.",
+  ];
+
   return (
-    <Card className="rounded-3xl border-slate-200/90 shadow-xs">
-      <CardHeader>
-        <div className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-            <CheckCircle2 className="size-4" />
+    <Card className="rounded-3xl border-slate-200/90 shadow-xs flex flex-col justify-between">
+      <div>
+        <CardHeader>
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 shrink-0">
+              <CheckCircle2 className="size-4" />
+            </div>
+            <div>
+              <CardTitle className="text-base">What to Do Next</CardTitle>
+              <CardDescription>
+                High-impact priority checklist generated from your latest resume evaluation.
+              </CardDescription>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-base">High-Impact Next Steps</CardTitle>
-            <CardDescription>
-              Prioritized checklist generated from your latest resume audit.
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2.5">
-          {items.length > 0 ? (
-            items.map((action, index) => (
-              <div
-                key={index}
-                className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5"
-              >
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {actions.map((action, index) => (
+            <div
+              key={index}
+              className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5 space-y-1"
+            >
+              <div className="flex items-start gap-3">
                 <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold mt-0.5">
                   {index + 1}
                 </div>
-                <p className="text-xs text-slate-700 leading-relaxed font-medium break-words">
-                  {action}
-                </p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-slate-800 leading-relaxed font-semibold break-words">
+                    {action}
+                  </p>
+                  <p className="text-[11px] text-slate-500 leading-relaxed font-normal mt-0.5">
+                    {actionGuidance[index] || "Consistency compounds over time."}
+                  </p>
+                </div>
               </div>
-            ))
-          ) : (
-            <div className="rounded-2xl border border-dashed border-slate-200 py-6 text-center text-xs text-slate-400">
-              All recommended adjustments completed! Upload a new version to re-evaluate.
             </div>
-          )}
-        </div>
-      </CardContent>
+          ))}
+
+          {/* Coaching Tip */}
+          <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-3 flex items-start gap-2">
+            <Lightbulb className="size-3.5 text-amber-500 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              <strong className="font-semibold text-slate-800">Habit:</strong> Focus on 1–2 high-impact edits each morning before submitting applications for peak callback conversions.
+            </p>
+          </div>
+        </CardContent>
+      </div>
     </Card>
   );
 }
@@ -364,60 +481,81 @@ export function WeeklySnapshotCard({
   interviews: number;
   summary: string;
 }) {
+  const hasWeeklyActivity = jobsAdded > 0 || applications > 0 || interviews > 0;
+
   return (
-    <Card className="rounded-3xl border-slate-200/90 shadow-xs">
-      <CardHeader>
-        <div className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
-            <Calendar className="size-4" />
-          </div>
-          <div>
-            <CardTitle className="text-base">Weekly Momentum</CardTitle>
-            <CardDescription>
-              Activity logged over the past 7 rolling days.
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3 text-center">
-            <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              Added
+    <Card className="rounded-3xl border-slate-200/90 shadow-xs flex flex-col justify-between">
+      <div>
+        <CardHeader>
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-xl bg-teal-50 text-teal-600 shrink-0">
+              <Calendar className="size-4" />
             </div>
-            <div className="mt-1 text-lg sm:text-2xl font-bold text-slate-900">
-              {jobsAdded}
+            <div>
+              <CardTitle className="text-base">Weekly Momentum</CardTitle>
+              <CardDescription>
+                Activity logged over the past 7 rolling days.
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3 text-center">
+              <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                Added
+              </div>
+              <div className="mt-1 text-lg sm:text-2xl font-bold text-slate-900">
+                {jobsAdded}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3 text-center">
+              <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                Sent
+              </div>
+              <div className="mt-1 text-lg sm:text-2xl font-bold text-slate-900">
+                {applications}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3 text-center">
+              <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
+                Interviews
+              </div>
+              <div className="mt-1 text-lg sm:text-2xl font-bold text-emerald-900">
+                {interviews}
+              </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3 text-center">
-            <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              Sent
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+              <span>Weekly Executive Summary</span>
+              {hasWeeklyActivity ? (
+                <Badge variant="brand" className="text-[10px] px-1.5 py-0">
+                  Active
+                </Badge>
+              ) : (
+                <Badge variant="neutral" className="text-[10px] px-1.5 py-0">
+                  Needs Push
+                </Badge>
+              )}
             </div>
-            <div className="mt-1 text-lg sm:text-2xl font-bold text-slate-900">
-              {applications}
-            </div>
+            <p className="mt-1 text-xs text-slate-600 leading-relaxed font-medium">
+              {summary}
+            </p>
           </div>
 
-          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3 text-center">
-            <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
-              Interviews
-            </div>
-            <div className="mt-1 text-lg sm:text-2xl font-bold text-emerald-900">
-              {interviews}
-            </div>
+          {/* Coaching Tip */}
+          <div className="rounded-2xl border border-teal-100 bg-teal-50/50 p-3 flex items-start gap-2">
+            <Lightbulb className="size-3.5 text-teal-600 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-teal-950 leading-relaxed">
+              <strong className="font-semibold text-teal-900">Consistency Rule:</strong> Submitting 5–10 tailored applications per week creates steady interview pipeline velocity without candidate burnout.
+            </p>
           </div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-            Executive Summary
-          </div>
-          <p className="mt-1 text-xs text-slate-600 leading-relaxed font-medium">
-            {summary}
-          </p>
-        </div>
-      </CardContent>
+        </CardContent>
+      </div>
     </Card>
   );
 }

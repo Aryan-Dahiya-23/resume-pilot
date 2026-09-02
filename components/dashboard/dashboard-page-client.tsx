@@ -176,6 +176,7 @@ export function DashboardPageClient({}: Record<string, never>) {
               jobs={jobs}
               jobsByStatus={jobsByStatus}
               interviewRate={interviewRate}
+              onAddJobClick={() => setAddJobModalOpen(true)}
             />
           </div>
 
