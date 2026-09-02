@@ -23,7 +23,7 @@ export function HowItWorksSection() {
         />
         <StepCard
           number="2"
-          title="Review DeepSeek Audit"
+          title="Review AI Audit"
           description="Receive an ATS readiness score, missing role-specific keywords, and actionable bullet-level rewrite suggestions."
         />
         <StepCard

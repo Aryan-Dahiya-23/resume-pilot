@@ -17,7 +17,7 @@ export default function PrivacyPage() {
       <section className="space-y-3">
         <h2 className="text-base font-bold text-slate-900">2. How AI Audits Work</h2>
         <p>
-          Uploaded documents are processed in secure memory to extract textual content for evaluation by our DeepSeek AI model. Your resume data is never used to train public foundation models or shared with third-party recruiters without your explicit instruction.
+          Uploaded documents are processed in secure memory to extract textual content for evaluation by our secure AI analysis model. Your resume data is never used to train public foundation models or shared with third-party recruiters without your explicit instruction.
         </p>
       </section>
 

@@ -226,7 +226,7 @@ export function ResumeScoreGuideCard() {
         <span>Scoring Benchmark Standard</span>
       </div>
       <h3 className="mt-1 text-base font-bold text-slate-900">
-        How DeepSeek ATS Scoring Works
+        How AI ATS Scoring Works
       </h3>
       <p className="mt-1 text-xs text-slate-500 leading-relaxed">
         Our evaluation models emulate modern enterprise ATS algorithms (Workday, Greenhouse, Lever, Taleo) combined with human recruiter scanning behavior.
@@ -326,7 +326,7 @@ export function ResumeUploadModal({
         <DialogHeader>
           <DialogTitle>Upload Resume for AI Audit</DialogTitle>
           <DialogDescription>
-            DeepSeek analyzes your document against modern ATS screening filters.
+            Advanced AI analyzes your document against modern ATS screening filters.
           </DialogDescription>
         </DialogHeader>
 

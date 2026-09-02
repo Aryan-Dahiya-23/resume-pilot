@@ -233,7 +233,7 @@ export function DataSettingsCard() {
                 AI Audit History (.JSON)
               </div>
               <div className="text-xs text-slate-500">
-                Complete raw DeepSeek scoring reports, ATS checks, and rewrite history.
+                Complete raw AI scoring reports, ATS checks, and rewrite history.
               </div>
             </div>
           </div>

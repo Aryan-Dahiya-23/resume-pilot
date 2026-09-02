@@ -14,7 +14,7 @@ export function LandingFooter() {
               ResumePilot
             </div>
             <div className="text-xs text-slate-400">
-              Intelligent Career Copilot • DeepSeek Powered
+              Intelligent Career Copilot • AI-Powered
             </div>
           </div>
         </div>

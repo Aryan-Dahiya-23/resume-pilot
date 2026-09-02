@@ -92,7 +92,7 @@ export default function ResumesPage() {
       });
       void queryClient.invalidateQueries({ queryKey: ["resumes"] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
-      toast({ tone: "success", message: "Resume uploaded successfully! DeepSeek AI analysis started." });
+      toast({ tone: "success", message: "Resume uploaded successfully! AI analysis started." });
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setUploadError(

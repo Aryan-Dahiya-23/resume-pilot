@@ -109,7 +109,7 @@ export function ResumeOverviewCard({
               Upload Your First Resume
             </h4>
             <p className="mx-auto mt-1 max-w-sm text-xs sm:text-sm text-slate-500">
-              Receive automated DeepSeek AI analysis, ATS compatibility score, and bullet-level rewrite recommendations.
+              Receive automated AI analysis, ATS compatibility score, and bullet-level rewrite recommendations.
             </p>
             <div className="mt-5">
               <Button onClick={onUploadResume} className="w-full sm:w-auto shadow-xs shadow-emerald-600/20">
@@ -196,7 +196,7 @@ export function ResumeOverviewCard({
               <span>Top Recommended Improvements</span>
             </div>
             <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 rounded px-1.5 py-0.5 border border-emerald-100">
-              DeepSeek AI
+              AI Analysis
             </span>
           </div>
 

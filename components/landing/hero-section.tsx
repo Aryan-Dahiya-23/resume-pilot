@@ -23,7 +23,7 @@ export function HeroSection({ isSignedIn = false }: { isSignedIn?: boolean }) {
               <Pill>AI Resume Audit v2.0</Pill>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-2xs">
                 <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                DeepSeek Powered
+                Neural AI Powered
               </span>
             </div>
 
@@ -55,7 +55,7 @@ export function HeroSection({ isSignedIn = false }: { isSignedIn?: boolean }) {
             <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 text-xs font-medium text-slate-500">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
-                <span>Instant 30-Second DeepSeek Analysis</span>
+                <span>Instant 30-Second AI Analysis</span>
               </div>
               <div className="flex items-center gap-2">
                 <Shield className="size-4 text-teal-600 shrink-0" />
@@ -111,7 +111,7 @@ export function HeroSection({ isSignedIn = false }: { isSignedIn?: boolean }) {
               <div className="mt-5 space-y-2.5">
                 <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                   <Wand2 className="size-3.5 text-emerald-600" />
-                  <span>DeepSeek Neural Optimization</span>
+                  <span>Neural Resume Optimization</span>
                 </div>
 
                 <div className="rounded-xl border border-rose-100 bg-rose-50/40 p-2.5 text-xs text-slate-600 font-mono">

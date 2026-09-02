@@ -46,7 +46,7 @@ export function ResumeFeedbackHeader({
       <div className="min-w-0">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600">
           <FileCheck2 className="size-3.5" />
-          <span>DeepSeek Audit Report</span>
+          <span>AI Audit Report</span>
         </div>
         <h1 className="mt-1 truncate text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
           {resume.fileName}

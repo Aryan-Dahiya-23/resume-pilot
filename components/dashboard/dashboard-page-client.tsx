@@ -93,7 +93,7 @@ export function DashboardPageClient({}: Record<string, never>) {
       setSelectedFile(null);
       toast({
         tone: "success",
-        message: "Resume uploaded successfully! DeepSeek AI analysis is running.",
+        message: "Resume uploaded successfully! AI analysis is running.",
       });
     } catch (error) {
       if (axios.isAxiosError(error)) {

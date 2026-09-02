@@ -203,7 +203,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </span>
           </div>
           <span className="text-[10px] font-mono text-emerald-700 bg-white/80 rounded px-1.5 py-0.5 border border-emerald-200/50">
-            DeepSeek
+            v2.0
           </span>
         </div>
 

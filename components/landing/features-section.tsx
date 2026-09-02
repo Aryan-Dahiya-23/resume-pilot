@@ -25,7 +25,7 @@ export function FeaturesSection() {
       <div className="mt-10 sm:mt-12 grid grid-cols-1 gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <FeatureCard
           icon={<FileText className="size-5" />}
-          title="DeepSeek ATS Audit"
+          title="Precision ATS Audit"
           description="Instant score breakdown across quantifiable impact, structure, readability, and recruiter scanning ease."
           badge="AI Powered"
         />
