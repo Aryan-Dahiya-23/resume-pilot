@@ -52,7 +52,7 @@ function parseModelJson(text: string) {
   try {
     return JSON.parse(text) as Record<string, unknown>;
   } catch {
-    throw new Error("Gemini returned non-JSON content");
+    throw new Error("DeepSeek returned non-JSON content");
   }
 }
 
@@ -101,43 +101,44 @@ function buildPrompt(input: ReviewResumeInput) {
   ].join("\n");
 }
 
-export async function reviewResumeWithGemini(input: ReviewResumeInput): Promise<ResumeReviewOutput> {
-  const apiKey = process.env.GEMINI_API_KEY;
+export async function reviewResumeWithDeepSeek(input: ReviewResumeInput): Promise<ResumeReviewOutput> {
+  const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not set");
+    throw new Error("DEEPSEEK_API_KEY is not set");
   }
 
-  const model = process.env.GEMINI_MODEL?.trim() || "gemini-1.5-flash";
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const model = process.env.DEEPSEEK_MODEL?.trim() || "deepseek-v4-flash";
+  console.log("[resume-review] Using DeepSeek model:", model);
 
-  const response = await fetch(endpoint, {
+  const response = await fetch("https://api.deepseek.com/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: buildPrompt(input) }] }],
-      generationConfig: {
-        temperature: 0.2,
-        responseMimeType: "application/json",
-      },
+      model,
+      messages: [{ role: "user", content: buildPrompt(input) }],
+      temperature: 0.2,
+      response_format: { type: "json_object" },
     }),
   });
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Gemini request failed: ${text || response.statusText}`);
+    throw new Error(`DeepSeek request failed: ${text || response.statusText}`);
   }
 
   const payload = (await response.json()) as {
-    candidates?: Array<{
-      content?: { parts?: Array<{ text?: string }> };
+    choices?: Array<{
+      message?: { content?: string | null };
     }>;
   };
 
-  const contentText =
-    payload.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("").trim() || "";
+  const contentText = payload.choices?.[0]?.message?.content?.trim() || "";
 
   if (!contentText) {
-    throw new Error("Gemini returned empty content");
+    throw new Error("DeepSeek returned empty content");
   }
 
   const parsed = parseModelJson(contentText);
@@ -152,11 +153,11 @@ export async function reviewResumeWithGemini(input: ReviewResumeInput): Promise<
   };
 
   if (!review.rewriteSuggestions.length) {
-    throw new Error("Gemini response missing rewriteSuggestions");
+    throw new Error("DeepSeek response missing rewriteSuggestions");
   }
 
   if (!review.nextActions.length) {
-    throw new Error("Gemini response missing nextActions");
+    throw new Error("DeepSeek response missing nextActions");
   }
 
   return review;

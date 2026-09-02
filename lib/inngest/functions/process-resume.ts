@@ -6,7 +6,7 @@ import {
   upsertResumeParse,
   upsertResumeReview,
 } from "@/lib/db/resumes";
-import { reviewResumeWithGemini } from "@/lib/ai/review-resume";
+import { reviewResumeWithDeepSeek } from "@/lib/ai/review-resume";
 import { parseResumeFile } from "@/lib/resume-parser";
 import { downloadResumeFileFromSupabaseStorage } from "@/lib/supabase-storage";
 
@@ -67,9 +67,9 @@ export const processResume = inngest.createFunction(
       await updateResumeStatus(resumeId, "REVIEWING");
     });
 
-    await step.run("review resume with ai (gemini)", async () => {
+    await step.run("review resume with ai (deepseek)", async () => {
       try {
-        const review = await reviewResumeWithGemini({
+        const review = await reviewResumeWithDeepSeek({
           roleTarget: resume.roleTarget,
           targetLevel: resume.targetLevel,
           rawText: parsed.rawText,
