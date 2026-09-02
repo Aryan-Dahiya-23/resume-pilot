@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Compass, Shield } from "lucide-react";
+import { ArrowLeft, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function PublicShell({

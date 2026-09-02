@@ -36,5 +36,13 @@ export async function GET(
     expiresIn: 120,
   });
 
+  const requestUrl = new URL(_request.url);
+  const wantsRedirect = requestUrl.searchParams.get("redirect") === "true";
+  const acceptsHtml = _request.headers.get("accept")?.includes("text/html");
+
+  if (wantsRedirect || acceptsHtml) {
+    return NextResponse.redirect(url);
+  }
+
   return NextResponse.json({ url });
 }

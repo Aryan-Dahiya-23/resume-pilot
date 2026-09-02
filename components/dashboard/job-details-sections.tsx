@@ -9,6 +9,7 @@ import {
   Clock,
   Copy,
   ExternalLink,
+  Loader2,
   Mail,
   MapPin,
   Pencil,
@@ -220,7 +221,11 @@ export function JobDetailsMain({
           <div className="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-2">
               <Button size="sm" onClick={onSaveNotes} disabled={isSavingNotes} className="shadow-xs shadow-emerald-600/20">
-                <Save className="size-3.5" />
+                {isSavingNotes ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <Save className="size-3.5" />
+                )}
                 {isSavingNotes ? "Saving..." : "Save Notes"}
               </Button>
               <Button
@@ -291,7 +296,11 @@ export function JobDetailsSidebar({
             onClick={onSaveStatus}
             disabled={isSavingStatus}
           >
-            <Save className="size-3.5" />
+            {isSavingStatus ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Save className="size-3.5" />
+            )}
             {isSavingStatus ? "Updating..." : "Update Stage"}
           </Button>
         </CardContent>
@@ -327,7 +336,11 @@ export function JobDetailsSidebar({
             onClick={onSetFollowUp}
             disabled={isSettingFollowUp}
           >
-            <Calendar className="size-3.5" />
+            {isSettingFollowUp ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Calendar className="size-3.5" />
+            )}
             {isSettingFollowUp ? "Saving..." : "Set Date Reminder"}
           </Button>
         </CardContent>
@@ -382,7 +395,11 @@ export function JobDetailsSidebar({
         onClick={onDelete}
         disabled={isDeleting}
       >
-        <Trash2 className="size-3.5" />
+        {isDeleting ? (
+          <Loader2 className="size-3.5 animate-spin" />
+        ) : (
+          <Trash2 className="size-3.5" />
+        )}
         {isDeleting ? "Deleting..." : "Delete Opportunity"}
       </Button>
     </aside>

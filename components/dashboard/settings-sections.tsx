@@ -331,6 +331,11 @@ export function DangerZoneSettingsCard() {
               disabled={isDeleting || confirmationText !== "DELETE"}
               className="w-full sm:w-auto"
             >
+              {isDeleting ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="size-3.5" />
+              )}
               {isDeleting ? "Purging..." : "Confirm Purge"}
             </Button>
           </DialogFooter>

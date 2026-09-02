@@ -26,7 +26,7 @@ import { listJobsQuery } from "@/lib/api/jobs";
 import { listResumesQuery } from "@/lib/api/resumes";
 import { getCurrentDbUserClient } from "@/lib/api/users";
 import { queryKeys } from "@/lib/react-query/query-keys";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface NavItemProps {
   href: string;

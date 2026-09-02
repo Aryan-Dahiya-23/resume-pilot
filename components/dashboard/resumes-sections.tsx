@@ -162,7 +162,7 @@ export function ResumesTableSection({
               <div className="flex items-center justify-end gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                 <Button variant="secondary" size="xs" asChild>
                   <a
-                    href={`/api/resumes/${resume.id}/download`}
+                    href={`/api/resumes/${resume.id}/download?redirect=true`}
                     target="_blank"
                     rel="noreferrer"
                     title="Download original file"
