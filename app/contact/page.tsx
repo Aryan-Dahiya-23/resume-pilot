@@ -1,4 +1,4 @@
-import { Mail, MessageSquare, Sparkles } from "lucide-react";
+import { Mail, MessageSquare } from "lucide-react";
 import { PublicShell } from "@/components/layout/public-shell";
 import { Button } from "@/components/ui/button";
 

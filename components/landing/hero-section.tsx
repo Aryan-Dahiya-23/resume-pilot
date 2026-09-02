@@ -4,11 +4,7 @@ import {
   BarChart3,
   CheckCircle2,
   FileCheck2,
-  Layers,
   Shield,
-  Sparkles,
-  TrendingUp,
-  Upload,
   Wand2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,8 +21,8 @@ export function HeroSection({ isSignedIn = false }: { isSignedIn?: boolean }) {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <Pill>AI Resume Audit v2.0</Pill>
-              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-2xs">
-                <Sparkles className="size-3 text-emerald-600" />
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-2xs">
+                <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 DeepSeek Powered
               </span>
             </div>

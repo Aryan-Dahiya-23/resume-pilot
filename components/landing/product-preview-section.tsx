@@ -4,13 +4,7 @@ import Link from "next/link";
 import {
   ArrowRight,
   BarChart3,
-  Building2,
-  Calendar,
-  CheckCircle2,
   FileText,
-  Flame,
-  Layers,
-  Sparkles,
   TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,8 +19,8 @@ export function ProductPreviewSection({ isSignedIn = false }: { isSignedIn?: boo
       <div className="rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-10 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-6">
           <div>
-            <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-600">
-              <Sparkles className="size-3.5" />
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
               <span>Interactive Preview</span>
             </div>
             <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">

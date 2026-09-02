@@ -12,7 +12,6 @@ import {
   LogOut,
   Menu,
   Settings,
-  Sparkles,
   TrendingUp,
   X,
 } from "lucide-react";

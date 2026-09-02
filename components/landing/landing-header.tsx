@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Compass, Sparkles } from "lucide-react";
+import { Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function LandingHeader({ isSignedIn = false }: { isSignedIn?: boolean }) {

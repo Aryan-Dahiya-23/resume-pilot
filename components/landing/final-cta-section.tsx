@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function FinalCtaSection({ isSignedIn = false }: { isSignedIn?: boolean }) {
@@ -12,7 +12,7 @@ export function FinalCtaSection({ isSignedIn = false }: { isSignedIn?: boolean }
         <div className="relative z-10 flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-200">
-              <Sparkles className="size-3.5" />
+              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
               Start For Free • Instant Setup
             </div>
             <h2 className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight">

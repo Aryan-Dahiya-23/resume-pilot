@@ -14,7 +14,6 @@ import {
   Lightbulb,
   Loader2,
   Save,
-  Sparkles,
   Target,
   Trash2,
   Wand2,
@@ -46,7 +45,7 @@ export function ResumeFeedbackHeader({
     <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600">
-          <Sparkles className="size-3.5" />
+          <FileCheck2 className="size-3.5" />
           <span>DeepSeek Audit Report</span>
         </div>
         <h1 className="mt-1 truncate text-xl sm:text-2xl font-bold tracking-tight text-slate-900">

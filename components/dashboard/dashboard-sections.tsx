@@ -13,8 +13,8 @@ import {
   Flame,
   HelpCircle,
   Lightbulb,
+  ListChecks,
   Plus,
-  Sparkles,
   Target,
   TrendingUp,
   Upload,
@@ -47,7 +47,7 @@ export function DashboardOverviewHeader({
     <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
       <div>
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600">
-          <Sparkles className="size-3.5" />
+          <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
           <span>{today} • Intelligence Hub</span>
         </div>
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
@@ -191,7 +191,7 @@ export function ResumeOverviewCard({
         <div className="space-y-2.5 rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700">
-              <Sparkles className="size-3.5 text-emerald-600" />
+              <ListChecks className="size-3.5 text-emerald-600" />
               <span>Top Recommended Improvements</span>
             </div>
             <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 rounded px-1.5 py-0.5 border border-emerald-100">
