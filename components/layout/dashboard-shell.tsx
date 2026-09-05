@@ -10,7 +10,6 @@ import {
   ChevronRight,
   FileText,
   LayoutGrid,
-  LifeBuoy,
   LogOut,
   Menu,
   Settings2,
@@ -174,15 +173,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       >
         <Settings2 size={17} strokeWidth={1.6} />
         Settings
-      </Link>
-      <Link
-        href="/contact"
-        className="sidebar-link"
-        onClick={() => setMobileOpen(false)}
-      >
-        <LifeBuoy size={17} strokeWidth={1.6} />
-        Help & support
-        <ArrowUpRight size={13} className="ml-auto opacity-50" />
       </Link>
       <div className="sidebar-profile">
         {avatar}

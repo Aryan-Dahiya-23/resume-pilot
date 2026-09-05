@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   ArrowDown,
   ArrowUpRight,
@@ -15,7 +15,6 @@ import { ProgressRing } from "@/components/ui/progress-ring";
 import { Badge } from "@/components/ui/badge";
 
 export function HeroSection({ isSignedIn }: { isSignedIn: boolean }) {
-  const [preview, setPreview] = useState("resume");
   return (
     <section
       className="landing-container landing-hero"
@@ -70,139 +69,101 @@ export function HeroSection({ isSignedIn }: { isSignedIn: boolean }) {
             <i />
             <span>your next chapter / workspace</span>
           </div>
-          <div
-            className="preview-tabs"
-            role="tablist"
-            aria-label="Explore the toolkit"
-          >
-            {(
-              [
-                ["resume", "Resume review"],
-                ["jobs", "Application tracker"],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                type="button"
-                key={id}
-                role="tab"
-                id={`preview-tab-${id}`}
-                aria-controls="product-preview"
-                aria-selected={preview === id}
-                tabIndex={preview === id ? 0 : -1}
-                onKeyDown={(event) => {
-                  if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
-                    event.preventDefault();
-                    const next = preview === "resume" ? "jobs" : "resume";
-                    setPreview(next);
-                    document.getElementById(`preview-tab-${next}`)?.focus();
-                  }
-                }}
-                onClick={() => setPreview(id)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <div
-            className="preview-content"
-            id="product-preview"
-            role="tabpanel"
-            aria-labelledby={`preview-tab-${preview}`}
-          >
-            {preview === "resume" ? (
-              <>
-                <div className="preview-file">
-                  <span className="icon-tile">
-                    <FileText size={18} />
+          <Tabs defaultValue="resume" className="gap-0">
+            <TabsList className="preview-tabs" aria-label="Explore the toolkit">
+              <TabsTrigger value="resume">Resume review</TabsTrigger>
+              <TabsTrigger value="jobs">Application tracker</TabsTrigger>
+            </TabsList>
+            <TabsContent value="resume" className="preview-content">
+              <div className="preview-file">
+                <span className="icon-tile">
+                  <FileText size={18} />
+                </span>
+                <div>
+                  <strong>Alex_Morgan_Resume.pdf</strong>
+                  <small>Product Designer · Version 03</small>
+                </div>
+                <span className="ml-auto">
+                  <Badge variant="success">Reviewed</Badge>
+                </span>
+              </div>
+              <div className="preview-score">
+                <div>
+                  <span className="eyebrow !text-[9px]">
+                    A stronger first impression
                   </span>
-                  <div>
-                    <strong>Alex_Morgan_Resume.pdf</strong>
-                    <small>Product Designer · Version 03</small>
-                  </div>
-                  <span className="ml-auto">
-                    <Badge variant="success">Reviewed</Badge>
+                  <strong className="mt-2">Looking good, Alex.</strong>
+                  <p>Your experience is coming through.</p>
+                  <span className="mt-3 inline-flex items-center gap-1 text-[11px] text-[#628443]">
+                    <ArrowUpRight size={13} /> 12 points above your last version
                   </span>
                 </div>
-                <div className="preview-score">
-                  <div>
-                    <span className="eyebrow !text-[9px]">
-                      A stronger first impression
-                    </span>
-                    <strong className="mt-2">Looking good, Alex.</strong>
-                    <p>Your experience is coming through.</p>
-                    <span className="mt-3 inline-flex items-center gap-1 text-[11px] text-[#628443]">
-                      <ArrowUpRight size={13} /> 12 points above your last
-                      version
-                    </span>
-                  </div>
-                  <ProgressRing value={86} size={94} />
+                <ProgressRing value={86} size={94} />
+              </div>
+              <div className="preview-feedback">
+                <div>
+                  <Sparkles size={12} /> MAKE YOUR IMPACT VISIBLE
                 </div>
-                <div className="preview-feedback">
-                  <div>
-                    <Sparkles size={12} /> MAKE YOUR IMPACT VISIBLE
-                  </div>
-                  <p>
-                    “Redesigned the onboarding flow, helping 28% more users
-                    complete their first project.”
+                <p>
+                  “Redesigned the onboarding flow, helping 28% more users
+                  complete their first project.”
+                </p>
+              </div>
+            </TabsContent>
+            <TabsContent value="jobs" className="preview-content">
+              <div className="flex items-center justify-between pb-5">
+                <div>
+                  <strong className="text-sm font-medium">
+                    Good things in motion.
+                  </strong>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Every opportunity, one clear view.
                   </p>
                 </div>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center justify-between pb-5">
-                  <div>
-                    <strong className="text-sm font-medium">
-                      Good things in motion.
-                    </strong>
-                    <p className="mt-1 text-xs text-zinc-500">
-                      Every opportunity, one clear view.
-                    </p>
-                  </div>
-                  <span className="icon-tile">
-                    <ArrowUpRight size={18} />
-                  </span>
-                </div>
-                {[
-                  {
-                    company: "Linear",
-                    role: "Product Designer",
-                    status: "Interview",
-                    variant: "info",
-                  },
-                  {
-                    company: "Notion",
-                    role: "Brand Designer",
-                    status: "Applied",
-                    variant: "neutral",
-                  },
-                  {
-                    company: "Figma",
-                    role: "Visual Designer",
-                    status: "Saved",
-                    variant: "warning",
-                  },
-                ].map((job) => (
-                  <div
-                    key={job.company}
-                    className="flex items-center gap-3 border-t border-zinc-100 py-4"
-                  >
-                    <div className="company-avatar">{job.company[0]}</div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs font-medium">{job.company}</div>
-                      <div className="mt-1 text-[11px] text-zinc-500">
-                        {job.role}
-                      </div>
+                <span className="icon-tile">
+                  <ArrowUpRight size={18} />
+                </span>
+              </div>
+              {[
+                {
+                  company: "Linear",
+                  role: "Product Designer",
+                  status: "Interview",
+                  variant: "info",
+                },
+                {
+                  company: "Notion",
+                  role: "Brand Designer",
+                  status: "Applied",
+                  variant: "neutral",
+                },
+                {
+                  company: "Figma",
+                  role: "Visual Designer",
+                  status: "Saved",
+                  variant: "warning",
+                },
+              ].map((job) => (
+                <div
+                  key={job.company}
+                  className="flex items-center gap-3 border-t border-zinc-100 py-4"
+                >
+                  <div className="company-avatar">{job.company[0]}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-medium">{job.company}</div>
+                    <div className="mt-1 text-[11px] text-zinc-500">
+                      {job.role}
                     </div>
-                    <Badge
-                      variant={job.variant as "info" | "neutral" | "warning"}
-                    >
-                      {job.status}
-                    </Badge>
                   </div>
-                ))}
-              </>
-            )}
-          </div>
+                  <Badge
+                    variant={job.variant as "info" | "neutral" | "warning"}
+                  >
+                    {job.status}
+                  </Badge>
+                </div>
+              ))}
+            </TabsContent>
+          </Tabs>
         </div>
         <div className="floating-label">
           <span className="grid h-8 w-8 place-items-center rounded-full bg-[#d5ed9a] text-[#19372c]">

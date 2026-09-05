@@ -1,5 +1,9 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -349,10 +353,10 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
         >
           <fieldset disabled={updateJob.isPending} className="space-y-4">
             <div>
-              <label htmlFor="contact-name" className="field-label">
+              <Label htmlFor="contact-name" className="field-label">
                 Contact name
-              </label>
-              <input
+              </Label>
+              <Input
                 id="contact-name"
                 className="field-input"
                 value={contactNameDraft}
@@ -361,10 +365,10 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
               />
             </div>
             <div>
-              <label htmlFor="contact-email" className="field-label">
+              <Label htmlFor="contact-email" className="field-label">
                 Contact email
-              </label>
-              <input
+              </Label>
+              <Input
                 id="contact-email"
                 type="email"
                 className="field-input"
@@ -442,10 +446,10 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
         description="Leave yourself a note about when and how to follow up. This doesn’t schedule a notification."
         busy={updateJob.isPending}
       >
-        <label htmlFor="follow-up-note" className="field-label">
+        <Label htmlFor="follow-up-note" className="field-label">
           Your next step
-        </label>
-        <textarea
+        </Label>
+        <Textarea
           id="follow-up-note"
           className="field-input min-h-[120px] !text-sm !leading-7"
           disabled={updateJob.isPending}

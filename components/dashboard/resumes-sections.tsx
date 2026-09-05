@@ -1,4 +1,9 @@
 "use client";
+import { FormSelect } from "@/components/ui/form-select";
+import { SelectItem } from "@/components/ui/select";
+
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 import Link from "next/link";
 import {
@@ -88,7 +93,7 @@ export function ResumesTableSection({
       <div className="collection-toolbar">
         <div className="search-field">
           <Search size={16} />
-          <input
+          <Input
             type="search"
             aria-label="Search resumes"
             value={query}
@@ -98,30 +103,28 @@ export function ResumesTableSection({
           />
         </div>
         <div className="filter-group">
-          <select
+          <FormSelect
             aria-label="Filter by review status"
             value={statusFilter}
-            onChange={(e) =>
-              onStatusFilterChange(e.target.value as ResumeStatusFilter)
-            }
+            onValueChange={(e) => onStatusFilterChange(e as ResumeStatusFilter)}
           >
-            <option value="All">All statuses</option>
+            <SelectItem value="All">All statuses</SelectItem>
             {Object.entries(statusLabels).map(([value, label]) => (
-              <option key={value} value={value}>
+              <SelectItem key={value} value={value}>
                 {label}
-              </option>
+              </SelectItem>
             ))}
-          </select>
-          <select
+          </FormSelect>
+          <FormSelect
             aria-label="Filter by upload date"
             value={dateFilter}
-            onChange={(e) => onDateFilterChange(e.target.value as DateFilter)}
+            onValueChange={(e) => onDateFilterChange(e as DateFilter)}
           >
-            <option value="All">Any time</option>
-            <option value="today">Today</option>
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-          </select>
+            <SelectItem value="All">Any time</SelectItem>
+            <SelectItem value="today">Today</SelectItem>
+            <SelectItem value="7d">Last 7 days</SelectItem>
+            <SelectItem value="30d">Last 30 days</SelectItem>
+          </FormSelect>
         </div>
       </div>
       <div className="flex items-center justify-between">
@@ -381,7 +384,7 @@ export function ResumeUploadModal({
       >
         <fieldset disabled={isUploading} className="space-y-5">
           <div>
-            <label
+            <Label
               className="drop-zone"
               data-active={dragActive}
               htmlFor={inputId}
@@ -394,7 +397,7 @@ export function ResumeUploadModal({
                 chooseFile(e.dataTransfer.files?.[0] || null);
               }}
             >
-              <input
+              <Input
                 id={inputId}
                 type="file"
                 accept=".pdf,.docx"
@@ -420,7 +423,7 @@ export function ResumeUploadModal({
               <span className="mt-4 text-[11px] text-zinc-400">
                 PDF or DOCX · Maximum 5 MB
               </span>
-            </label>
+            </Label>
             {fileError && (
               <p role="alert" className="mt-2 text-xs text-rose-700">
                 {fileError}
@@ -428,10 +431,10 @@ export function ResumeUploadModal({
             )}
           </div>
           <div>
-            <label htmlFor={roleId} className="field-label">
+            <Label htmlFor={roleId} className="field-label">
               What role are you working toward?
-            </label>
-            <input
+            </Label>
+            <Input
               id={roleId}
               className="field-input"
               required

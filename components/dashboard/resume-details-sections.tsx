@@ -1,4 +1,9 @@
 "use client";
+import { FormSelect } from "@/components/ui/form-select";
+import { SelectItem } from "@/components/ui/select";
+
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 import Link from "next/link";
 import {
@@ -65,18 +70,18 @@ export function ResumeFeedbackHeader({
         actions={
           <>
             {Boolean(versionOptions?.length) && (
-              <select
+              <FormSelect
                 aria-label="Select a review version"
                 className="field-input !w-auto !text-xs"
                 value={selectedVersionId ?? versionOptions?.[0].id}
-                onChange={(e) => onSelectVersion?.(e.target.value)}
+                onValueChange={(e) => onSelectVersion?.(e)}
               >
                 {versionOptions?.map((item) => (
-                  <option key={item.id} value={item.id}>
+                  <SelectItem key={item.id} value={item.id}>
                     {item.label}
-                  </option>
+                  </SelectItem>
                 ))}
-              </select>
+              </FormSelect>
             )}
             <Button onClick={onRerunReview} disabled={isRerunning}>
               <Sparkles size={15} />
@@ -381,10 +386,10 @@ export function ResumeDetailsSidebar({
         </p>
         <div className="mt-5 space-y-4">
           <div>
-            <label htmlFor="resume-target-role" className="field-label">
+            <Label htmlFor="resume-target-role" className="field-label">
               Target role
-            </label>
-            <input
+            </Label>
+            <Input
               id="resume-target-role"
               className="field-input"
               value={roleTarget ?? ""}
@@ -393,14 +398,14 @@ export function ResumeDetailsSidebar({
             />
           </div>
           <div>
-            <label htmlFor="resume-target-level" className="field-label">
+            <Label htmlFor="resume-target-level" className="field-label">
               Experience level
-            </label>
-            <select
+            </Label>
+            <FormSelect
               id="resume-target-level"
               className="field-input"
               value={targetLevel || "Internship"}
-              onChange={(e) => onTargetLevelChange?.(e.target.value)}
+              onValueChange={(e) => onTargetLevelChange?.(e)}
             >
               {targetLevel &&
                 ![
@@ -409,7 +414,9 @@ export function ResumeDetailsSidebar({
                   "1-3 years",
                   "3-5 years",
                   "5+ years",
-                ].includes(targetLevel) && <option>{targetLevel}</option>}
+                ].includes(targetLevel) && (
+                  <SelectItem value={targetLevel}>{targetLevel}</SelectItem>
+                )}
               {[
                 "Internship",
                 "0-1 years",
@@ -417,9 +424,11 @@ export function ResumeDetailsSidebar({
                 "3-5 years",
                 "5+ years",
               ].map((level) => (
-                <option key={level}>{level}</option>
+                <SelectItem key={level} value={level}>
+                  {level}
+                </SelectItem>
               ))}
-            </select>
+            </FormSelect>
           </div>
         </div>
         <Button

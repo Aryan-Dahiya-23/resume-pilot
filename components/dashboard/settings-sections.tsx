@@ -1,5 +1,8 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
 import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
 import { useClerk } from "@clerk/nextjs";
@@ -74,10 +77,10 @@ export function ProfileSettingsCard() {
       </div>
       <div className="mt-4 grid grid-cols-1 gap-3">
         <div>
-          <label htmlFor="profile-name" className="field-label">
+          <Label htmlFor="profile-name" className="field-label">
             Your name
-          </label>
-          <input
+          </Label>
+          <Input
             id="profile-name"
             autoComplete="name"
             value={value}
@@ -86,10 +89,10 @@ export function ProfileSettingsCard() {
           />
         </div>
         <div>
-          <label htmlFor="profile-email" className="field-label">
+          <Label htmlFor="profile-email" className="field-label">
             Email address
-          </label>
-          <input
+          </Label>
+          <Input
             id="profile-email"
             value={currentUser?.email ?? ""}
             readOnly
@@ -245,10 +248,10 @@ export function DangerZoneSettingsCard() {
         description="All resumes, applications, and feedback will be permanently removed. This cannot be undone."
         busy={isDeleting}
       >
-        <label htmlFor="delete-confirmation" className="field-label">
+        <Label htmlFor="delete-confirmation" className="field-label">
           Type DELETE to confirm
-        </label>
-        <input
+        </Label>
+        <Input
           id="delete-confirmation"
           className="field-input"
           autoComplete="off"

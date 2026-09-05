@@ -14,6 +14,10 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonStyles } from "@/components/ui/button";
+import { FormSelect } from "@/components/ui/form-select";
+import { SelectItem } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/ui/page-header";
 import { statusVariant, type Job, type JobDetail } from "@/lib/mock-data";
 
@@ -168,9 +172,9 @@ export function JobDetailsMain({
       <section className="panel p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <label htmlFor="job-notes" className="section-title">
+            <Label htmlFor="job-notes" className="section-title">
               A place for the details
-            </label>
+            </Label>
             <p className="panel-kicker">
               Research, questions, and things worth remembering.
             </p>
@@ -185,7 +189,7 @@ export function JobDetailsMain({
             <Copy size={15} />
           </button>
         </div>
-        <textarea
+        <Textarea
           id="job-notes"
           className="field-input mt-5 min-h-[230px] !bg-[#fbfcf8] !p-4 !text-sm !leading-7"
           value={notes}
@@ -235,21 +239,23 @@ export function JobDetailsSidebar({
     <aside className="min-w-0 space-y-5">
       <section className="panel p-6">
         <h2 className="section-title">Where things stand</h2>
-        <label htmlFor="job-status" className="field-label mt-4">
+        <Label htmlFor="job-status" className="field-label mt-4">
           Application status
-        </label>
-        <select
+        </Label>
+        <FormSelect
           id="job-status"
           className="field-input"
           value={status ?? "Saved"}
-          onChange={(e) => onStatusChange?.(e.target.value as Job["status"])}
+          onValueChange={(e) => onStatusChange?.(e as Job["status"])}
         >
           {["Saved", "Applied", "Interview", "Offer", "Rejected"].map(
             (value) => (
-              <option key={value}>{value}</option>
+              <SelectItem key={value} value={value}>
+                {value}
+              </SelectItem>
             ),
           )}
-        </select>
+        </FormSelect>
         <Button
           className="mt-4 w-full"
           onClick={onSaveStatus}

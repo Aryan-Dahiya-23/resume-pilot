@@ -1,4 +1,9 @@
 "use client";
+import { FormSelect } from "@/components/ui/form-select";
+import { SelectItem } from "@/components/ui/select";
+
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 import Link from "next/link";
 import {
@@ -142,10 +147,10 @@ function JobForm({
       <fieldset disabled={isSubmitting} className="space-y-5">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="field-label" htmlFor={`${id}-company`}>
+            <Label className="field-label" htmlFor={`${id}-company`}>
               Company <span className="text-[#8aa76a]">*</span>
-            </label>
-            <input
+            </Label>
+            <Input
               id={`${id}-company`}
               className="field-input"
               placeholder="e.g. Linear"
@@ -156,10 +161,10 @@ function JobForm({
             />
           </div>
           <div>
-            <label className="field-label" htmlFor={`${id}-role`}>
+            <Label className="field-label" htmlFor={`${id}-role`}>
               Role <span className="text-[#8aa76a]">*</span>
-            </label>
-            <input
+            </Label>
+            <Input
               id={`${id}-role`}
               className="field-input"
               placeholder="e.g. Product Designer"
@@ -169,26 +174,29 @@ function JobForm({
             />
           </div>
           <div>
-            <label className="field-label" htmlFor={`${id}-status`}>
+            <Label className="field-label" htmlFor={`${id}-status`}>
               Where are you in the process?
-            </label>
-            <select
+            </Label>
+            <FormSelect
               id={`${id}-status`}
+              disabled={isSubmitting}
               className="field-input"
               value={values.status}
-              onChange={(e) => set("status", e.target.value as JobStatus)}
+              onValueChange={(e) => set("status", e as JobStatus)}
             >
               {jobStatuses.map((status) => (
-                <option key={status}>{status}</option>
+                <SelectItem key={status} value={status}>
+                  {status}
+                </SelectItem>
               ))}
-            </select>
+            </FormSelect>
           </div>
           <div>
-            <label className="field-label" htmlFor={`${id}-location`}>
+            <Label className="field-label" htmlFor={`${id}-location`}>
               Location{" "}
               <span className="font-normal text-zinc-400">(optional)</span>
-            </label>
-            <input
+            </Label>
+            <Input
               id={`${id}-location`}
               className="field-input"
               placeholder="Remote, hybrid, or a city"
@@ -198,11 +206,11 @@ function JobForm({
           </div>
         </div>
         <div>
-          <label className="field-label" htmlFor={`${id}-link`}>
+          <Label className="field-label" htmlFor={`${id}-link`}>
             Job listing{" "}
             <span className="font-normal text-zinc-400">(optional)</span>
-          </label>
-          <input
+          </Label>
+          <Input
             id={`${id}-link`}
             type="url"
             className="field-input"
@@ -222,10 +230,10 @@ function JobForm({
           <div className="space-y-5 border-t border-zinc-100 p-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor={`${id}-name`} className="field-label">
+                <Label htmlFor={`${id}-name`} className="field-label">
                   Contact name
-                </label>
-                <input
+                </Label>
+                <Input
                   id={`${id}-name`}
                   className="field-input"
                   placeholder="Recruiter or hiring manager"
@@ -234,10 +242,10 @@ function JobForm({
                 />
               </div>
               <div>
-                <label htmlFor={`${id}-email`} className="field-label">
+                <Label htmlFor={`${id}-email`} className="field-label">
                   Contact email
-                </label>
-                <input
+                </Label>
+                <Input
                   id={`${id}-email`}
                   type="email"
                   className="field-input"
@@ -294,7 +302,7 @@ export function RoundsEditor({
     <div className="space-y-3">
       {rounds.map((round, index) => (
         <div key={index} className="flex flex-wrap gap-2">
-          <input
+          <Input
             className="field-input !w-auto min-w-0 flex-[1_1_150px]"
             aria-label={`Round ${index + 1} name`}
             value={round.name}
@@ -307,24 +315,22 @@ export function RoundsEditor({
             }
             placeholder="e.g. Portfolio review"
           />
-          <select
+          <FormSelect
             className="field-input !w-auto flex-[0_1_115px]"
             aria-label={`Round ${index + 1} status`}
             value={round.status}
-            onChange={(e) =>
+            onValueChange={(e) =>
               onChange(
                 rounds.map((r, i) =>
-                  i === index
-                    ? { ...r, status: e.target.value as Round["status"] }
-                    : r,
+                  i === index ? { ...r, status: e as Round["status"] } : r,
                 ),
               )
             }
           >
-            <option>Pending</option>
-            <option>Upcoming</option>
-            <option>Done</option>
-          </select>
+            <SelectItem value="Pending">Pending</SelectItem>
+            <SelectItem value="Upcoming">Upcoming</SelectItem>
+            <SelectItem value="Done">Done</SelectItem>
+          </FormSelect>
           <button
             type="button"
             className="icon-button icon-button-danger !h-11"
@@ -420,7 +426,7 @@ export function JobsTableSection({
       <div className="collection-toolbar">
         <div className="search-field">
           <Search size={16} />
-          <input
+          <Input
             aria-label="Search jobs"
             type="search"
             className="field-input"
@@ -439,18 +445,16 @@ export function JobsTableSection({
               Updating
             </span>
           )}
-          <select
+          <FormSelect
             aria-label="Filter jobs by date added"
             value={dateFilter}
-            onChange={(e) =>
-              onDateFilterChange(e.target.value as typeof dateFilter)
-            }
+            onValueChange={(e) => onDateFilterChange(e as typeof dateFilter)}
           >
-            <option value="All">Added any time</option>
-            <option value="today">Today</option>
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-          </select>
+            <SelectItem value="All">Added any time</SelectItem>
+            <SelectItem value="today">Today</SelectItem>
+            <SelectItem value="7d">Last 7 days</SelectItem>
+            <SelectItem value="30d">Last 30 days</SelectItem>
+          </FormSelect>
         </div>
       </div>
       <div className="panel overflow-hidden">

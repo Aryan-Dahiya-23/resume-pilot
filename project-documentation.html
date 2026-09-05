@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ResumePilot Documentation</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 20mm 15mm 20mm 15mm;
+      @bottom-right {
+        content: counter(page);
+      }
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #1f2937;
+      line-height: 1.6;
+      font-size: 14px;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: #111827;
+      font-weight: 700;
+      page-break-after: avoid;
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+    }
+    h1 {
+      font-size: 28px;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 8px;
+      margin-top: 0;
+    }
+    h2 {
+      font-size: 20px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 6px;
+      color: #2563eb;
+    }
+    h3 {
+      font-size: 16px;
+      color: #374151;
+    }
+    p {
+      margin-top: 0;
+      margin-bottom: 1em;
+    }
+    ul, ol {
+      margin-top: 0;
+      margin-bottom: 1em;
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 0.25em;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12.5px;
+      background-color: #f3f4f6;
+      padding: 2px 4px;
+      border-radius: 4px;
+      color: #eb5757;
+    }
+    pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      background-color: #1e1e2e;
+      color: #cdd6f4;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-top: 0;
+      margin-bottom: 1.5em;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    pre code {
+      background-color: transparent;
+      padding: 0;
+      border-radius: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0;
+      margin-bottom: 1.5em;
+      page-break-inside: avoid;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 13px;
+    }
+    th {
+      background-color: #f9fafb;
+      font-weight: 600;
+      color: #374151;
+    }
+    tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+    .page-break {
+      page-break-before: always;
+    }
+    .cover-page {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 250mm;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .cover-title {
+      font-size: 42px;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+    .cover-subtitle {
+      font-size: 20px;
+      color: #4b5563;
+      margin-bottom: 40px;
+      font-weight: 400;
+    }
+    .cover-badge {
+      display: inline-block;
+      background-color: #dbeafe;
+      color: #1e40af;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 30px;
+    }
+    .cover-metadata {
+      margin-top: auto;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 20px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .cover-metadata table {
+      width: auto;
+      margin-bottom: 0;
+    }
+    .cover-metadata table td {
+      border: none;
+      padding: 4px 15px 4px 0;
+      background-color: transparent;
+    }
+    .callout {
+      background-color: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1.5em;
+    }
+    .callout-title {
+      font-weight: 600;
+      color: #1d4ed8;
+      margin-bottom: 4px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .badge-primary { background-color: #dbeafe; color: #1e40af; }
+    .badge-success { background-color: #dcfce7; color: #166534; }
+    .badge-warning { background-color: #fef9c3; color: #854d0e; }
+    .badge-danger { background-color: #fee2e2; color: #991b1b; }
+    .badge-secondary { background-color: #f3f4f6; color: #374151; }
+  </style>
+</head>
+<body>
+
+  <!-- COVER PAGE -->
+  <div class="cover-page">
+    <div class="cover-badge">System Documentation</div>
+    <div class="cover-title">ResumePilot</div>
+    <div class="cover-subtitle">AI-Powered Resume Reviewer & Job Application Tracker</div>
+    
+    <div class="callout" style="margin-top: 40px;">
+      <div class="callout-title">Architecture Summary</div>
+      ResumePilot is a modern full-stack web application designed to help job seekers optimize their resumes using AI and track their job application pipeline. It is built on the Next.js App Router framework, employing PostgreSQL for persistence, Prisma for database ORM, Clerk for secure identity management, Supabase Storage for resume files, Inngest for background step-function queues, and an advanced AI Engine for structural parsing validation and constructive review critique.
+    </div>
+
+    <div class="cover-metadata">
+      <table>
+        <tr>
+          <td><strong>Author:</strong></td>
+          <td>Engineering & Architecture Team</td>
+        </tr>
+        <tr>
+          <td><strong>Stack:</strong></td>
+          <td>Next.js 16 (App Router), React 19, TypeScript, Prisma, Clerk, Supabase, Inngest, AI Engine</td>
+        </tr>
+        <tr>
+          <td><strong>Document Version:</strong></td>
+          <td>1.0.0</td>
+        </tr>
+        <tr>
+          <td><strong>Date:</strong></td>
+          <td>June 2026</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- TABLE OF CONTENTS / ARCHITECTURE OVERVIEW -->
+  <h1>1. System Architecture</h1>
+  
+  <p>
+    ResumePilot utilizes a decoupled, event-driven serverless design. Users interact with a responsive single-page dashboard built with React 19. Core API routes manage user state, resume metadata, and job trackers synchronously, while heavy workloads—such as resume parsing (PDF/DOCX extraction) and generative AI feedback evaluations—are dispatched asynchronously to Inngest background queues.
+  </p>
+
+  <h3>High-Level System Topology</h3>
+  <ul>
+    <li><strong>Client Layer:</strong> React 19 Client Components, styled with Tailwind CSS, using TanStack React Query for declarative server-state management, cache invalidation, and optimistic state transitions.</li>
+    <li><strong>Identity Provider:</strong> Clerk Authentication middleware guarding frontend pages, Next.js Middleware routes, and API endpoints, mapping authentication states to the local database schema via standard Clerk Sync webhooks.</li>
+    <li><strong>Storage Layer:</strong> Supabase Object Storage API, accessed via secure Signed URL protocols, enabling controlled document storage for resumes.</li>
+    <li><strong>Persistent Database:</strong> PostgreSQL database mapped via Prisma Client, supporting high-concurrency connection pools and direct schema migrations.</li>
+    <li><strong>Asynchronous Job Queue:</strong> Inngest event processor orchestrating multi-step, durable workflows for resume analysis with state check-pointing.</li>
+    <li><strong>AI Intelligence Layer:</strong> Large Language Model (LLM) producing structured, schema-validated critiques.</li>
+  </ul>
+
+  <div class="callout">
+    <div class="callout-title">Core Benefit of Inngest Event Pipeline</div>
+    By decoupling the file parsing and LLM API calls from the client request-response loop, ResumePilot completely avoids API timeouts (common in serverless functions limited to 15s-30s execution boundaries) and provides robust automatic retry mechanisms on transient third-party API failures.
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- DATABASE SCHEMAS -->
+  <h1>2. Database Schema Design</h1>
+  <p>
+    The application database uses a PostgreSQL instance managed via Prisma ORM. The relational model stores user profiles, uploaded documents, parse summaries, AI generated feedback reports, and tracked job application cycles.
+  </p>
+
+  <h3>Entity Relationship Models</h3>
+  <pre><code>// schema.prisma
+
+enum ResumeStatus {
+  UPLOADED
+  PARSING
+  REVIEWING
+  READY
+  FAILED
+}
+
+enum JobStatus {
+  Saved
+  Applied
+  Interview
+  Offer
+  Rejected
+}
+
+model User {
+  id        String   @id @default(uuid())
+  clerkId   String   @unique
+  name      String?
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  resumes   Resume[]
+  jobs      Job[]
+}
+
+model Resume {
+  id          String       @id @default(uuid())
+  userId      String
+  fileName    String
+  storageKey  String
+  mimeType    String
+  size        Int
+  roleTarget  String?
+  targetLevel String?
+  status      ResumeStatus @default(UPLOADED)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parse       ResumeParse?
+  review      ResumeReview?
+  reviewHistory ResumeReviewHistory[]
+
+  @@index([userId, createdAt])
+}
+
+model ResumeParse {
+  id             String   @id @default(uuid())
+  resumeId       String   @unique
+  rawText        String
+  structuredJson Json
+  parserVersion  String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  resume         Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model ResumeReview {
+  id              String   @id @default(uuid())
+  resumeId        String   @unique
+  score           Int
+  summaryJson     Json
+  missingKeywords Json
+  suggestionsJson Json
+  model           String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  resume          Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model ResumeReviewHistory {
+  id              String   @id @default(uuid())
+  resumeId        String
+  score           Int
+  summaryJson     Json
+  missingKeywords Json
+  suggestionsJson Json
+  model           String
+  createdAt       DateTime @default(now())
+
+  resume          Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId, createdAt])
+}
+
+model Job {
+  id             String    @id @default(uuid())
+  userId         String
+  company        String
+  role           String
+  status         JobStatus @default(Saved)
+  notes          String?
+  followUp       String?
+  contactName    String?
+  contactEmail   String?
+  interviewRounds Json?
+  location       String?
+  link           String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, status])
+}</code></pre>
+
+  <div class="page-break"></div>
+
+  <!-- THE ANALYSIS PIPELINE -->
+  <h1>3. The Resume Parsing & AI Critique Pipeline</h1>
+  <p>
+    When a user uploads a resume, the document proceeds through a highly structured, automated processing chain. This cycle is fully asynchronous and coordinated via durable execution.
+  </p>
+
+  <h3>Processing Lifecycle</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Status Code</th>
+        <th>Responsible Module</th>
+        <th>Action Performed</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1. Upload</td>
+        <td><span class="badge badge-primary">UPLOADED</span></td>
+        <td><code>app/api/resumes/upload</code></td>
+        <td>Validates file mime-type and file size limit. Uploads binary data to Supabase Storage, creates a database <code>Resume</code> record, and dispatches the <code>resume/uploaded</code> event to Inngest.</td>
+      </tr>
+      <tr>
+        <td>2. Parser</td>
+        <td><span class="badge badge-warning">PARSING</span></td>
+        <td><code>lib/resume-parser.ts</code></td>
+        <td>Downloads the document from Supabase. Selects appropriate parser: <code>pdf-parse</code> for PDF binaries, or <code>mammoth</code> for Microsoft Word (DOCX) files. Normalizes spacing, separates lines, and extracts text structures.</td>
+      </tr>
+      <tr>
+        <td>3. Reviewer</td>
+        <td><span class="badge badge-info" style="background-color: #e0f2fe; color: #0369a1;">REVIEWING</span></td>
+        <td><code>lib/ai/review-resume.ts</code></td>
+        <td>Generates a target prompt based on targeted role/seniority. Transmits the raw text and structure map to the AI API with instruction to output strict, structured JSON. Sanitizes response.</td>
+      </tr>
+      <tr>
+        <td>4. Ready</td>
+        <td><span class="badge badge-success">READY</span></td>
+        <td><code>lib/inngest/functions</code></td>
+        <td>Saves final critique properties into <code>ResumeReview</code>, appends a version history node to <code>ResumeReviewHistory</code>, and marks the resume as ready for front-end rendering.</td>
+      </tr>
+      <tr>
+        <td>5. Failed</td>
+        <td><span class="badge badge-danger">FAILED</span></td>
+        <td>Global Error Catch Block</td>
+        <td>Catches network connection timeouts, parsing errors, or API schema violations, changing the target resume status to <code>FAILED</code> and logging execution logs.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Text Normalization and Section Segmentation</h3>
+  <p>
+    To feed clean, context-focused content into the LLM model and maximize assessment quality, the parser parses file buffers into plaintext strings and runs the following normalizations:
+  </p>
+  <ul>
+    <li>Normalizes carriage returns (<code>\r\n</code>) to Unix newlines (<code>\n</code>), strips null bytes (<code>\u0000</code>), and removes tab whitespace.</li>
+    <li>Uses aliases lookup mapping to identify section boundaries (e.g. mapping "Profile", "About", and "Professional Summary" into the single logical key <code>summary</code>).</li>
+    <li>Applies regular expressions to distinguish between project lines, technical skills strings, educational structures, and personal contact lines.</li>
+  </ul>
+
+  <h3>AI Integration Details</h3>
+  <p>
+    The AI model evaluation prompt sets strict constraints for resume evaluation:
+  </p>
+  <pre><code>// lib/ai/review-resume.ts Prompt Constraints
+- Provide 3-6 strengths
+- Provide 3-6 weaknesses
+- Provide 5-12 missingKeywords
+- Provide exactly 3 rewriteSuggestions (each with before/after/why properties)
+- Provide exactly 3 nextActions
+- Score must reflect ATS readability + role alignment + measurable impact</code></pre>
+  <p>
+    The code requests structured JSON output using <code>response_format: { type: "json_object" }</code> to guarantee structural parseability. The returning string is filtered, validated, and normalized back into type-safe JavaScript objects.
+  </p>
+
+  <div class="page-break"></div>
+
+  <!-- API REFERENCE -->
+  <h1>4. REST API Endpoint Reference</h1>
+  <p>
+    All HTTP API endpoints are mounted within Next.js Route Handlers. Requests are authenticated using Clerk, ensuring users can only read and write data belonging to their respective identity record.
+  </p>
+
+  <h3>Resume Endpoints</h3>
+
+  <h4><code>GET /api/resumes</code></h4>
+  <p>Lists resumes uploaded by the authenticated user. Supports filtering and search parameters.</p>
+  <ul>
+    <li><strong>Query Parameters:</strong>
+      <ul>
+        <li><code>q</code> (string): Matches search queries against the filename, target role, or level.</li>
+        <li><code>status</code> (ResumeStatus): Filter files matching specific statuses.</li>
+        <li><code>dateRange</code> (string): Restricts search bounds to <code>today</code>, <code>7d</code>, or <code>30d</code>.</li>
+      </ul>
+    </li>
+    <li><strong>Success Response (200 OK):</strong>
+      <pre><code>{
+  "resumes": [
+    {
+      "id": "e581db32-dfc7-4eb7-a068-07e3bd26ef04",
+      "fileName": "Aryan_Dahiya_Resume.pdf",
+      "roleTarget": "Frontend Architect",
+      "targetLevel": "Senior",
+      "status": "READY",
+      "createdAt": "2026-06-02T15:30:00.000Z",
+      "score": 85
+    }
+  ],
+  "totalCount": 1
+}</code></pre>
+    </li>
+  </ul>
+
+  <h4><code>POST /api/resumes/upload</code></h4>
+  <p>Accepts a multipart file upload payload to start the resume parsing pipeline.</p>
+  <ul>
+    <li><strong>Request Body:</strong> <code>FormData</code> containing:
+      <ul>
+        <li><code>file</code> (File): Binary PDF/DOCX file stream (Max 5MB).</li>
+        <li><code>roleTarget</code> (string): Targeted role description (e.g., "Fullstack Developer").</li>
+        <li><code>targetLevel</code> (string, optional): Seniority level (e.g., "Mid-Level").</li>
+      </ul>
+    </li>
+    <li><strong>Success Response (201 Created):</strong>
+      <pre><code>{
+  "resume": {
+    "id": "e581db32-dfc7-4eb7-a068-07e3bd26ef04",
+    "fileName": "Aryan_Dahiya_Resume.pdf",
+    "roleTarget": "Frontend Architect",
+    "targetLevel": "Senior",
+    "status": "UPLOADED",
+    "size": 1204523,
+    "mimeType": "application/pdf",
+    "storageKey": "user_id/1770900057_Aryan_Dahiya_Resume.pdf",
+    "bucket": "resumes",
+    "createdAt": "2026-06-02T20:54:34.000Z"
+  },
+  "processingQueued": true
+}</code></pre>
+    </li>
+  </ul>
+
+  <h4><code>GET /api/resumes/[id]</code></h4>
+  <p>Fetches full parsing information, current feedback review ratings, and historic review versions for a specific resume resource.</p>
+  <ul>
+    <li><strong>Success Response (200 OK):</strong>
+      <pre><code>{
+  "resume": {
+    "id": "e581db32-dfc7-4eb7-a068-07e3bd26ef04",
+    "fileName": "Aryan_Dahiya_Resume.pdf",
+    "roleTarget": "Frontend Architect",
+    "targetLevel": "Senior",
+    "status": "READY",
+    "createdAt": "2026-06-02T15:30:00.000Z",
+    "updatedAt": "2026-06-02T15:31:12.000Z",
+    "mimeType": "application/pdf",
+    "size": 1204523,
+    "storageKey": "user_id/1770900057_Aryan_Dahiya_Resume.pdf",
+    "parse": {
+      "parserVersion": "real-v1-pdfparse-mammoth",
+      "rawText": "...",
+      "structuredJson": {
+        "summary": "...",
+        "experience": ["..."],
+        "projects": ["..."],
+        "skills": ["..."],
+        "education": ["..."]
+      }
+    },
+    "feedback": {
+      "score": 85,
+      "strengths": ["Clear section headings", "Strong impact action verbs"],
+      "weaknesses": ["Missing Kubernetes keyword", "Project metrics could be quantifiable"],
+      "nextActions": ["Add quantifiable metrics to project items", "Include CI/CD skills"],
+      "missingKeywords": ["Docker", "Kubernetes", "GraphQL"],
+      "atsChecks": [],
+      "rewriteSuggestions": [
+        {
+          "before": "Worked on the frontend code",
+          "after": "Refactored user dashboard interface using Next.js, boosting load speed by 35%",
+          "why": "Demonstrates impact, specific tech stack, and quantifies performance gains."
+        }
+      ]
+    },
+    "reviewHistory": []
+  }
+}</code></pre>
+    </li>
+  </ul>
+
+  <div class="page-break"></div>
+
+  <h3>Job Endpoints</h3>
+
+  <h4><code>GET /api/jobs</code></h4>
+  <p>Retrieves a paginated list of job applications tracked by the active user account.</p>
+  <ul>
+    <li><strong>Query Parameters:</strong>
+      <ul>
+        <li><code>q</code>: Filters jobs by company name, role title, or location fields.</li>
+        <li><code>status</code>: Restricts results to specific job status types.</li>
+        <li><code>page</code> (default 1): The page index.</li>
+        <li><code>limit</code> (default 10): Page size (maximum of 50).</li>
+      </ul>
+    </li>
+    <li><strong>Success Response (200 OK):</strong>
+      <pre><code>{
+  "jobs": [
+    {
+      "id": "a90412e8-d7a8-4221-a3f1-b92ccfe98c21",
+      "company": "Google",
+      "role": "Frontend Engineer",
+      "status": "Interview",
+      "location": "Bengaluru, India",
+      "link": "https://careers.google.com/jobs",
+      "createdAt": "2026-06-01T10:00:00.000Z",
+      "interviewRounds": [
+        { "name": "Technical Assessment", "status": "Done" },
+        { "name": "System Design", "status": "Upcoming" }
+      ]
+    }
+  ],
+  "totalCount": 10,
+  "filteredCount": 1,
+  "page": 1,
+  "limit": 10,
+  "totalPages": 1
+}</code></pre>
+    </li>
+  </ul>
+
+  <h4><code>POST /api/jobs</code></h4>
+  <p>Creates a new tracked job application record in the database. Schema-validated via <code>zod</code>.</p>
+  <ul>
+    <li><strong>Request Body:</strong>
+      <pre><code>{
+  "company": "Google",
+  "role": "Frontend Engineer",
+  "status": "Interview",
+  "location": "Bengaluru, India",
+  "link": "https://careers.google.com/jobs",
+  "interviewRounds": [
+    { "name": "Technical Assessment", "status": "Done" },
+    { "name": "System Design", "status": "Upcoming" }
+  ]
+}</code></pre>
+    </li>
+    <li><strong>Success Response (201 Created):</strong> Returns the newly created database job object.</li>
+  </ul>
+
+  <div class="page-break"></div>
+
+  <!-- DASHBOARD OVERVIEW -->
+  <h1>5. Dashboard Metrics & Front-end Integration</h1>
+  <p>
+    The dashboard homepage presents a unified overview of all resume assessment metrics, application status metrics, and goal progressions.
+  </p>
+
+  <h3>Endpoint: <code>GET /api/dashboard/overview</code></h3>
+  <p>
+    Returns composite metrics parsed synchronously from historical databases:
+  </p>
+  <ul>
+    <li><strong>Latest Resume Score & Delta:</strong> Compares the score of the most recently uploaded resume against the previous document version, computing the rating difference (<code>delta</code>) to demonstrate progress tracking.</li>
+    <li><strong>Application Success Funnel:</strong> Computes the User's Interview Conversion Rate using the mathematical relation:
+      <div style="text-align: center; margin: 15px 0;">
+        <strong>Interview Conversion Rate (%) = (Interviews + Offers) / Total Submitted Applications (Applied + Interview + Offer + Rejected)</strong>
+      </div>
+    </li>
+    <li><strong>Weekly Target Counter:</strong> Measures job application counts submitted over the past 7 days to calculate user progression progress towards their weekly goal.</li>
+  </ul>
+
+  <h3>Frontend State Synchronizer</h3>
+  <p>
+    The application's sidebar layout (<code>DashboardShell</code>) acts as a parent shell that handles application state.
+  </p>
+  <ul>
+    <li><strong>Prefetching Engine:</strong> Listens to mouse hover triggers (<code>onMouseEnter</code>) over navigation links (e.g. Dashboard, Resumes, Jobs) and pre-fetches resource datasets into the React Query cache before transitions happen. This creates a zero-delay transition user experience.</li>
+    <li><strong>Mobile Optimizations:</strong> Implements responsive gesture handlers (listening to touch gestures like <code>onTouchStart</code>, <code>onTouchMove</code>, and <code>onTouchEnd</code>) allowing users to close side drawer menus via left-swiping motions on handheld devices.</li>
+  </ul>
+
+  <div class="page-break"></div>
+
+  <!-- CONFIGURATION AND DEPLOYMENT -->
+  <h1>6. Installation & Configuration</h1>
+  <p>
+    To spin up the project environment locally or configure deployment builds on Vercel, the following steps must be completed.
+  </p>
+
+  <h3>Required Environment Keys (<code>.env</code>)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Variable Key</th>
+        <th>Description / Usage</th>
+        <th>Source</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY</code></td>
+        <td>Clerk Identity SDK authorization key</td>
+        <td>Clerk Dashboard</td>
+      </tr>
+      <tr>
+        <td><code>CLERK_SECRET_KEY</code></td>
+        <td>Private signing key validating webhook requests</td>
+        <td>Clerk Dashboard</td>
+      </tr>
+      <tr>
+        <td><code>DATABASE_URL</code></td>
+        <td>Postgres Transaction connection pool URL</td>
+        <td>Supabase database setting</td>
+      </tr>
+      <tr>
+        <td><code>DIRECT_URL</code></td>
+        <td>Postgres Direct migration connection URL</td>
+        <td>Supabase database setting</td>
+      </tr>
+      <tr>
+        <td><code>SUPABASE_URL</code></td>
+        <td>Supabase project API endpoint domain</td>
+        <td>Supabase settings API page</td>
+      </tr>
+      <tr>
+        <td><code>SUPABASE_SERVICE_ROLE_KEY</code></td>
+        <td>Bypasses RLS to read/write storage files</td>
+        <td>Supabase API settings (Secure!)</td>
+      </tr>
+      <tr>
+        <td><code>AI_API_KEY</code></td>
+        <td>Accesses AI generative models</td>
+        <td>AI Provider API Keys (e.g. OpenAI / Compatible)</td>
+      </tr>
+      <tr>
+        <td><code>AI_MODEL</code></td>
+        <td>Target AI model identifier</td>
+        <td>e.g., <code>gpt-4o-mini</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Local Workspace Execution</h3>
+  <ol>
+    <li>Install packages:
+      <pre><code>npm install</code></pre>
+    </li>
+    <li>Push Database Schema:
+      <pre><code>npx prisma db push</code></pre>
+    </li>
+    <li>Launch Inngest development service to listen to local API endpoint:
+      <pre><code>npx inngest-cli@latest dev -u http://localhost:3000/api/inngest</code></pre>
+    </li>
+    <li>Launch Next.js development server:
+      <pre><code>npm run dev</code></pre>
+    </li>
+  </ol>
+
+  <div class="callout" style="border-left-color: #10b981; background-color: #ecfdf5;">
+    <div class="callout-title" style="color: #047857;">Prisma Post-Installation Webhook</div>
+    The project is configured with a <code>postinstall</code> lifecycle script that runs <code>prisma generate</code> automatically on production deploys (e.g. Vercel builds), ensuring client type safety remains consistent without manual builds.
+  </div>
+
+</body>
+</html>
