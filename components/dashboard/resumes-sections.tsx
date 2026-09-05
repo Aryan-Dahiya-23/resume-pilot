@@ -3,47 +3,60 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
-  Briefcase,
   CheckCircle2,
   FileText,
-  Loader2,
   Lightbulb,
+  Loader2,
   Search,
+  ShieldCheck,
+  Sparkles,
   Trash2,
-  X,
   Upload,
-  Wand2,
 } from "lucide-react";
-import { useState, type DragEvent } from "react";
+import { useId, useState, type DragEvent } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Modal } from "@/components/ui/modal";
+import { PageHeader } from "@/components/ui/page-header";
 import type { UploadResumeResponse } from "@/lib/api/resumes";
 import type { Resume } from "@/lib/mock-data";
+
+type ResumeStatusFilter =
+  | "All"
+  | "UPLOADED"
+  | "PARSING"
+  | "REVIEWING"
+  | "READY"
+  | "FAILED";
+type DateFilter = "All" | "today" | "7d" | "30d";
+const statusLabels: Record<string, string> = {
+  UPLOADED: "Queued",
+  PARSING: "Reading file",
+  REVIEWING: "Reviewing",
+  READY: "Reviewed",
+  FAILED: "Needs attention",
+};
 
 export function ResumesHeader() {
   return <ResumesHeaderWithAction />;
 }
-
 export function ResumesHeaderWithAction({
   onUploadClick,
 }: {
   onUploadClick?: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <div className="text-sm text-zinc-500">Resumes</div>
-        <h1 className="text-xl font-semibold text-zinc-900">
-          All resume versions
-        </h1>
-      </div>
-
-      <div className="flex flex-col gap-2 sm:flex-row">
+    <PageHeader
+      eyebrow="YOUR STORY, REFINED"
+      title="My resumes"
+      description="Every version is a step toward a stronger first impression."
+      actions={
         <Button onClick={onUploadClick}>
-          <Upload className="h-4 w-4" />
-          Upload new
+          <Upload size={16} />
+          Upload resume
         </Button>
-      </div>
-    </div>
+      }
+    />
   );
 }
 
@@ -61,192 +74,227 @@ export function ResumesTableSection({
 }: {
   query: string;
   onQueryChange: (value: string) => void;
-  statusFilter: "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED";
-  onStatusFilterChange: (value: "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED") => void;
-  dateFilter: "All" | "today" | "7d" | "30d";
-  onDateFilterChange: (value: "All" | "today" | "7d" | "30d") => void;
+  statusFilter: ResumeStatusFilter;
+  onStatusFilterChange: (value: ResumeStatusFilter) => void;
+  dateFilter: DateFilter;
+  onDateFilterChange: (value: DateFilter) => void;
   rows: Array<Resume & { status?: string }>;
-  onDeleteResume?: (resumeId: string) => void;
+  onDeleteResume?: (id: string) => void;
   deletingResumeId?: string | null;
-  onHoverResume?: (resumeId: string) => void;
+  onHoverResume?: (id: string) => void;
 }) {
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+    <section aria-label="Resume library" className="space-y-6">
+      <div className="collection-toolbar">
+        <div className="search-field">
+          <Search size={16} />
           <input
+            type="search"
+            aria-label="Search resumes"
             value={query}
-            onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Search versions, file name, target role..."
-            className="w-full rounded-2xl border border-zinc-200 bg-white py-2 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
+            onChange={(e) => onQueryChange(e.target.value)}
+            placeholder="Search resumes or target roles…"
+            className="field-input"
           />
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="filter-group">
           <select
+            aria-label="Filter by review status"
             value={statusFilter}
-            onChange={(event) =>
-              onStatusFilterChange(
-                event.target.value as "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED",
-              )
+            onChange={(e) =>
+              onStatusFilterChange(e.target.value as ResumeStatusFilter)
             }
-            className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
           >
             <option value="All">All statuses</option>
-            <option value="UPLOADED">Uploaded</option>
-            <option value="PARSING">Parsing</option>
-            <option value="REVIEWING">Reviewing</option>
-            <option value="READY">Ready</option>
-            <option value="FAILED">Failed</option>
+            {Object.entries(statusLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
           </select>
           <select
+            aria-label="Filter by upload date"
             value={dateFilter}
-            onChange={(event) =>
-              onDateFilterChange(
-                event.target.value as "All" | "today" | "7d" | "30d",
-              )
-            }
-            className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
+            onChange={(e) => onDateFilterChange(e.target.value as DateFilter)}
           >
-            <option value="All">Any date</option>
+            <option value="All">Any time</option>
             <option value="today">Today</option>
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
           </select>
         </div>
       </div>
-
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-zinc-200">
-        <div className="min-w-[740px]">
-          <div className="grid grid-cols-[110px_1fr_120px_120px_140px] gap-0 bg-zinc-50 px-4 py-3 text-xs font-medium text-zinc-600">
-            <div>Version</div>
-            <div>File</div>
-            <div>Status</div>
-            <div>Score</div>
-            <div className="text-right">Actions</div>
-          </div>
-          <div className="divide-y divide-zinc-200">
-            {rows.map((resume) => (
-              <div
-                key={resume.id}
-                className="grid grid-cols-[110px_1fr_120px_120px_140px] items-center gap-0 px-4 py-3"
-              >
-              <div className="text-sm font-medium text-zinc-900">
-                {resume.version}
-                <div className="mt-0.5 text-xs text-zinc-500">
-                  {resume.uploadedAt}
-                </div>
-              </div>
-
-              <div className="min-w-0">
-                <div className="truncate text-sm font-medium text-zinc-900">
-                  {resume.fileName}
-                </div>
-                <div className="truncate text-sm text-zinc-500">
-                  Target: {resume.roleTarget ?? "Not set"}
-                </div>
-              </div>
-
-              <div>
-                <span
-                  className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                    resume.status === "READY"
-                      ? "bg-emerald-50 text-emerald-700"
-                      : resume.status === "FAILED"
-                        ? "bg-rose-50 text-rose-700"
-                        : "bg-amber-50 text-amber-700"
-                  }`}
-                >
-                  {resume.status ?? "READY"}
-                </span>
-              </div>
-
-              <div>
-                <div className="text-sm font-semibold text-zinc-900">
-                  {resume.score}
-                </div>
-                <div className="text-xs text-zinc-500">ATS</div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2">
-                <Link
-                  href={`/dashboard/resumes/${resume.id}`}
-                  onMouseEnter={() => onHoverResume?.(resume.id)}
-                  className="rounded-xl border border-zinc-200 bg-white p-2 hover:bg-zinc-50"
-                  title="View feedback"
-                >
-                  <ArrowUpRight className="h-4 w-4" />
-                </Link>
-                <button
-                  onClick={() => onDeleteResume?.(resume.id)}
-                  disabled={deletingResumeId === resume.id}
-                  className="rounded-xl border border-zinc-200 bg-white p-2 hover:bg-zinc-50"
-                  title="Delete"
-                >
-                  {deletingResumeId === resume.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              </div>
-            ))}
-            {rows.length === 0 ? (
-              <div className="px-4 py-8 text-center">
-                <div className="text-sm font-medium text-zinc-900">No matching resumes</div>
-                <div className="mt-1 text-sm text-zinc-600">
-                  Try changing search text or filters to see results.
-                </div>
-              </div>
-            ) : null}
-          </div>
-        </div>
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-medium">
+          Your resume library{" "}
+          <span className="ml-2 rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500">
+            {rows.length}
+          </span>
+        </h2>
+        <span className="text-xs text-zinc-400">Newest first</span>
       </div>
+      {rows.length ? (
+        <div className="resume-grid">
+          {rows.map((resume) => {
+            const ready = !resume.status || resume.status === "READY";
+            const failed = resume.status === "FAILED";
+            return (
+              <article key={resume.id} className="panel resume-card">
+                <div className="resume-card-preview" aria-hidden="true">
+                  <div className="resume-paper">
+                    <div className="paper-line !mb-2 !h-[7px] !w-2/5 !bg-[#668b4d]" />
+                    <div className="paper-line !mb-4 !w-3/5" />
+                    {[100, 87, 94, 64, 100, 83, 93].map((n, i) => (
+                      <div
+                        key={i}
+                        className="paper-line"
+                        style={{ width: `${n}%` }}
+                      />
+                    ))}
+                  </div>
+                  <span className="absolute right-3 top-3 rounded-md border border-[#e1e7d6] bg-white px-2 py-1 font-mono text-[10px] text-zinc-500">
+                    {resume.fileName.split(".").pop()?.toUpperCase()}
+                  </span>
+                </div>
+                <div className="resume-card-body">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h2>
+                        <Link
+                          href={`/dashboard/resumes/${resume.id}`}
+                          onMouseEnter={() => onHoverResume?.(resume.id)}
+                          onFocus={() => onHoverResume?.(resume.id)}
+                        >
+                          {resume.fileName}
+                        </Link>
+                      </h2>
+                      <p className="resume-card-meta">
+                        {resume.uploadedAt} · {resume.version}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="icon-button icon-button-danger !h-7 !w-7"
+                      aria-label={`Delete ${resume.fileName}`}
+                      onClick={() => onDeleteResume?.(resume.id)}
+                      disabled={deletingResumeId === resume.id}
+                    >
+                      {deletingResumeId === resume.id ? (
+                        <Loader2 size={15} className="animate-spin" />
+                      ) : (
+                        <Trash2 size={15} />
+                      )}
+                    </button>
+                  </div>
+                  <p className="mt-4 truncate text-xs text-zinc-500">
+                    {resume.roleTarget || "No target role set"}
+                  </p>
+                  <div className="resume-card-score">
+                    <span className="text-xs text-zinc-500">Resume score</span>
+                    <div className="flex items-center gap-2">
+                      <strong className="text-lg font-medium">
+                        {ready ? resume.score : "—"}
+                      </strong>
+                      {ready && (
+                        <span className="score-track">
+                          <i
+                            style={{
+                              width: `${Math.max(0, Math.min(resume.score, 100))}%`,
+                            }}
+                          />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge
+                      variant={
+                        ready ? "success" : failed ? "danger" : "warning"
+                      }
+                    >
+                      {statusLabels[resume.status || "READY"] || "Processing"}
+                    </Badge>
+                    <Link
+                      href={`/dashboard/resumes/${resume.id}`}
+                      className="text-link"
+                      onMouseEnter={() => onHoverResume?.(resume.id)}
+                    >
+                      {ready ? "View feedback" : "View details"}
+                      <ArrowUpRight size={14} />
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="panel empty-state">
+          <div className="icon-tile">
+            <Search size={24} />
+          </div>
+          <h3>No resumes match just yet.</h3>
+          <p>
+            Try a different search or clear your filters to see your library.
+          </p>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              onQueryChange("");
+              onStatusFilterChange("All");
+              onDateFilterChange("All");
+            }}
+          >
+            Clear filters
+          </Button>
+        </div>
+      )}
     </section>
   );
 }
 
 export function ResumeScoreGuideCard() {
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="text-sm font-medium text-zinc-900">
-        How the score works
+    <section className="score-guide">
+      <div className="flex items-center gap-2">
+        <Sparkles size={16} className="text-[#7b9956]" />
+        <h2 className="text-sm font-medium">
+          What goes into a stronger resume?
+        </h2>
       </div>
-      <div className="mt-2 text-sm text-zinc-600">
-        Your ATS score is computed from structure + clarity + role match. Upload
-        a new version after edits to track improvement.
+      <div className="score-guide-grid">
+        {[
+          {
+            icon: CheckCircle2,
+            title: "Easy to read",
+            text: "Clear sections and consistent formatting help your experience stand out.",
+          },
+          {
+            icon: Lightbulb,
+            title: "Real impact",
+            text: "Specific outcomes and honest metrics make your contribution concrete.",
+          },
+          {
+            icon: Sparkles,
+            title: "The right story",
+            text: "Relevant skills and language connect your experience to the role.",
+          },
+        ].map((item) => (
+          <div key={item.title} className="flex gap-3">
+            <item.icon size={17} className="mt-0.5 shrink-0 text-[#809865]" />
+            <div>
+              <h3 className="text-xs font-medium">{item.title}</h3>
+              <p className="mt-1 text-xs leading-6 text-zinc-500">
+                {item.text}
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
-
-      <div className="mt-4 space-y-3">
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-            <CheckCircle2 className="h-4 w-4" />
-            Structure
-          </div>
-          <div className="mt-1 text-sm text-zinc-600">
-            One-column layout, consistent headings, ATS-friendly formatting.
-          </div>
-        </div>
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-            <Lightbulb className="h-4 w-4" />
-            Impact
-          </div>
-          <div className="mt-1 text-sm text-zinc-600">
-            Metrics, outcomes, scale, ownership.
-          </div>
-        </div>
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-            <Wand2 className="h-4 w-4" />
-            Role match
-          </div>
-          <div className="mt-1 text-sm text-zinc-600">
-            Keywords + phrasing aligned with the role you target.
-          </div>
-        </div>
-      </div>
+      <p className="mt-4 text-[11px] text-zinc-500">
+        Scores are AI estimates to guide improvement. They do not predict a
+        hiring decision.
+      </p>
     </section>
   );
 }
@@ -274,172 +322,169 @@ export function ResumeUploadModal({
   onRoleTargetChange: (value: string) => void;
   onStartUpload: () => void;
 }) {
-  const [isDragActive, setIsDragActive] = useState(false);
-  const [localFileError, setLocalFileError] = useState<string | null>(null);
-  const allowedMimeTypes = new Set([
-    "application/pdf",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ]);
-
-  function handlePickedFile(file: File | null) {
+  const [dragActive, setDragActive] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const inputId = useId();
+  const roleId = useId();
+  function chooseFile(file: File | null) {
+    if (isUploading) return;
+    setFileError(null);
     if (!file) {
-      setLocalFileError(null);
       onFileSelect(null);
       return;
     }
-
-    if (!allowedMimeTypes.has(file.type)) {
-      setLocalFileError("Please upload a PDF or Word document.");
+    if (
+      ![
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ].includes(file.type)
+    ) {
+      onFileSelect(null);
+      setFileError(
+        "Choose a PDF or DOCX file. Other file types aren’t supported.",
+      );
       return;
     }
-
-    setLocalFileError(null);
+    if (file.size > 5 * 1024 * 1024) {
+      onFileSelect(null);
+      setFileError("This file is too large. Choose a file smaller than 5 MB.");
+      return;
+    }
+    if (file.size === 0) {
+      onFileSelect(null);
+      setFileError("This file is empty. Please choose another resume.");
+      return;
+    }
     onFileSelect(file);
   }
-
-  function handleDragState(event: DragEvent<HTMLLabelElement>, active: boolean) {
+  function drag(event: DragEvent<HTMLLabelElement>, active: boolean) {
     event.preventDefault();
-    event.stopPropagation();
-    setIsDragActive(active);
+    setDragActive(active);
   }
-
-  function handleDrop(event: DragEvent<HTMLLabelElement>) {
-    event.preventDefault();
-    event.stopPropagation();
-    setIsDragActive(false);
-    handlePickedFile(event.dataTransfer.files?.[0] ?? null);
-  }
-
-  if (!open) return null;
-  const selectedFileSize = selectedFile
-    ? `${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB`
-    : null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/55 p-4 backdrop-blur-[2px]">
-      <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-xl">
-        <div className="p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-base font-semibold text-zinc-900">
-                Upload Resume
-              </div>
-              <button
-                onClick={onClose}
-                className="rounded-xl border border-zinc-200 bg-white p-2 text-zinc-600 hover:bg-zinc-50"
-                aria-label="Close"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="mt-4 space-y-4">
-              <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-zinc-600">
-                  Resume File
-                </label>
-                <label
-                  htmlFor="resume-upload-input"
-                  onDragEnter={(event) => handleDragState(event, true)}
-                  onDragOver={(event) => handleDragState(event, true)}
-                  onDragLeave={(event) => handleDragState(event, false)}
-                  onDrop={handleDrop}
-                  className={`mt-2 flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed px-4 py-4 transition-colors ${
-                    isDragActive
-                      ? "border-zinc-500 bg-zinc-100"
-                      : "border-zinc-300 bg-zinc-50 hover:border-zinc-400 hover:bg-zinc-100/70"
-                  }`}
-                >
-                  <span className="rounded-xl border border-zinc-200 bg-white p-2">
-                    <FileText className="h-4 w-4 text-zinc-600" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-zinc-800">
-                      {selectedFile
-                        ? selectedFile.name
-                        : "Drop file here or click to browse"}
-                    </span>
-                    <span className="block text-xs text-zinc-500">
-                      PDF/DOCX only • Max 5MB
-                    </span>
-                  </span>
-                </label>
-                <input
-                  id="resume-upload-input"
-                  type="file"
-                  accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  onChange={(event) => handlePickedFile(event.target.files?.[0] ?? null)}
-                  className="sr-only"
-                />
-                {localFileError ? (
-                  <div className="mt-2 text-xs text-rose-600">{localFileError}</div>
-                ) : null}
+    <Modal
+      open={open}
+      onClose={() => {
+        setFileError(null);
+        setDragActive(false);
+        onClose();
+      }}
+      title="Let’s give your resume a fresh look."
+      description="Upload your resume and tell us where you want to go next."
+      busy={isUploading}
+    >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onStartUpload();
+        }}
+      >
+        <fieldset disabled={isUploading} className="space-y-5">
+          <div>
+            <label
+              className="drop-zone"
+              data-active={dragActive}
+              htmlFor={inputId}
+              onDragEnter={(e) => drag(e, true)}
+              onDragOver={(e) => drag(e, true)}
+              onDragLeave={(e) => drag(e, false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragActive(false);
+                chooseFile(e.dataTransfer.files?.[0] || null);
+              }}
+            >
+              <input
+                id={inputId}
+                type="file"
+                accept=".pdf,.docx"
+                aria-label="Choose your resume file"
+                className="sr-only"
+                onChange={(e) => chooseFile(e.target.files?.[0] || null)}
+              />
+              <span className="icon-tile mb-4 !h-12 !w-12 !bg-white">
                 {selectedFile ? (
-                  <div className="mt-2 text-xs text-zinc-600">
-                    Size: {selectedFileSize}
-                  </div>
-                ) : null}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="target-role-input"
-                  className="text-xs font-semibold uppercase tracking-wide text-zinc-600"
-                >
-                  Target Role
-                </label>
-                <div className="relative mt-2">
-                  <Briefcase className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                  <input
-                    id="target-role-input"
-                    value={roleTarget}
-                    onChange={(event) => onRoleTargetChange(event.target.value)}
-                    placeholder="Frontend Engineer"
-                    className="w-full rounded-2xl border border-zinc-200 bg-white py-3 pl-10 pr-3 text-sm outline-none focus:border-zinc-400"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 flex items-center gap-2">
-              <Button
-                onClick={onStartUpload}
-                disabled={isUploading || !selectedFile || !roleTarget.trim()}
-              >
-                {isUploading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <FileText size={23} />
                 ) : (
-                  <Upload className="h-4 w-4" />
+                  <Upload size={23} strokeWidth={1.5} />
                 )}
-                {isUploading ? "Uploading..." : "Start Upload"}
-              </Button>
-              <Button variant="secondary" onClick={onClose}>
-                Cancel
-              </Button>
-            </div>
-
-            {uploadError ? (
-              <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
-                {uploadError}
-              </div>
-            ) : null}
-
-            {uploadResult ? (
-              <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-3">
-                <div className="text-sm font-medium text-emerald-800">
-                  Upload completed
-                </div>
-                <div className="mt-1 text-sm text-emerald-700">
-                  {uploadResult.fileName} stored successfully.
-                </div>
-                <div className="mt-1 text-xs text-emerald-700">
-                  Status: {uploadResult.status} • Role target:{" "}
-                  {uploadResult.roleTarget ?? "Not set"}
-                </div>
-              </div>
-            ) : null}
+              </span>
+              <strong className="max-w-full break-all text-sm font-medium">
+                {selectedFile ? selectedFile.name : "Drop your resume here"}
+              </strong>
+              <span className="mt-1 text-xs text-zinc-500">
+                {selectedFile
+                  ? `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB · Click to choose a different file`
+                  : "or click to browse your files"}
+              </span>
+              <span className="mt-4 text-[11px] text-zinc-400">
+                PDF or DOCX · Maximum 5 MB
+              </span>
+            </label>
+            {fileError && (
+              <p role="alert" className="mt-2 text-xs text-rose-700">
+                {fileError}
+              </p>
+            )}
+          </div>
+          <div>
+            <label htmlFor={roleId} className="field-label">
+              What role are you working toward?
+            </label>
+            <input
+              id={roleId}
+              className="field-input"
+              required
+              value={roleTarget}
+              onChange={(e) => onRoleTargetChange(e.target.value)}
+              placeholder="e.g. Product Designer"
+            />
+            <p className="field-help">
+              We’ll tailor keywords and suggestions to this role.
+            </p>
+          </div>
+        </fieldset>
+        <div className="mt-5 flex items-start gap-2 text-xs leading-5 text-zinc-500">
+          <ShieldCheck size={15} className="mt-0.5 shrink-0" />
+          <p>
+            Your resume stays in your workspace. You can download or delete it
+            anytime.
+          </p>
         </div>
-      </div>
-    </div>
+        {uploadError && (
+          <div role="alert" className="form-error mt-4">
+            {uploadError}
+          </div>
+        )}
+        {uploadResult && (
+          <p role="status" className="mt-4 text-sm text-emerald-700">
+            {uploadResult.fileName} uploaded successfully.
+          </p>
+        )}
+        <div className="form-footer">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setFileError(null);
+              onClose();
+            }}
+            disabled={isUploading}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={isUploading || !selectedFile || !roleTarget.trim()}
+          >
+            {isUploading ? (
+              <Loader2 className="animate-spin" size={16} />
+            ) : (
+              <Sparkles size={16} />
+            )}
+            {isUploading ? "Uploading your resume…" : "Upload & review"}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

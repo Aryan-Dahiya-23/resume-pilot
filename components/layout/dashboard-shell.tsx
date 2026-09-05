@@ -4,360 +4,293 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useClerk, useUser } from "@clerk/nextjs";
-import { Briefcase, ChevronRight, FileText, LayoutDashboard, LogOut, Menu, Settings, TrendingUp } from "lucide-react";
-import { cn } from "@/components/ui/cn";
+import {
+  ArrowUpRight,
+  BriefcaseBusiness,
+  ChevronRight,
+  FileText,
+  LayoutGrid,
+  LifeBuoy,
+  LogOut,
+  Menu,
+  Settings2,
+  Sprout,
+  Target,
+} from "lucide-react";
+import { useState } from "react";
+import { Brand } from "@/components/ui/brand";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { useCurrentDbUser, useDashboardOverview } from "@/hooks/queries";
 import { getDashboardOverview } from "@/lib/api/dashboard";
 import { listJobsQuery } from "@/lib/api/jobs";
 import { listResumesQuery } from "@/lib/api/resumes";
 import { getCurrentDbUserClient } from "@/lib/api/users";
 import { queryKeys } from "@/lib/react-query/query-keys";
-import { useEffect, useRef, useState } from "react";
+import { useToast } from "@/components/providers/toast-provider";
 
-function SidebarItem({
-  href,
-  icon,
-  label,
-  active,
-  pending,
-  onHover,
-  onClick,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-  pending?: boolean;
-  onHover?: () => void;
-  onClick?: () => void;
-}) {
-  const isHighlighted = active || pending;
-
-  return (
-    <Link
-      href={href}
-      onMouseEnter={onHover}
-      onClick={onClick}
-      className={cn(
-        "flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm transition-all duration-200",
-        isHighlighted ? "bg-zinc-900 text-white" : "text-zinc-700 hover:bg-zinc-100",
-      )}
-    >
-      <span className="flex items-center gap-2">
-        <span className="grid place-items-center">{icon}</span>
-        <span className="font-medium">{label}</span>
-      </span>
-      <ChevronRight
-        className={cn(
-          "h-4 w-4 transition-transform duration-200",
-          isHighlighted ? "text-white/80" : "text-zinc-400",
-        )}
-      />
-    </Link>
-  );
-}
+const navigation = [
+  { href: "/dashboard", label: "Overview", icon: LayoutGrid },
+  { href: "/dashboard/resumes", label: "My resumes", icon: FileText },
+  { href: "/dashboard/jobs", label: "Job tracker", icon: BriefcaseBusiness },
+];
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const queryClient = useQueryClient();
   const { signOut } = useClerk();
   const { user: clerkUser } = useUser();
+  const { toast } = useToast();
   const { data: currentUser } = useCurrentDbUser();
-  const { data: dashboardOverview } = useDashboardOverview();
-  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [pendingPath, setPendingPath] = useState<string | null>(null);
-  const drawerTouchStartX = useRef<number | null>(null);
-  const drawerTouchCurrentX = useRef<number | null>(null);
-  const displayName = currentUser?.name?.trim() || currentUser?.email || "User";
-  const avatarInitial = displayName.charAt(0).toUpperCase();
-  const avatarImageUrl = clerkUser?.hasImage ? clerkUser.imageUrl : null;
-  const weeklyGoal = 10;
-  const weeklyDone = dashboardOverview?.weeklyApplications ?? 0;
-  const weeklyProgress = Math.min(100, Math.max(0, Math.round((weeklyDone / weeklyGoal) * 100)));
-
-  useEffect(() => {
-    setIsMobileSidebarOpen(false);
-    setPendingPath(null);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (!isMobileSidebarOpen) return;
-
-    const { overflow } = document.body.style;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = overflow;
-    };
-  }, [isMobileSidebarOpen]);
-
-  function prefetchDashboardOverview() {
-    void queryClient.prefetchQuery({
-      queryKey: queryKeys.dashboard.overview(),
-      queryFn: getDashboardOverview,
-      staleTime: 30 * 1000,
-    });
+  const { data: overview } = useDashboardOverview();
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const displayName =
+    currentUser?.name?.trim() || clerkUser?.firstName || "Your workspace";
+  const weeklyDone = overview?.weeklyApplications ?? 0;
+  const currentPage = pathname.startsWith("/dashboard/settings")
+    ? "Settings"
+    : (navigation.find(
+        (item) => item.href !== "/dashboard" && pathname.startsWith(item.href),
+      )?.label ?? "Overview");
+  const isDetails = pathname.split("/").length > 3;
+  function prefetch(href: string) {
+    const options = { staleTime: 30_000 };
+    if (href === "/dashboard")
+      void queryClient.prefetchQuery({
+        ...options,
+        queryKey: queryKeys.dashboard.overview(),
+        queryFn: getDashboardOverview,
+      });
+    if (href === "/dashboard/resumes")
+      void queryClient.prefetchQuery({
+        ...options,
+        queryKey: queryKeys.resumes.listWithFilters({}),
+        queryFn: () => listResumesQuery({}),
+      });
+    if (href === "/dashboard/jobs")
+      void queryClient.prefetchQuery({
+        ...options,
+        queryKey: queryKeys.jobs.listWithFilters({}),
+        queryFn: () => listJobsQuery({}),
+      });
+    if (href === "/dashboard/settings")
+      void queryClient.prefetchQuery({
+        ...options,
+        queryKey: queryKeys.user.current(),
+        queryFn: getCurrentDbUserClient,
+      });
   }
-
-  function prefetchResumesList() {
-    void queryClient.prefetchQuery({
-      queryKey: queryKeys.resumes.listWithFilters({}),
-      queryFn: () => listResumesQuery({}),
-      staleTime: 30 * 1000,
-    });
-  }
-
-  function prefetchJobsList() {
-    void queryClient.prefetchQuery({
-      queryKey: queryKeys.jobs.listWithFilters({}),
-      queryFn: () => listJobsQuery({}),
-      staleTime: 30 * 1000,
-    });
-  }
-
-  function prefetchSettingsData() {
-    void queryClient.prefetchQuery({
-      queryKey: queryKeys.user.current(),
-      queryFn: getCurrentDbUserClient,
-      staleTime: 30 * 1000,
-    });
-  }
-
-  async function handleConfirmLogout() {
-    setIsLoggingOut(true);
+  async function handleLogout() {
+    setLoggingOut(true);
     try {
       await signOut({ redirectUrl: "/" });
+    } catch {
+      toast({
+        tone: "error",
+        message: "Could not sign out. Please try again.",
+      });
     } finally {
-      setIsLoggingOut(false);
-      setIsLogoutModalOpen(false);
+      setLoggingOut(false);
+      setLogoutOpen(false);
     }
   }
-
-  function handleNavigate(href: string) {
-    setPendingPath(href);
-    setIsMobileSidebarOpen(false);
-  }
-
-  function handleDrawerTouchStart(event: React.TouchEvent<HTMLElement>) {
-    drawerTouchStartX.current = event.touches[0]?.clientX ?? null;
-    drawerTouchCurrentX.current = drawerTouchStartX.current;
-  }
-
-  function handleDrawerTouchMove(event: React.TouchEvent<HTMLElement>) {
-    drawerTouchCurrentX.current = event.touches[0]?.clientX ?? null;
-  }
-
-  function handleDrawerTouchEnd() {
-    const startX = drawerTouchStartX.current;
-    const endX = drawerTouchCurrentX.current;
-
-    drawerTouchStartX.current = null;
-    drawerTouchCurrentX.current = null;
-
-    if (startX === null || endX === null) return;
-
-    const deltaX = endX - startX;
-    if (deltaX < -40) {
-      setIsMobileSidebarOpen(false);
-    }
-  }
-
-  function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-    return (
-      <>
-        <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
-          <div>
-            <div className="text-sm text-zinc-500">Welcome back</div>
-            <div className="text-lg font-semibold text-zinc-900">{displayName}</div>
-          </div>
-          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-zinc-900 text-white">
-            {avatarImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={avatarImageUrl}
-                alt={displayName}
-                className="h-full w-full rounded-2xl object-cover"
-              />
-            ) : (
-              <span className="text-sm font-semibold">{avatarInitial}</span>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-4 space-y-1">
-          <SidebarItem
-            href="/dashboard"
-            icon={<LayoutDashboard className="h-4 w-4" />}
-            label="Dashboard"
-            active={pathname === "/dashboard"}
-            pending={pendingPath === "/dashboard"}
-            onHover={prefetchDashboardOverview}
-            onClick={() => {
-              handleNavigate("/dashboard");
-              onNavigate?.();
-            }}
-          />
-          <SidebarItem
-            href="/dashboard/resumes"
-            icon={<FileText className="h-4 w-4" />}
-            label="Resumes"
-            active={pathname.startsWith("/dashboard/resumes")}
-            pending={pendingPath === "/dashboard/resumes"}
-            onHover={prefetchResumesList}
-            onClick={() => {
-              handleNavigate("/dashboard/resumes");
-              onNavigate?.();
-            }}
-          />
-          <SidebarItem
-            href="/dashboard/jobs"
-            icon={<Briefcase className="h-4 w-4" />}
-            label="Jobs"
-            active={pathname.startsWith("/dashboard/jobs")}
-            pending={pendingPath === "/dashboard/jobs"}
-            onHover={prefetchJobsList}
-            onClick={() => {
-              handleNavigate("/dashboard/jobs");
-              onNavigate?.();
-            }}
-          />
-          <SidebarItem
-            href="/dashboard/settings"
-            icon={<Settings className="h-4 w-4" />}
-            label="Settings"
-            active={pathname.startsWith("/dashboard/settings")}
-            pending={pendingPath === "/dashboard/settings"}
-            onHover={prefetchSettingsData}
-            onClick={() => {
-              handleNavigate("/dashboard/settings");
-              onNavigate?.();
-            }}
-          />
-        </div>
-
-        <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-zinc-900">
-            <TrendingUp className="h-4 w-4" />
-            Weekly goal
-          </div>
-          <div className="mt-2 text-sm text-zinc-600">
-            Apply to <span className="font-medium">10 jobs</span> this week.
-          </div>
-          <div className="mt-3 h-2 w-full rounded-full bg-zinc-200">
-            <div
-              className="h-2 rounded-full bg-zinc-900 transition-[width] duration-300"
-              style={{ width: `${weeklyProgress}%` }}
-            />
-          </div>
-          <div className="mt-2 text-xs text-zinc-500">
-            {weeklyDone} / {weeklyGoal} done
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <Button
-            variant="secondary"
-            className="w-full"
-            onClick={() => {
-              setIsLogoutModalOpen(true);
-              onNavigate?.();
-            }}
-          >
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
-        </div>
-      </>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-zinc-50">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mb-4 flex items-center justify-between rounded-2xl border border-zinc-200 bg-white px-4 py-3 shadow-sm lg:hidden">
-          <button
-            type="button"
-            className="rounded-xl border border-zinc-200 bg-white p-2 text-zinc-700 hover:bg-zinc-50"
-            onClick={() => setIsMobileSidebarOpen(true)}
-            aria-label="Open menu"
-          >
-            <Menu className="h-4 w-4" />
-          </button>
-          <div className="text-sm font-semibold text-zinc-900">Resume Pilot</div>
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-zinc-900 text-white">
-            {avatarImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={avatarImageUrl}
-                alt={displayName}
-                className="h-full w-full rounded-xl object-cover"
-              />
-            ) : (
-              <span className="text-xs font-semibold">{avatarInitial}</span>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
-          <aside className="hidden rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm lg:sticky lg:top-6 lg:block lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
-            <SidebarContent />
-          </aside>
-
-          <main className="space-y-6">{children}</main>
+  const avatar = (
+    <span className="avatar">
+      {clerkUser?.hasImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={clerkUser.imageUrl}
+          alt=""
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        displayName.slice(0, 1).toUpperCase()
+      )}
+    </span>
+  );
+  const sidebar = (
+    <>
+      <div onClick={() => setMobileOpen(false)}>
+        <Brand light />
+      </div>
+      <p className="sidebar-subtitle">A workspace for your next move.</p>
+      <p className="sidebar-label">YOUR WORKSPACE</p>
+      <nav aria-label="Workspace navigation">
+        {navigation.map((item) => {
+          const active =
+            item.href === "/dashboard"
+              ? pathname === item.href
+              : pathname.startsWith(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="sidebar-link"
+              data-active={active}
+              aria-current={active ? "page" : undefined}
+              onMouseEnter={() => prefetch(item.href)}
+              onFocus={() => prefetch(item.href)}
+              onClick={() => setMobileOpen(false)}
+            >
+              <item.icon size={17} strokeWidth={1.6} />
+              {item.label}
+              {active && <span className="nav-dot" />}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="sidebar-spacer" />
+      <div className="sidebar-goal">
+        <h2>
+          <Target size={15} className="text-[#d5ed9a]" /> A little progress,
+          every week.
+        </h2>
+        <p>
+          {weeklyDone >= 10
+            ? "You reached your weekly goal. Keep it going!"
+            : "Every application is a step forward."}
+        </p>
+        <progress
+          value={Math.min(weeklyDone, 10)}
+          max={10}
+          aria-label="Weekly application goal"
+        />
+        <div className="flex justify-between text-[10px] text-[#aabd99]">
+          <span>{weeklyDone} of 10 applications</span>
+          <span>{Math.min(Math.round((weeklyDone / 10) * 100), 100)}%</span>
         </div>
       </div>
-
-      <div
-        className={cn(
-          "fixed inset-0 z-40 bg-zinc-900/40 transition-opacity duration-200 lg:hidden",
-          isMobileSidebarOpen ? "opacity-100" : "pointer-events-none opacity-0",
-        )}
-        onClick={() => setIsMobileSidebarOpen(false)}
-      />
-
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 w-[86%] max-w-[320px] border-r border-zinc-200 bg-white p-4 shadow-xl transition-transform duration-200 lg:hidden",
-          isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full",
-        )}
-        onTouchStart={handleDrawerTouchStart}
-        onTouchMove={handleDrawerTouchMove}
-        onTouchEnd={handleDrawerTouchEnd}
+      <Link
+        href="/dashboard/settings"
+        className="sidebar-link"
+        data-active={pathname.startsWith("/dashboard/settings")}
+        aria-current={
+          pathname.startsWith("/dashboard/settings") ? "page" : undefined
+        }
+        onMouseEnter={() => prefetch("/dashboard/settings")}
+        onClick={() => setMobileOpen(false)}
       >
-        <SidebarContent onNavigate={() => setIsMobileSidebarOpen(false)} />
-      </aside>
-
-      {isLogoutModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">
-              Logout now?
-            </div>
-            <div className="mt-2 text-sm text-zinc-600">
-              You will be signed out from your account.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsLogoutModalOpen(false)}
-                disabled={isLoggingOut}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
-                onClick={handleConfirmLogout}
-                disabled={isLoggingOut}
-              >
-                {isLoggingOut ? "Logging out..." : "Confirm"}
-              </button>
+        <Settings2 size={17} strokeWidth={1.6} />
+        Settings
+      </Link>
+      <Link
+        href="/contact"
+        className="sidebar-link"
+        onClick={() => setMobileOpen(false)}
+      >
+        <LifeBuoy size={17} strokeWidth={1.6} />
+        Help & support
+        <ArrowUpRight size={13} className="ml-auto opacity-50" />
+      </Link>
+      <div className="sidebar-profile">
+        {avatar}
+        <Link
+          href="/dashboard/settings"
+          onClick={() => setMobileOpen(false)}
+          className="min-w-0 flex-1"
+        >
+          <div className="truncate text-xs font-medium text-[#ebf1e4]">
+            {displayName}
+          </div>
+          <div className="mt-1 text-[10px] text-[#8fa180]">
+            Your personal workspace
+          </div>
+        </Link>
+        <button
+          type="button"
+          aria-label="Sign out"
+          title="Sign out"
+          className="icon-button !text-[#a9bc9b]"
+          onClick={() => {
+            setMobileOpen(false);
+            setLogoutOpen(true);
+          }}
+        >
+          <LogOut size={15} />
+        </button>
+      </div>
+    </>
+  );
+  return (
+    <div className="workspace">
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
+      <aside className="workspace-sidebar">{sidebar}</aside>
+      <div className="workspace-body">
+        <header className="workspace-topbar">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="icon-button mobile-menu-button"
+              aria-label="Open navigation"
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen(true)}
+            >
+              <Menu size={20} />
+            </button>
+            <div className="breadcrumb">
+              <span className="hidden sm:inline">Workspace</span>
+              <ChevronRight size={12} className="hidden sm:inline" />
+              <strong>{currentPage}</strong>
+              {isDetails && (
+                <>
+                  <ChevronRight size={12} />
+                  <strong>Details</strong>
+                </>
+              )}
             </div>
           </div>
+          <div className="flex items-center gap-4">
+            <span className="hidden items-center gap-1.5 text-[11px] text-zinc-500 sm:flex">
+              <Sprout size={14} className="text-[#8ba66b]" /> One step closer.
+            </span>
+            <Link href="/dashboard/settings" aria-label="Open profile settings">
+              {avatar}
+            </Link>
+          </div>
+        </header>
+        <main id="main-content" className="workspace-content">
+          {children}
+          <footer className="workspace-footer">
+            <span>Small steps. A stronger story.</span>
+            <span>
+              Made for your next move{" "}
+              <ArrowUpRight size={12} className="ml-1 inline" />
+            </span>
+          </footer>
+        </main>
+      </div>
+      <Modal
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        title="Workspace navigation"
+        className="mobile-drawer"
+      >
+        {sidebar}
+      </Modal>
+      <Modal
+        open={logoutOpen}
+        onClose={() => setLogoutOpen(false)}
+        title="Ready to sign out?"
+        description="Your resumes and applications will be here when you return."
+        busy={loggingOut}
+      >
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => setLogoutOpen(false)}
+            disabled={loggingOut}
+          >
+            Stay here
+          </Button>
+          <Button onClick={handleLogout} disabled={loggingOut}>
+            {loggingOut ? "Signing out…" : "Sign out"}
+          </Button>
         </div>
-      ) : null}
+      </Modal>
     </div>
   );
 }

@@ -1,6 +1,9 @@
 "use client";
 
-import { DashboardPageError, DashboardPageLoading } from "@/components/dashboard/page-state";
+import {
+  DashboardPageError,
+  DashboardPageLoading,
+} from "@/components/dashboard/page-state";
 import {
   DangerZoneSettingsCard,
   DataSettingsCard,
@@ -32,7 +35,7 @@ export default function SettingsPage() {
     <>
       <SettingsHeader />
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="grid max-w-5xl grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <ProfileSettingsCard />
         <DataSettingsCard />
         <DangerZoneSettingsCard />

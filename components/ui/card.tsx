@@ -10,14 +10,12 @@ export function Card({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <section className="panel p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-2">
-          {icon ? (
-            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-zinc-900 text-white">{icon}</div>
-          ) : null}
+          {icon ? <div className="icon-tile">{icon}</div> : null}
           <div>
-            <div className="text-sm font-medium text-zinc-900">{title}</div>
+            <h2 className="section-title">{title}</h2>
           </div>
         </div>
         {right}

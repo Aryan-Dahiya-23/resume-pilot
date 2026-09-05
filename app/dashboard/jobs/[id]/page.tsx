@@ -15,5 +15,5 @@ export default function JobDetailsPage() {
     );
   }
 
-  return <JobDetailsClient jobId={jobId} />;
+  return <JobDetailsClient key={jobId} jobId={jobId} />;
 }

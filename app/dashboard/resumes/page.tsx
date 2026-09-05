@@ -18,13 +18,23 @@ import { useResumes, useUploadResume } from "@/hooks/queries";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { getResumeDetails } from "@/lib/api/resumes";
 import type { Resume } from "@/lib/mock-data";
+import { Modal } from "@/components/ui/modal";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/providers/toast-provider";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
-type ResumeStatusFilter = "All" | "UPLOADED" | "PARSING" | "REVIEWING" | "READY" | "FAILED";
+type ResumeStatusFilter =
+  | "All"
+  | "UPLOADED"
+  | "PARSING"
+  | "REVIEWING"
+  | "READY"
+  | "FAILED";
 type ResumeDateFilter = "All" | "today" | "7d" | "30d";
 
 export default function ResumesPage() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<ResumeStatusFilter>("All");
   const [dateFilter, setDateFilter] = useState<ResumeDateFilter>("All");
@@ -45,7 +55,9 @@ export default function ResumesPage() {
   const hasInitialError = resumesQuery.isError && !resumesQuery.data;
   const hasAnyResumes = (resumesQuery.data?.totalCount ?? 0) > 0;
 
-  const rows = useMemo<Array<Resume & { status?: string; createdAtIso: string }>>(() => {
+  const rows = useMemo<
+    Array<Resume & { status?: string; createdAtIso: string }>
+  >(() => {
     const source = resumesQuery.data?.resumes ?? [];
     return source.map((resume, index) => ({
       id: resume.id,
@@ -120,6 +132,12 @@ export default function ResumesPage() {
         queryKey: queryKeys.dashboard.overview(),
       });
       setResumeToDelete(null);
+      toast({ tone: "success", message: "Resume deleted." });
+    } catch {
+      toast({
+        tone: "error",
+        message: "Could not delete this resume. Please try again.",
+      });
     } finally {
       setIsDeletingResume(false);
     }
@@ -127,7 +145,9 @@ export default function ResumesPage() {
 
   return (
     <>
-      {isInitialLoading ? <DashboardPageLoading label="Loading resumes..." /> : null}
+      {isInitialLoading ? (
+        <DashboardPageLoading label="Loading resumes..." />
+      ) : null}
       {hasInitialError ? (
         <DashboardPageError
           title="Could not load resumes"
@@ -169,19 +189,20 @@ export default function ResumesPage() {
                 onHoverResume={handlePrefetchResume}
               />
             ) : (
-              <section className="rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
-                <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-zinc-100 text-zinc-700">
+              <section className="panel empty-state">
+                <div className="icon-tile">
                   <FileText className="h-5 w-5" />
                 </div>
                 <div className="mt-4 text-base font-semibold text-zinc-900">
-                  No resumes yet
+                  A stronger story starts here.
                 </div>
                 <div className="mt-1 text-sm text-zinc-600">
-                  Upload your first resume to start AI analysis and version tracking.
+                  Upload your resume for specific feedback, clearer language,
+                  and a practical next step.
                 </div>
                 <div className="mt-5">
                   <button
-                    className="inline-flex items-center gap-2 rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                    className="button button-primary"
                     onClick={handleUploadClick}
                   >
                     <Upload className="h-4 w-4" />
@@ -195,35 +216,30 @@ export default function ResumesPage() {
         </>
       )}
 
-      {resumeToDelete ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">
-              Delete Resume?
-            </div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove the resume and its parsed/reviewed data.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setResumeToDelete(null)}
-                disabled={isDeletingResume}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={handleDeleteResume}
-                disabled={isDeletingResume}
-              >
-                {isDeletingResume ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
+      <Modal
+        open={Boolean(resumeToDelete)}
+        onClose={() => setResumeToDelete(null)}
+        title="Delete this resume?"
+        description="This permanently removes the file and its review history. Other versions will stay in your library."
+        busy={isDeletingResume}
+      >
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => setResumeToDelete(null)}
+            disabled={isDeletingResume}
+          >
+            Keep resume
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleDeleteResume}
+            disabled={isDeletingResume}
+          >
+            {isDeletingResume ? "Deleting…" : "Delete resume"}
+          </Button>
         </div>
-      ) : null}
-
+      </Modal>
     </>
   );
 }

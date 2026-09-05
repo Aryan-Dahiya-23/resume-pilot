@@ -1,28 +1,34 @@
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowUpRight } from "lucide-react";
+import { Brand } from "@/components/ui/brand";
+import { buttonStyles } from "@/components/ui/button";
 
-export function LandingHeader({ isSignedIn = false }: { isSignedIn?: boolean }) {
+export function LandingHeader({
+  isSignedIn = false,
+}: {
+  isSignedIn?: boolean;
+}) {
   return (
-    <header className="border-b border-zinc-200 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-zinc-900 text-white">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="text-sm font-semibold text-zinc-900">
-              ResumePilot
-            </div>
-            <div className="text-xs text-zinc-500">AI Resume + Job Tracker</div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Link href={isSignedIn ? "/dashboard" : "/sign-in"}>
-            <Button>{isSignedIn ? "Go to dashboard" : "Get started"}</Button>
+    <header className="landing-container landing-nav">
+      <Brand />
+      <nav className="landing-nav-links" aria-label="Main navigation">
+        <Link href="/#features">The toolkit</Link>
+        <Link href="/#how-it-works">How it works</Link>
+        <Link href="/contact">Get in touch</Link>
+      </nav>
+      <div className="flex items-center gap-2">
+        {!isSignedIn && (
+          <Link href="/sign-in" className={buttonStyles("ghost")}>
+            Log in
           </Link>
-        </div>
+        )}
+        <Link
+          href={isSignedIn ? "/dashboard" : "/sign-up"}
+          className={buttonStyles()}
+        >
+          {isSignedIn ? "My workspace" : "Get started"}
+          <ArrowUpRight size={16} />
+        </Link>
       </div>
     </header>
   );

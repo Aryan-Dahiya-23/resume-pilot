@@ -1,31 +1,22 @@
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { Brand } from "@/components/ui/brand";
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-zinc-200 bg-white">
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 text-sm text-zinc-600 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-        <div className="flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-2xl bg-zinc-900 text-white">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <div>
-            <div className="font-medium text-zinc-900">ResumePilot</div>
-            <div className="text-xs text-zinc-500">Build by you. Ship fast.</div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-4">
-          <Link className="hover:underline" href="/privacy">
-            Privacy
-          </Link>
-          <Link className="hover:underline" href="/terms">
-            Terms
-          </Link>
-          <Link className="hover:underline" href="/contact">
-            Contact
-          </Link>
-        </div>
+    <footer className="landing-container landing-footer">
+      <div className="footer-row">
+        <Brand />
+        <p className="text-xs text-zinc-500">
+          A little clarity for what comes next.
+        </p>
+        <nav className="footer-links" aria-label="Footer">
+          <Link href="/privacy">Privacy</Link>
+          <Link href="/terms">Terms</Link>
+          <Link href="/contact">Contact</Link>
+        </nav>
+      </div>
+      <div className="mt-7 text-[11px] text-zinc-400">
+        © {new Date().getFullYear()} ResumePilot. Made for your next move.
       </div>
     </footer>
   );

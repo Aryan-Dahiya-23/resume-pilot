@@ -3,8 +3,17 @@
 import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
 import { useClerk } from "@clerk/nextjs";
-import { AlertTriangle, Download, Loader2, Save, Settings, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  Download,
+  Loader2,
+  Save,
+  UserRound,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
+import { PageHeader } from "@/components/ui/page-header";
+import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/providers/toast-provider";
@@ -13,12 +22,11 @@ import { queryKeys } from "@/lib/react-query/query-keys";
 
 export function SettingsHeader() {
   return (
-    <div className="flex flex-col gap-3 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <div className="text-sm text-zinc-500">Settings</div>
-        <h1 className="text-xl font-semibold text-zinc-900">Account & data</h1>
-      </div>
-    </div>
+    <PageHeader
+      eyebrow="MAKE YOURSELF AT HOME"
+      title="Settings"
+      description="Your profile, your data, your workspace."
+    />
   );
 }
 
@@ -26,10 +34,10 @@ export function ProfileSettingsCard() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { data: currentUser } = useCurrentDbUser();
-  const [name, setName] = useState("");
+  const [name, setName] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const value = name || currentUser?.name || "";
+  const value = name ?? currentUser?.name ?? "";
 
   async function handleSave() {
     setIsSaving(true);
@@ -39,7 +47,9 @@ export function ProfileSettingsCard() {
         { name: value },
         { withCredentials: true },
       );
-      await queryClient.invalidateQueries({ queryKey: queryKeys.user.current() });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.user.current(),
+      });
       toast({ tone: "success", message: "Profile updated." });
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -58,22 +68,29 @@ export function ProfileSettingsCard() {
   }
 
   return (
-    <Card title="Profile" icon={<Settings className="h-4 w-4" />}>
+    <Card title="Profile" icon={<UserRound className="h-4 w-4" />}>
       <div className="text-sm text-zinc-600">
-        Update your profile details used across dashboard widgets.
+        A few details to make this space feel like yours.
       </div>
       <div className="mt-4 grid grid-cols-1 gap-3">
         <div>
-          <div className="text-xs font-medium text-zinc-600">Name</div>
+          <label htmlFor="profile-name" className="field-label">
+            Your name
+          </label>
           <input
+            id="profile-name"
+            autoComplete="name"
             value={value}
             onChange={(event) => setName(event.target.value)}
             className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
           />
         </div>
         <div>
-          <div className="text-xs font-medium text-zinc-600">Email</div>
+          <label htmlFor="profile-email" className="field-label">
+            Email address
+          </label>
           <input
+            id="profile-email"
             value={currentUser?.email ?? ""}
             readOnly
             className="mt-1 w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-600 outline-none"
@@ -81,8 +98,12 @@ export function ProfileSettingsCard() {
         </div>
       </div>
       <div className="mt-4">
-        <Button onClick={handleSave} disabled={isSaving}>
-          {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+        <Button onClick={handleSave} disabled={isSaving || !value.trim()}>
+          {isSaving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
           {isSaving ? "Saving..." : "Save changes"}
         </Button>
       </div>
@@ -141,11 +162,14 @@ export function DataSettingsCard() {
   }
 
   return (
-    <Card title="Data" icon={<Download className="h-4 w-4" />}>
+    <Card
+      title="Take your progress with you"
+      icon={<Download className="h-4 w-4" />}
+    >
       <div className="text-sm text-zinc-600">
         Export your jobs and resume feedback for backups or offline analysis.
       </div>
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 flex flex-col gap-3">
         <Button
           variant="secondary"
           className="w-full"
@@ -198,60 +222,60 @@ export function DangerZoneSettingsCard() {
 
   return (
     <>
-      <Card title="Danger zone" icon={<AlertTriangle className="h-4 w-4" />}>
+      <Card title="A fresh start" icon={<AlertTriangle className="h-4 w-4" />}>
         <div className="text-sm text-zinc-600">
-          Deleting account data will remove resumes, jobs, and feedback from your workspace.
+          Permanently remove all resumes, applications, and feedback. Export
+          anything you want to keep before continuing.
         </div>
         <div className="mt-4">
           <Button variant="danger" onClick={() => setIsDeleteModalOpen(true)}>
             <Trash2 className="h-4 w-4" />
-            Delete account data
+            Delete workspace data
           </Button>
         </div>
       </Card>
 
-      {isDeleteModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">
-              Delete account data?
-            </div>
-            <div className="mt-2 text-sm text-zinc-600">
-              Type <span className="font-medium text-zinc-900">DELETE</span> to confirm.
-            </div>
-            <input
-              value={confirmationText}
-              onChange={(event) => setConfirmationText(event.target.value)}
-              className="mt-3 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-            />
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setIsDeleteModalOpen(false);
-                  setConfirmationText("");
-                }}
-                disabled={isDeleting}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="danger"
-                onClick={handleDeleteAccountData}
-                disabled={isDeleting || confirmationText !== "DELETE"}
-              >
-                {isDeleting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="h-4 w-4" />
-                )}
-                {isDeleting ? "Deleting..." : "Confirm delete"}
-              </Button>
-            </div>
-          </div>
+      <Modal
+        open={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setConfirmationText("");
+        }}
+        title="Delete your workspace data?"
+        description="All resumes, applications, and feedback will be permanently removed. This cannot be undone."
+        busy={isDeleting}
+      >
+        <label htmlFor="delete-confirmation" className="field-label">
+          Type DELETE to confirm
+        </label>
+        <input
+          id="delete-confirmation"
+          className="field-input"
+          autoComplete="off"
+          value={confirmationText}
+          disabled={isDeleting}
+          onChange={(e) => setConfirmationText(e.target.value)}
+        />
+        <div className="form-footer">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setIsDeleteModalOpen(false);
+              setConfirmationText("");
+            }}
+            disabled={isDeleting}
+          >
+            Keep my workspace
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleDeleteAccountData}
+            disabled={isDeleting || confirmationText !== "DELETE"}
+          >
+            {isDeleting ? "Deleting…" : "Delete all data"}
+          </Button>
         </div>
-      ) : null}
-
+      </Modal>
     </>
   );
 }

@@ -2,14 +2,23 @@
 
 import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
-import { Briefcase, Plus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { AddJobModal, JobsHeader, JobsTableSection } from "@/components/dashboard/jobs-sections";
-import { DashboardPageError, DashboardPageLoading } from "@/components/dashboard/page-state";
+import { useMemo, useState } from "react";
+import {
+  AddJobModal,
+  JobsHeader,
+  JobsTableSection,
+} from "@/components/dashboard/jobs-sections";
+import {
+  DashboardPageError,
+  DashboardPageLoading,
+} from "@/components/dashboard/page-state";
 import { useCreateJob, useDeleteJob, useJobs } from "@/hooks/queries";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { getJob, updateJob } from "@/lib/api/jobs";
 import type { JobStatus } from "@/lib/mock-data";
+import { Modal } from "@/components/ui/modal";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/providers/toast-provider";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
 function toRelativeDayLabel(dateInput: string) {
@@ -17,8 +26,16 @@ function toRelativeDayLabel(dateInput: string) {
   if (Number.isNaN(date.getTime())) return "";
 
   const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfInputDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  );
+  const startOfInputDay = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  );
   const diffMs = startOfToday.getTime() - startOfInputDay.getTime();
   const dayDiff = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
@@ -36,6 +53,7 @@ const JOBS_PAGE_SIZE = 10;
 
 export default function JobsPage() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<JobStatus | "All">("All");
   const [dateFilter, setDateFilter] = useState<JobDateFilter>("All");
@@ -57,29 +75,25 @@ export default function JobsPage() {
   const deleteJob = useDeleteJob();
   const isInitialLoading = jobsQuery.isLoading && !jobsQuery.data;
   const hasInitialError = jobsQuery.isError && !jobsQuery.data;
-  const hasAnyJobs = (jobsQuery.data?.totalCount ?? 0) > 0;
   const totalPages = jobsQuery.data?.totalPages ?? 1;
 
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedQuery, statusFilter, dateFilter]);
-
   const rows = useMemo(() => {
-    if (jobsQuery.isFetching) return [];
     const jobs = jobsQuery.data?.jobs ?? [];
     return jobs.map((job) => ({
-        id: job.id,
-        company: job.company,
-        role: job.role,
-        status: job.status,
-        when: toRelativeDayLabel(job.createdAt),
-        link: job.link ?? undefined,
-        location: job.location ?? undefined,
-      }));
-  }, [jobsQuery.data, jobsQuery.isFetching]);
+      id: job.id,
+      company: job.company,
+      role: job.role,
+      status: job.status,
+      when: toRelativeDayLabel(job.createdAt),
+      link: job.link ?? undefined,
+      location: job.location ?? undefined,
+    }));
+  }, [jobsQuery.data]);
 
   const editingJob = useMemo(
-    () => (jobsQuery.data?.jobs ?? []).find((job) => job.id === editingJobId) ?? null,
+    () =>
+      (jobsQuery.data?.jobs ?? []).find((job) => job.id === editingJobId) ??
+      null,
     [editingJobId, jobsQuery.data],
   );
 
@@ -102,7 +116,10 @@ export default function JobsPage() {
     status: JobStatus;
     contactName: string;
     contactEmail: string;
-    interviewRounds: Array<{ name: string; status: "Done" | "Upcoming" | "Pending" }>;
+    interviewRounds: Array<{
+      name: string;
+      status: "Done" | "Upcoming" | "Pending";
+    }>;
     location: string;
     link: string;
   }) {
@@ -124,6 +141,10 @@ export default function JobsPage() {
         queryKey: queryKeys.dashboard.overview(),
       });
       setIsAddJobOpen(false);
+      toast({
+        tone: "success",
+        message: "A new opportunity, added to your tracker.",
+      });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(
@@ -141,7 +162,10 @@ export default function JobsPage() {
     status: JobStatus;
     contactName: string;
     contactEmail: string;
-    interviewRounds: Array<{ name: string; status: "Done" | "Upcoming" | "Pending" }>;
+    interviewRounds: Array<{
+      name: string;
+      status: "Done" | "Upcoming" | "Pending";
+    }>;
     location: string;
     link: string;
   }) {
@@ -196,12 +220,14 @@ export default function JobsPage() {
       setJobToDeleteId(null);
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        alert(
-          (error.response?.data as { error?: string } | undefined)?.error ??
+        toast({
+          tone: "error",
+          message:
+            (error.response?.data as { error?: string } | undefined)?.error ??
             "Could not delete job.",
-        );
+        });
       } else {
-        alert("Could not delete job.");
+        toast({ tone: "error", message: "Could not delete job." });
       }
     } finally {
       setDeletingJobId(null);
@@ -210,7 +236,9 @@ export default function JobsPage() {
 
   return (
     <>
-      {isInitialLoading ? <DashboardPageLoading label="Loading jobs..." /> : null}
+      {isInitialLoading ? (
+        <DashboardPageLoading label="Loading jobs..." />
+      ) : null}
       {hasInitialError ? (
         <DashboardPageError
           title="Could not load jobs"
@@ -234,7 +262,9 @@ export default function JobsPage() {
             open={Boolean(editingJob)}
             onClose={() => setEditingJobId(null)}
             onSubmit={handleEditJob}
-            isSubmitting={updatingJobId === editingJobId && Boolean(editingJobId)}
+            isSubmitting={
+              updatingJobId === editingJobId && Boolean(editingJobId)
+            }
             mode="edit"
             initialValues={
               editingJob
@@ -253,11 +283,20 @@ export default function JobsPage() {
           />
           <JobsTableSection
             query={query}
-            onQueryChange={setQuery}
+            onQueryChange={(value) => {
+              setQuery(value);
+              setPage(1);
+            }}
             statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
+            onStatusFilterChange={(value) => {
+              setStatusFilter(value);
+              setPage(1);
+            }}
             dateFilter={dateFilter}
-            onDateFilterChange={setDateFilter}
+            onDateFilterChange={(value) => {
+              setDateFilter(value);
+              setPage(1);
+            }}
             rows={rows}
             onEditJob={setEditingJobId}
             onRequestDeleteJob={setJobToDeleteId}
@@ -269,58 +308,32 @@ export default function JobsPage() {
             onPageChange={handlePageChange}
             isLoadingRows={jobsQuery.isFetching}
           />
-          {!jobsQuery.isLoading && !hasAnyJobs ? (
-            <section className="rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-zinc-100 text-zinc-700">
-                <Briefcase className="h-5 w-5" />
-              </div>
-              <div className="mt-4 text-base font-semibold text-zinc-900">
-                No jobs found
-              </div>
-              <div className="mt-1 text-sm text-zinc-600">
-                Start tracking applications to build your pipeline and analytics.
-              </div>
-              <div className="mt-5">
-                <button
-                  className="inline-flex items-center gap-2 rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-                  onClick={() => setIsAddJobOpen(true)}
-                >
-                  <Plus className="h-4 w-4" />
-                  Add job
-                </button>
-              </div>
-            </section>
-          ) : null}
         </>
       )}
-      {jobToDeleteId ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">
-              Delete Job?
-            </div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove this job from your tracker.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setJobToDeleteId(null)}
-                disabled={deletingJobId === jobToDeleteId}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={() => handleDeleteJob(jobToDeleteId)}
-                disabled={deletingJobId === jobToDeleteId}
-              >
-                {deletingJobId === jobToDeleteId ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
+      <Modal
+        open={Boolean(jobToDeleteId)}
+        onClose={() => setJobToDeleteId(null)}
+        title="Remove this opportunity?"
+        description="This permanently deletes the job, its notes, and interview details from your tracker."
+        busy={Boolean(deletingJobId)}
+      >
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => setJobToDeleteId(null)}
+            disabled={Boolean(deletingJobId)}
+          >
+            Keep it
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => jobToDeleteId && handleDeleteJob(jobToDeleteId)}
+            disabled={Boolean(deletingJobId)}
+          >
+            {deletingJobId ? "Deleting…" : "Delete job"}
+          </Button>
         </div>
-      ) : null}
+      </Modal>
     </>
   );
 }

@@ -1,68 +1,103 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { CheckCircle2, AlertCircle, X } from "lucide-react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 type ToastTone = "success" | "error";
-
-type ToastItem = {
-  id: number;
-  tone: ToastTone;
-  message: string;
-};
-
-type ToastInput = {
-  tone: ToastTone;
-  message: string;
-  durationMs?: number;
-};
-
-type ToastContextValue = {
+type ToastItem = { id: number; tone: ToastTone; message: string };
+type ToastInput = { tone: ToastTone; message: string; durationMs?: number };
+const ToastContext = createContext<{
   toast: (input: ToastInput) => void;
-};
-
-const ToastContext = createContext<ToastContextValue | null>(null);
+} | null>(null);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
-
+  const region = useRef<HTMLDivElement>(null);
+  const timers = useRef(new Set<ReturnType<typeof setTimeout>>());
+  const nextId = useRef(0);
   const toast = useCallback((input: ToastInput) => {
-    const id = Date.now() + Math.floor(Math.random() * 1000);
-    const duration = input.durationMs ?? 2600;
-    setToasts((prev) => [...prev, { id, tone: input.tone, message: input.message }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((item) => item.id !== id));
-    }, duration);
+    const id = ++nextId.current;
+    setToasts((prev) => [
+      ...prev,
+      { id, tone: input.tone, message: input.message },
+    ]);
+    const timer = setTimeout(
+      () => {
+        setToasts((prev) => prev.filter((item) => item.id !== id));
+        timers.current.delete(timer);
+      },
+      input.durationMs ?? (input.tone === "error" ? 6500 : 4500),
+    );
+    timers.current.add(timer);
   }, []);
-
-  const value = useMemo<ToastContextValue>(() => ({ toast }), [toast]);
-
+  useEffect(() => {
+    const activeTimers = timers.current;
+    return () => {
+      activeTimers.forEach(clearTimeout);
+    };
+  }, []);
+  useEffect(() => {
+    const element = region.current;
+    if (!element) return;
+    if (toasts.length && typeof element.showPopover === "function") {
+      element.hidePopover();
+      element.showPopover();
+    } else if (typeof element.hidePopover === "function") element.hidePopover();
+  }, [toasts]);
+  const value = useMemo(() => ({ toast }), [toast]);
   return (
     <ToastContext.Provider value={value}>
       {children}
-      {toasts.length ? (
-        <div className="pointer-events-none fixed right-4 top-4 z-[80] space-y-2">
-          {toasts.map((item) => (
-            <div
-              key={item.id}
-              className={`rounded-2xl border px-3 py-2 text-sm shadow-sm ${
-                item.tone === "success"
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  : "border-rose-200 bg-rose-50 text-rose-700"
-              }`}
+      <div
+        ref={region}
+        popover="manual"
+        className="toast-region"
+        aria-live="polite"
+      >
+        {toasts.map((item) => (
+          <div
+            key={item.id}
+            role={item.tone === "error" ? "alert" : "status"}
+            className="toast-item"
+          >
+            <span
+              className={
+                item.tone === "success" ? "text-[#70964f]" : "text-rose-600"
+              }
             >
-              {item.message}
-            </div>
-          ))}
-        </div>
-      ) : null}
+              {item.tone === "success" ? (
+                <CheckCircle2 size={18} />
+              ) : (
+                <AlertCircle size={18} />
+              )}
+            </span>
+            <p className="min-w-0 flex-1 text-sm leading-6">{item.message}</p>
+            <button
+              type="button"
+              className="icon-button !h-7 !w-7"
+              aria-label="Dismiss notification"
+              onClick={() =>
+                setToasts((prev) => prev.filter((t) => t.id !== item.id))
+              }
+            >
+              <X size={14} />
+            </button>
+          </div>
+        ))}
+      </div>
     </ToastContext.Provider>
   );
 }
-
 export function useToast() {
   const context = useContext(ToastContext);
-  if (!context) {
-    throw new Error("useToast must be used within ToastProvider");
-  }
+  if (!context) throw new Error("useToast must be used within ToastProvider");
   return context;
 }
