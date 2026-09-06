@@ -1015,10 +1015,6 @@ a {
   font-size: 12px;
   color: #929988;
 }
-.workspace-topbar .breadcrumb strong {
-  color: #58624f;
-  font-weight: 450;
-}
 .workspace-topbar .breadcrumb-link {
   color: #58624f;
   font-weight: 450;
@@ -1028,6 +1024,13 @@ a {
   color: var(--forest);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+.workspace-topbar .breadcrumb-page {
+  color: #58624f;
+  font-weight: 450;
+}
+.workspace-topbar .breadcrumb-separator {
+  color: #929988;
 }
 .workspace-content {
   width: 100%;

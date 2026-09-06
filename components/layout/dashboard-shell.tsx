@@ -7,7 +7,6 @@ import { useClerk, useUser } from "@clerk/nextjs";
 import {
   ArrowUpRight,
   BriefcaseBusiness,
-  ChevronRight,
   FileText,
   LayoutGrid,
   LogOut,
@@ -19,6 +18,14 @@ import {
 import { useState } from "react";
 import { Brand } from "@/components/ui/brand";
 import { Button } from "@/components/ui/button";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Modal } from "@/components/ui/modal";
 import { useCurrentDbUser, useDashboardOverview } from "@/hooks/queries";
 import { getDashboardOverview } from "@/lib/api/dashboard";
@@ -231,21 +238,29 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             >
               <Menu size={20} />
             </button>
-            <div className="breadcrumb">
-              <Link href="/dashboard" className="breadcrumb-link hidden sm:inline">
-                Workspace
-              </Link>
-              <ChevronRight size={12} className="hidden sm:inline" />
-              <Link href={currentPageHref} className="breadcrumb-link">
-                {currentPage}
-              </Link>
-              {isDetails && (
-                <>
-                  <ChevronRight size={12} />
-                  <strong>Details</strong>
-                </>
-              )}
-            </div>
+            <Breadcrumb className="breadcrumb">
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden sm:inline-flex">
+                  <BreadcrumbLink href="/dashboard">
+                    Workspace
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden sm:inline-flex" />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href={currentPageHref}>
+                    {currentPage}
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                {isDetails && (
+                  <>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>Details</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </>
+                )}
+              </BreadcrumbList>
+            </Breadcrumb>
           </div>
           <div className="flex items-center gap-4">
             <span className="hidden items-center gap-1.5 text-[11px] text-zinc-500 sm:flex">
