@@ -53,6 +53,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     : (navigation.find(
         (item) => item.href !== "/dashboard" && pathname.startsWith(item.href),
       )?.label ?? "Overview");
+  const currentPageHref = pathname.startsWith("/dashboard/settings")
+    ? "/dashboard/settings"
+    : (navigation.find(
+        (item) => item.href !== "/dashboard" && pathname.startsWith(item.href),
+      )?.href ?? "/dashboard");
   const isDetails = pathname.split("/").length > 3;
   function prefetch(href: string) {
     const options = { staleTime: 30_000 };
@@ -227,9 +232,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <Menu size={20} />
             </button>
             <div className="breadcrumb">
-              <span className="hidden sm:inline">Workspace</span>
+              <Link href="/dashboard" className="breadcrumb-link hidden sm:inline">
+                Workspace
+              </Link>
               <ChevronRight size={12} className="hidden sm:inline" />
-              <strong>{currentPage}</strong>
+              <Link href={currentPageHref} className="breadcrumb-link">
+                {currentPage}
+              </Link>
               {isDetails && (
                 <>
                   <ChevronRight size={12} />

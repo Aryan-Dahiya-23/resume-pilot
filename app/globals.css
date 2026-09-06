@@ -1019,6 +1019,16 @@ a {
   color: #58624f;
   font-weight: 450;
 }
+.workspace-topbar .breadcrumb-link {
+  color: #58624f;
+  font-weight: 450;
+  transition: color 0.2s ease;
+}
+.workspace-topbar .breadcrumb-link:hover {
+  color: var(--forest);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .workspace-content {
   width: 100%;
   max-width: 1440px;
