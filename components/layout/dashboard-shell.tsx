@@ -111,13 +111,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   );
   const sidebar = (
     <>
-      <Link
-        href="/dashboard"
-        aria-label="Go to dashboard overview"
-        onClick={() => setMobileOpen(false)}
-      >
-        <Brand light />
-      </Link>
+      <div onClick={() => setMobileOpen(false)}>
+        <Brand
+          light
+          href="/dashboard"
+          ariaLabel="Go to dashboard overview"
+        />
+      </div>
       <p className="sidebar-subtitle">A workspace for your next move.</p>
       <p className="sidebar-label">YOUR WORKSPACE</p>
       <nav aria-label="Workspace navigation">

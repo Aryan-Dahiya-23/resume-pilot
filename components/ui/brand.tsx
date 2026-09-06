@@ -5,14 +5,18 @@ import { cn } from "@/components/ui/cn";
 export function Brand({
   light = false,
   compact = false,
+  href = "/",
+  ariaLabel = "ResumePilot home",
 }: {
   light?: boolean;
   compact?: boolean;
+  href?: string;
+  ariaLabel?: string;
 }) {
   return (
     <Link
-      href="/"
-      aria-label="ResumePilot home"
+      href={href}
+      aria-label={ariaLabel}
       className={cn("brand", light && "brand-light")}
     >
       <span className="brand-mark">

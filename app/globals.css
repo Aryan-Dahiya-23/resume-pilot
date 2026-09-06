@@ -1665,9 +1665,22 @@ a {
     max-width: 550px;
   }
   .hero-art {
+    display: flex;
+    flex-direction: column;
     max-width: 500px;
     margin-inline: auto;
     width: calc(100% - 18px);
+  }
+  .floating-label {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    align-self: center;
+    margin-top: 16px;
+    transform: none;
+  }
+  .preview-caption {
+    margin-top: 12px;
   }
   .promise-strip {
     grid-template-columns: 1fr;
@@ -1774,7 +1787,7 @@ a {
   }
   .floating-label {
     padding: 12px 14px;
-    right: -5px;
+    right: auto;
   }
   .landing-hero h1 {
     font-size: clamp(42px, 13vw, 49px);
