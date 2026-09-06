@@ -8,7 +8,6 @@ import {
   Check,
   CheckCheck,
   FileText,
-  Sparkles,
 } from "lucide-react";
 import { buttonStyles } from "@/components/ui/button";
 import { ProgressRing } from "@/components/ui/progress-ring";
@@ -102,7 +101,7 @@ export function HeroSection({ isSignedIn }: { isSignedIn: boolean }) {
               </div>
               <div className="preview-feedback">
                 <div>
-                  <Sparkles size={12} /> MAKE YOUR IMPACT VISIBLE
+                  <Check size={12} /> MAKE YOUR IMPACT VISIBLE
                 </div>
                 <p>
                   “Redesigned the onboarding flow, helping 28% more users

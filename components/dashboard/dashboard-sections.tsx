@@ -9,7 +9,6 @@ import {
   FileText,
   MessagesSquare,
   Plus,
-  Sparkles,
   Sprout,
   Target,
   Upload,
@@ -180,7 +179,7 @@ export function ResumeOverviewCard({
             </div>
             {nextActions.length > 0 && (
               <div className="mt-4 flex items-start gap-2 text-xs leading-6 text-zinc-500">
-                <Sparkles size={14} className="mt-1 shrink-0 text-[#819e60]" />
+                <Target size={14} className="mt-1 shrink-0 text-[#819e60]" />
                 <p>{nextActions[0]}</p>
               </div>
             )}
@@ -338,7 +337,7 @@ export function NextActionsCard({ items }: { items: string[] }) {
     <section className="panel !border-[#dfe8d1] !bg-[#eef3e4] p-6">
       <div className="mb-4 flex items-center gap-2.5">
         <span className="icon-tile !bg-white">
-          <Sparkles size={17} />
+          <Target size={17} />
         </span>
         <div>
           <h2 className="section-title">A little direction</h2>

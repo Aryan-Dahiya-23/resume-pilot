@@ -16,8 +16,9 @@ import {
   Download,
   FileText,
   History,
+  PenLine,
+  RefreshCw,
   Save,
-  Sparkles,
   Target,
   Trash2,
 } from "lucide-react";
@@ -84,7 +85,7 @@ export function ResumeFeedbackHeader({
               </FormSelect>
             )}
             <Button onClick={onRerunReview} disabled={isRerunning}>
-              <Sparkles size={15} />
+              <RefreshCw size={15} />
               {isRerunning ? "Queuing review…" : "Review again"}
             </Button>
           </>
@@ -237,7 +238,7 @@ export function ResumeDetailsMain({
               Practical rewrites to make your contribution clear.
             </p>
           </div>
-          <Sparkles size={18} className="text-[#8aa769]" />
+          <PenLine size={18} className="text-[#8aa769]" />
         </div>
         <div className="space-y-5 px-6 pb-6">
           {feedback.rewriteSuggestions.map((suggestion, index) => (

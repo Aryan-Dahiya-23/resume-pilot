@@ -14,7 +14,7 @@ import {
   Loader2,
   Search,
   ShieldCheck,
-  Sparkles,
+  Target,
   Trash2,
   Upload,
 } from "lucide-react";
@@ -277,7 +277,7 @@ export function ResumeScoreGuideCard() {
   return (
     <section className="score-guide">
       <div className="flex items-center gap-2">
-        <Sparkles size={16} className="text-[#7b9956]" />
+        <FileText size={16} className="text-[#7b9956]" />
         <h2 className="text-sm font-medium">
           What goes into a stronger resume?
         </h2>
@@ -295,7 +295,7 @@ export function ResumeScoreGuideCard() {
             text: "Specific outcomes and honest metrics make your contribution concrete.",
           },
           {
-            icon: Sparkles,
+            icon: Target,
             title: "The right story",
             text: "Relevant skills and language connect your experience to the role.",
           },
@@ -515,7 +515,7 @@ export function ResumeUploadModal({
             {isUploading ? (
               <Loader2 className="animate-spin" size={16} />
             ) : (
-              <Sparkles size={16} />
+              <Upload size={16} />
             )}
             {isUploading ? "Uploading your resume…" : "Upload & review"}
           </Button>

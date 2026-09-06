@@ -5,7 +5,6 @@ import {
   FileSearch,
   Layers3,
   Route,
-  Sparkles,
 } from "lucide-react";
 
 export function FeaturesSection() {
@@ -56,7 +55,7 @@ export function FeaturesSection() {
         <div className="feature-grid">
           <article className="feature-block">
             <div className="feature-illustration">
-              <Sparkles
+              <FileSearch
                 size={29}
                 className="mb-5 text-[#d5ed9a]"
                 strokeWidth={1.3}
