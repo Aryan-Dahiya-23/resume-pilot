@@ -106,6 +106,11 @@ export default function ResumesPage() {
       });
       setUploadModalOpen(false);
       setSelectedFile(null);
+      toast({
+        tone: "success",
+        message:
+          "Resume uploaded. Open it from your library to follow the review.",
+      });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const message =
@@ -175,6 +180,24 @@ export default function ResumesPage() {
           />
 
           <div className="space-y-6">
+            {resumesQuery.isError && resumesQuery.data && (
+              <div
+                role="alert"
+                className="panel flex flex-wrap items-center justify-between gap-3 p-4"
+              >
+                <p className="text-sm text-zinc-600">
+                  We couldn’t refresh your library. You’re seeing the last
+                  loaded results.
+                </p>
+                <Button
+                  variant="secondary"
+                  disabled={resumesQuery.isFetching}
+                  onClick={() => void resumesQuery.refetch()}
+                >
+                  {resumesQuery.isFetching ? "Retrying…" : "Retry refresh"}
+                </Button>
+              </div>
+            )}
             {hasAnyResumes ? (
               <ResumesTableSection
                 query={query}
@@ -187,6 +210,7 @@ export default function ResumesPage() {
                 onDeleteResume={setResumeToDelete}
                 deletingResumeId={isDeletingResume ? resumeToDelete : null}
                 onHoverResume={handlePrefetchResume}
+                isUpdating={resumesQuery.isFetching || query !== debouncedQuery}
               />
             ) : (
               <section className="panel empty-state">

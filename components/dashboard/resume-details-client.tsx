@@ -294,9 +294,7 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
         onRerunReview={handleRerunReview}
         isRerunning={
           isRerunning ||
-          ["PARSING", "REVIEWING"].includes(
-            detailsQuery.data.status,
-          )
+          ["PARSING", "REVIEWING"].includes(detailsQuery.data.status)
         }
         scoreDelta={latestScoreDelta}
         versionOptions={versionOptions}
@@ -318,12 +316,16 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
             <h2 className="text-base font-medium">
               {detailsQuery.data.status === "FAILED"
                 ? "This review needs another try."
-                : "Your story is getting a fresh look."}
+                : detailsQuery.data.status === "UPLOADED"
+                  ? "Your resume is queued for review."
+                  : "Your story is getting a fresh look."}
             </h2>
             <p className="mt-2 text-sm leading-6 text-zinc-500">
               {detailsQuery.data.status === "FAILED"
                 ? "We couldn’t finish processing this file. Try reviewing it again, or upload another version."
-                : "We’re reading your resume and preparing specific suggestions. This page updates automatically."}
+                : detailsQuery.data.status === "UPLOADED"
+                  ? "Your upload is complete. Processing hasn’t started yet. This page updates automatically; if it stays queued, use Review again above."
+                  : "We’re reading your resume and preparing specific suggestions. This page updates automatically."}
             </p>
             {detailsQuery.data.status !== "FAILED" && (
               <div className="mt-4 flex flex-wrap gap-4 text-xs text-zinc-500">
@@ -334,7 +336,9 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
                 <span>
                   {detailsQuery.data.status === "REVIEWING"
                     ? "✓ Resume read"
-                    : "Reading your file"}
+                    : detailsQuery.data.status === "UPLOADED"
+                      ? "Next: read your file"
+                      : "Reading your file"}
                 </span>
                 <span>
                   {detailsQuery.data.status === "REVIEWING"

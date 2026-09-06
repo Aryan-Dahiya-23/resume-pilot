@@ -282,6 +282,7 @@ export default function JobsPage() {
             }
           />
           <JobsTableSection
+            onAddJob={() => setIsAddJobOpen(true)}
             query={query}
             onQueryChange={(value) => {
               setQuery(value);

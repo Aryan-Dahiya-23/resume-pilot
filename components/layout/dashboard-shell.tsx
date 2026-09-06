@@ -169,6 +169,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           pathname.startsWith("/dashboard/settings") ? "page" : undefined
         }
         onMouseEnter={() => prefetch("/dashboard/settings")}
+        onFocus={() => prefetch("/dashboard/settings")}
         onClick={() => setMobileOpen(false)}
       >
         <Settings2 size={17} strokeWidth={1.6} />

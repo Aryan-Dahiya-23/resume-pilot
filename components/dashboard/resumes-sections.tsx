@@ -76,6 +76,7 @@ export function ResumesTableSection({
   onDeleteResume,
   deletingResumeId,
   onHoverResume,
+  isUpdating = false,
 }: {
   query: string;
   onQueryChange: (value: string) => void;
@@ -87,6 +88,7 @@ export function ResumesTableSection({
   onDeleteResume?: (id: string) => void;
   deletingResumeId?: string | null;
   onHoverResume?: (id: string) => void;
+  isUpdating?: boolean;
 }) {
   return (
     <section aria-label="Resume library" className="space-y-6">
@@ -134,10 +136,18 @@ export function ResumesTableSection({
             {rows.length}
           </span>
         </h2>
-        <span className="text-xs text-zinc-400">Newest first</span>
+        <span
+          role="status"
+          className="flex items-center gap-2 text-xs text-zinc-500"
+        >
+          {isUpdating && (
+            <Loader2 size={13} className="animate-spin" aria-hidden="true" />
+          )}
+          {isUpdating ? "Updating results…" : "Newest first"}
+        </span>
       </div>
       {rows.length ? (
-        <div className="resume-grid">
+        <div className="resume-grid" aria-busy={isUpdating}>
           {rows.map((resume) => {
             const ready = !resume.status || resume.status === "READY";
             const failed = resume.status === "FAILED";
@@ -221,6 +231,7 @@ export function ResumesTableSection({
                       href={`/dashboard/resumes/${resume.id}`}
                       className="text-link"
                       onMouseEnter={() => onHoverResume?.(resume.id)}
+                      onFocus={() => onHoverResume?.(resume.id)}
                     >
                       {ready ? "View feedback" : "View details"}
                       <ArrowUpRight size={14} />
@@ -236,9 +247,15 @@ export function ResumesTableSection({
           <div className="icon-tile">
             <Search size={24} />
           </div>
-          <h3>No resumes match just yet.</h3>
+          <h3>
+            {isUpdating
+              ? "Finding your resumes…"
+              : "No resumes match just yet."}
+          </h3>
           <p>
-            Try a different search or clear your filters to see your library.
+            {isUpdating
+              ? "We’re checking your library for matching results."
+              : "Try a different search or clear your filters to see your library."}
           </p>
           <Button
             variant="secondary"
@@ -457,6 +474,22 @@ export function ResumeUploadModal({
         {uploadError && (
           <div role="alert" className="form-error mt-4">
             {uploadError}
+            <p className="mt-1">
+              Your selected file is still here. Check your connection and try
+              again, or choose another file.
+            </p>
+          </div>
+        )}
+        {isUploading && (
+          <div
+            role="status"
+            className="mt-4 rounded-lg border border-[#dce5cf] bg-[#f0f4e8] p-4 text-sm"
+          >
+            <p className="font-medium">Uploading and preparing your review</p>
+            <p className="mt-1 text-zinc-600">
+              Keep this window open until the upload finishes. Your resume
+              review will then continue in your workspace.
+            </p>
           </div>
         )}
         {uploadResult && (

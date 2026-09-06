@@ -369,6 +369,7 @@ export function JobsTableSection({
   totalPages,
   onPageChange,
   isLoadingRows,
+  onAddJob,
 }: {
   query: string;
   onQueryChange: (value: string) => void;
@@ -386,12 +387,14 @@ export function JobsTableSection({
   totalPages: number;
   onPageChange: (page: number) => void;
   isLoadingRows?: boolean;
+  onAddJob?: () => void;
 }) {
   const actions = (job: Job) => (
     <div className="flex items-center justify-end gap-1">
       <Link
         href={`/dashboard/jobs/${job.id}`}
         onMouseEnter={() => onHoverJob?.(job.id)}
+        onFocus={() => onHoverJob?.(job.id)}
         className="icon-button"
         aria-label={`View ${job.role} at ${job.company}`}
       >
@@ -496,6 +499,7 @@ export function JobsTableSection({
                         <Link
                           href={`/dashboard/jobs/${job.id}`}
                           onMouseEnter={() => onHoverJob?.(job.id)}
+                          onFocus={() => onHoverJob?.(job.id)}
                           className="flex items-center gap-3"
                         >
                           <span className="company-avatar">
@@ -571,7 +575,7 @@ export function JobsTableSection({
             <p>
               {query || statusFilter !== "All" || dateFilter !== "All"
                 ? "Try another search or clear your filters to find what you’re looking for."
-                : "Add your first opportunity with the “Add a job” button above. Keep its details, conversations, and next steps together."}
+                : "Keep an opportunity’s details, conversations, and next steps together. Start with a company and role."}
             </p>
             {(query || statusFilter !== "All" || dateFilter !== "All") && (
               <Button
@@ -585,6 +589,14 @@ export function JobsTableSection({
                 Clear filters
               </Button>
             )}
+            {!query &&
+              statusFilter === "All" &&
+              dateFilter === "All" &&
+              onAddJob && (
+                <Button onClick={onAddJob}>
+                  <Plus size={16} /> Add your first job
+                </Button>
+              )}
           </div>
         )}
         <div className="pagination">
