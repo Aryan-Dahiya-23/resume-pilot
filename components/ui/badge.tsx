@@ -1,6 +1,11 @@
 import { cn } from "@/components/ui/cn";
 
-export type BadgeVariant = "neutral" | "success" | "warning" | "danger" | "info";
+export type BadgeVariant =
+  | "neutral"
+  | "success"
+  | "warning"
+  | "danger"
+  | "info";
 
 const variantClasses: Record<BadgeVariant, string> = {
   neutral: "bg-zinc-100 text-zinc-700 border-zinc-200",
@@ -20,10 +25,14 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium",
+        "inline-flex shrink-0 items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium leading-none",
         variantClasses[variant],
       )}
     >
+      <span
+        className="h-1.5 w-1.5 rounded-full bg-current opacity-65"
+        aria-hidden="true"
+      />
       {children}
     </span>
   );

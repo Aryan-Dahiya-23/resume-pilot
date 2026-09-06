@@ -1,16 +1,23 @@
+"use client";
+
 import Link from "next/link";
 import {
+  ArrowRight,
   ArrowUpRight,
-  Briefcase,
-  Calendar,
-  ChevronRight,
+  BriefcaseBusiness,
+  CircleArrowUp,
   FileText,
+  MessagesSquare,
   Plus,
+  Sprout,
+  Target,
   Upload,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { ProgressRing } from "@/components/ui/progress-ring";
+import { useCurrentDbUser } from "@/hooks/queries";
 import {
   statusVariant,
   type Job,
@@ -25,25 +32,88 @@ export function DashboardOverviewHeader({
   onUploadClick?: () => void;
   onAddJobClick?: () => void;
 }) {
+  const { data: user } = useCurrentDbUser();
+  const firstName = user?.name?.trim().split(" ")[0];
   return (
-    <div className="flex flex-col gap-3 rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <div className="text-sm text-zinc-500">Overview</div>
-        <h1 className="text-xl font-semibold text-zinc-900">
-          Resume + Job Hunt Dashboard
-        </h1>
-      </div>
+    <PageHeader
+      eyebrow="YOUR NEXT CHAPTER"
+      title={
+        firstName ? `Welcome back, ${firstName}.` : "Let’s make your next move."
+      }
+      description="A little clarity on where you are. A clear path to what’s next."
+      actions={
+        <>
+          <Button variant="secondary" onClick={onAddJobClick}>
+            <Plus size={16} />
+            Add a job
+          </Button>
+          <Button onClick={onUploadClick}>
+            <Upload size={16} />
+            Upload resume
+          </Button>
+        </>
+      }
+    />
+  );
+}
 
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <Button onClick={onUploadClick}>
-          <Upload className="h-4 w-4" />
-          Upload resume
-        </Button>
-        <Button variant="secondary" onClick={onAddJobClick}>
-          <Plus className="h-4 w-4" />
-          Add job
-        </Button>
-      </div>
+export function OverviewMetrics({
+  score,
+  jobsByStatus,
+  interviewRate,
+}: {
+  score: number | null;
+  jobsByStatus: Record<JobStatus, number>;
+  interviewRate: number;
+}) {
+  const total = Object.values(jobsByStatus).reduce((a, b) => a + b, 0);
+  const metrics = [
+    {
+      label: "Latest resume score",
+      value: score === null ? "—" : score,
+      suffix: score === null ? "" : "/ 100",
+      icon: FileText,
+      foot:
+        score === null
+          ? "Your first review starts here"
+          : "An estimate of resume readiness",
+    },
+    {
+      label: "Opportunities tracked",
+      value: total,
+      icon: BriefcaseBusiness,
+      foot: `${jobsByStatus.Saved} saved for your next step`,
+    },
+    {
+      label: "In conversation",
+      value: jobsByStatus.Interview,
+      icon: MessagesSquare,
+      foot: "Applications at interview stage",
+    },
+    {
+      label: "Interview rate",
+      value: `${interviewRate}%`,
+      icon: CircleArrowUp,
+      foot: `${jobsByStatus.Offer} ${jobsByStatus.Offer === 1 ? "offer" : "offers"} in your pipeline`,
+    },
+  ];
+  return (
+    <div className="metric-grid">
+      {metrics.map((item) => (
+        <section key={item.label} className="panel metric">
+          <div className="metric-head">
+            <h2>{item.label}</h2>
+            <item.icon size={16} className="metric-icon" strokeWidth={1.6} />
+          </div>
+          <div className="metric-value">
+            {item.value}
+            <span className="ml-1.5 text-sm font-normal tracking-normal text-zinc-400">
+              {item.suffix}
+            </span>
+          </div>
+          <p className="metric-foot">{item.foot}</p>
+        </section>
+      ))}
     </div>
   );
 }
@@ -59,106 +129,112 @@ export function ResumeOverviewCard({
   nextActions: string[];
   onUploadResume?: () => void;
 }) {
-  const hasResume = Boolean(latestResume.id);
-
-  if (!hasResume) {
-    return (
-      <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-2xl bg-zinc-900 text-white">
-            <FileText className="h-4 w-4" />
-          </div>
-          <div>
-            <div className="text-sm font-medium text-zinc-900">Latest resume</div>
-            <div className="text-sm text-zinc-500">No resume uploaded yet</div>
-          </div>
-        </div>
-        <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-          <div className="text-sm font-medium text-zinc-900">
-            Upload your first resume
-          </div>
-          <div className="mt-1 text-sm text-zinc-600">
-            Get AI feedback, ATS score, and version tracking.
-          </div>
-          <div className="mt-4">
-            <Button onClick={onUploadResume}>
-              <Upload className="h-4 w-4" />
-              Upload resume
-            </Button>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-zinc-900 text-white">
-              <FileText className="h-4 w-4" />
-            </div>
-            <div className="min-w-0">
-              <div className="text-sm font-medium text-zinc-900">
-                Latest resume
-              </div>
-              <div className="truncate text-sm text-zinc-500">
-                {latestResume.version} • Uploaded {latestResume.uploadedAt}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <Badge variant={delta >= 0 ? "success" : "danger"}>
-              {delta >= 0 ? `+${delta}` : delta} vs last version
-            </Badge>
-            <Badge variant="neutral">
-              Target: {latestResume.roleTarget ?? "Not set"}
-            </Badge>
-          </div>
+    <section className="panel">
+      <div className="panel-heading">
+        <div>
+          <h2 className="section-title">Your resume, at a glance</h2>
+          <p className="panel-kicker">Make every word work for you.</p>
         </div>
-
-        <div className="self-start sm:self-auto">
-          <ProgressRing value={latestResume.score} />
-        </div>
+        <FileText size={18} className="text-zinc-400" />
       </div>
-
-      <div className="mt-5">
-        <div className="text-sm font-medium text-zinc-900">
-          Top improvements
-        </div>
-        <ul className="mt-3 space-y-2">
-          {nextActions.slice(0, 3).map((item) => (
-            <li
-              key={item}
-              className="flex items-start gap-2 text-sm text-zinc-700"
+      {latestResume.id ? (
+        <>
+          <div className="resume-overview-body">
+            <div className="resume-file">
+              <div className="icon-tile">
+                <FileText size={18} />
+              </div>
+              <div className="min-w-0">
+                <h3>{latestResume.fileName}</h3>
+                <p>
+                  {latestResume.version} · {latestResume.uploadedAt}
+                </p>
+              </div>
+              <span className="ml-auto">
+                <Badge variant="success">Latest</Badge>
+              </span>
+            </div>
+            <div className="resume-score-strip">
+              <div>
+                <span className="eyebrow !text-[10px]">RESUME READINESS</span>
+                <h3 className="mt-2 text-xl font-medium tracking-tight">
+                  {latestResume.score >= 75
+                    ? "A strong foundation."
+                    : latestResume.score >= 50
+                      ? "Room to tell more."
+                      : "Let’s build from here."}
+                </h3>
+                <p className="mt-1 text-xs text-zinc-500">
+                  {latestResume.roleTarget || "General resume review"}
+                </p>
+                <div className="mt-3">
+                  <Badge variant={delta >= 0 ? "success" : "warning"}>
+                    {delta > 0 ? "+" : ""}
+                    {delta} points vs. previous version
+                  </Badge>
+                </div>
+              </div>
+              <ProgressRing value={latestResume.score} />
+            </div>
+            {nextActions.length > 0 && (
+              <div className="mt-4 flex items-start gap-2 text-xs leading-6 text-zinc-500">
+                <Target size={14} className="mt-1 shrink-0 text-[#819e60]" />
+                <p>{nextActions[0]}</p>
+              </div>
+            )}
+          </div>
+          <div className="panel-bottom">
+            <span className="text-xs text-zinc-400">
+              One edit closer to your next role.
+            </span>
+            <Link
+              href={`/dashboard/resumes/${latestResume.id}`}
+              className="text-link"
             >
-              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <Link href={`/dashboard/resumes/${latestResume.id}`}>
-          <Button variant="secondary" className="px-3">
-            View feedback
-            <ArrowUpRight className="h-4 w-4" />
-          </Button>
-        </Link>
-
-        <div className="sm:ml-auto sm:max-w-[280px]">
-          <div className="rounded-2xl bg-zinc-50 px-3 py-2 text-xs text-zinc-600 sm:text-right">
-            Tip: upload a new version after edits to track improvement.
+              Open feedback
+              <ArrowUpRight size={15} />
+            </Link>
           </div>
+        </>
+      ) : (
+        <div className="resume-overview-body">
+          <button
+            type="button"
+            className="drop-zone w-full !py-8"
+            onClick={onUploadResume}
+          >
+            <span className="icon-tile mb-4 !h-12 !w-12 !bg-white">
+              <Upload size={22} strokeWidth={1.4} />
+            </span>
+            <h3 className="text-base font-medium">
+              Your next chapter starts with a resume.
+            </h3>
+            <p className="mt-2 max-w-xs text-xs leading-6 text-zinc-500">
+              Upload your resume for specific feedback, stronger bullets, and a
+              clearer story.
+            </p>
+            <span className="button button-primary mt-5">
+              Upload my first resume
+              <ArrowUpRight size={15} />
+            </span>
+            <span className="mt-3 text-[11px] text-zinc-400">
+              PDF or DOCX · Up to 5 MB
+            </span>
+          </button>
         </div>
-      </div>
+      )}
     </section>
   );
 }
 
+const pipelineColors: Record<JobStatus, string> = {
+  Saved: "#c5d5ac",
+  Applied: "#8ba574",
+  Interview: "#bdcbea",
+  Offer: "#425f35",
+  Rejected: "#e1cbbf",
+};
 export function JobPipelineCard({
   jobs,
   jobsByStatus,
@@ -168,150 +244,137 @@ export function JobPipelineCard({
   jobsByStatus: Record<JobStatus, number>;
   interviewRate: number;
 }) {
-  const hasJobs = jobs.length > 0;
-
+  const total = Object.values(jobsByStatus).reduce((a, b) => a + b, 0);
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
+    <section className="panel">
+      <div className="panel-heading">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-zinc-900 text-white">
-              <Briefcase className="h-4 w-4" />
-            </div>
-            <div>
-              <div className="text-sm font-medium text-zinc-900">
-                Job pipeline
-              </div>
-              <div className="text-sm text-zinc-500">
-                {jobs.length} jobs tracked
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            {Object.entries(jobsByStatus).map(([status, count]) => (
-              <Badge key={status} variant={statusVariant(status)}>
-                {status}: {count}
-              </Badge>
+          <h2 className="section-title">Your application pipeline</h2>
+          <p className="panel-kicker">Every opportunity has a place.</p>
+        </div>
+        <Link href="/dashboard/jobs" className="text-link">
+          View all
+          <ArrowUpRight size={14} />
+        </Link>
+      </div>
+      <div className="px-6 pb-4">
+        <div
+          className="pipeline-bar"
+          role="img"
+          aria-label={Object.entries(jobsByStatus)
+            .map(([status, count]) => `${count} ${status}`)
+            .join(", ")}
+        >
+          {Object.entries(jobsByStatus)
+            .filter(([, n]) => n > 0)
+            .map(([status, n]) => (
+              <div
+                key={status}
+                style={{
+                  width: `${(n / total) * 100}%`,
+                  background: pipelineColors[status as JobStatus],
+                }}
+              />
             ))}
+        </div>
+        <div className="pipeline-legend">
+          {(
+            ["Saved", "Applied", "Interview", "Offer", "Rejected"] as const
+          ).map((status) => (
+            <div key={status}>
+              <span>
+                <i style={{ background: pipelineColors[status] }} />
+                {status}
+              </span>
+              <strong>{jobsByStatus[status]}</strong>
+            </div>
+          ))}
+          <div>
+            <span>Interview rate</span>
+            <strong>{interviewRate}%</strong>
           </div>
         </div>
-
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
-          <div className="text-xs text-zinc-500">Interview rate</div>
-          <div className="mt-1 text-2xl font-semibold text-zinc-900">
-            {interviewRate}%
-          </div>
-          <div className="mt-1 text-xs text-zinc-500">Applied → Interview</div>
+      </div>
+      {jobs.length > 0 ? (
+        <div>
+          {jobs.slice(0, 3).map((job) => (
+            <Link
+              key={job.id}
+              href={`/dashboard/jobs/${job.id}`}
+              className="recent-job"
+            >
+              <span className="company-avatar">{job.company.slice(0, 1)}</span>
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate text-[13px] font-medium">
+                  {job.company}
+                </h3>
+                <p className="mt-1 truncate text-xs text-zinc-500">
+                  {job.role}
+                </p>
+              </div>
+              <Badge variant={statusVariant(job.status)}>{job.status}</Badge>
+              <ArrowUpRight size={15} className="text-zinc-400" />
+            </Link>
+          ))}
         </div>
-      </div>
-
-      <div className="mt-5">
-        {hasJobs ? (
-          <>
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-medium text-zinc-900">Recent jobs</div>
-              <Link
-                href="/dashboard/jobs"
-                className="text-sm font-medium text-zinc-900 hover:underline"
-              >
-                View all
-              </Link>
-            </div>
-
-            <div className="mt-3 overflow-hidden rounded-2xl border border-zinc-200">
-              <div className="divide-y divide-zinc-200">
-                {jobs.slice(0, 5).map((job) => (
-                  <Link
-                    key={job.id}
-                    href={`/dashboard/jobs/${job.id}`}
-                    className="flex w-full items-center justify-between gap-3 bg-white px-4 py-3 text-left hover:bg-zinc-50"
-                  >
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-medium text-zinc-900">
-                        {job.company}
-                      </div>
-                      <div className="truncate text-sm text-zinc-500">
-                        {job.role}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="hidden items-center gap-1 text-xs text-zinc-500 sm:flex">
-                        <Calendar className="h-3.5 w-3.5" />
-                        {job.when}
-                      </div>
-                      <Badge variant={statusVariant(job.status)}>
-                        {job.status}
-                      </Badge>
-                      <ChevronRight className="h-4 w-4 text-zinc-400" />
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between">
-              <Link href="/dashboard/jobs">
-                <Button variant="secondary" className="px-3">
-                  Go to jobs
-                  <ArrowUpRight className="h-4 w-4" />
-                </Button>
-              </Link>
-
-              <div className="sm:ml-auto sm:max-w-[280px]">
-                <div className="rounded-2xl bg-zinc-50 px-3 py-2 text-xs text-zinc-600 sm:text-right">
-                  Tip: keep “Saved” jobs short. Apply fast.
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <div className="text-sm font-medium text-zinc-900">
-              No job activity yet
-            </div>
-            <div className="mt-1 text-sm text-zinc-600">
-              Add your first job to start tracking your pipeline and interview rate.
-            </div>
-            <div className="mt-4">
-              <Link href="/dashboard/jobs">
-                <Button>
-                  <Plus className="h-4 w-4" />
-                  Add first job
-                </Button>
-              </Link>
-            </div>
-          </div>
-        )}
-      </div>
+      ) : (
+        <div className="mx-6 mb-6 rounded-lg border border-dashed border-zinc-200 p-5 text-center">
+          <p className="text-sm text-zinc-500">
+            Your next opportunity is out there.
+          </p>
+          <Link href="/dashboard/jobs" className="text-link mt-3">
+            Start your job tracker
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+      )}
     </section>
   );
 }
 
 export function NextActionsCard({ items }: { items: string[] }) {
-  const actions =
-    items.length > 0
-      ? items.slice(0, 2)
-      : ["Fix 2 resume bullets today", "Apply to 3 roles from your Saved list"];
-
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="text-sm font-medium text-zinc-900">What to do next</div>
-      <div className="mt-3 space-y-2">
-        {actions.map((action, index) => (
-          <div
-            key={`${action}-${index}`}
-            className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3"
-          >
-            <div className="text-sm font-medium text-zinc-900">{action}</div>
-            <div className="mt-1 text-sm text-zinc-600">
-              {index === 0
-                ? "Focus on high-impact edits first."
-                : "Consistency compounds over time."}
+    <section className="panel !border-[#dfe8d1] !bg-[#eef3e4] p-6">
+      <div className="mb-4 flex items-center gap-2.5">
+        <span className="icon-tile !bg-white">
+          <Target size={17} />
+        </span>
+        <div>
+          <h2 className="section-title">A little direction</h2>
+          <p className="panel-kicker">Focus on what moves you forward.</p>
+        </div>
+      </div>
+      {items.length > 0 ? (
+        items.slice(0, 3).map((item, i) => (
+          <div className="action-item" key={item}>
+            <span>{i + 1}</span>
+            <p>{item}</p>
+          </div>
+        ))
+      ) : (
+        <>
+          <div className="action-item">
+            <span>1</span>
+            <div>
+              <p className="font-medium">Start with your story.</p>
+              <p className="text-xs text-zinc-500">
+                Upload a resume to get your personal feedback.
+              </p>
             </div>
           </div>
-        ))}
+          <div className="action-item">
+            <span>2</span>
+            <div>
+              <p className="font-medium">Make room for the possibilities.</p>
+              <p className="text-xs text-zinc-500">
+                Save a role that feels like a good next step.
+              </p>
+            </div>
+          </div>
+        </>
+      )}
+      <div className="mt-3 flex items-center gap-1.5 text-[11px] text-[#829567]">
+        <Sprout size={13} /> Progress happens one step at a time.
       </div>
     </section>
   );
@@ -328,52 +391,57 @@ export function WeeklySnapshotCard({
   interviews: number;
   summary: string;
 }) {
-  const hasWeeklyActivity = jobsAdded > 0 || applications > 0 || interviews > 0;
-
+  const metrics = [
+    { label: "Jobs added", value: jobsAdded, color: "#d5e5be" },
+    { label: "Applications", value: applications, color: "#9bbb75" },
+    { label: "Interviews", value: interviews, color: "#446839" },
+  ];
+  const max = Math.max(...metrics.map((item) => item.value), 1);
   return (
-    <section className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="text-sm font-medium text-zinc-900">Weekly snapshot</div>
-      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-          <div className="text-xs text-zinc-500">Jobs added</div>
-          <div className="mt-1 text-xl font-semibold text-zinc-900">
-            {jobsAdded}
-          </div>
+    <section className="panel p-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="section-title">A week of small steps</h2>
+          <p className="panel-kicker">Your activity this week.</p>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-          <div className="text-xs text-zinc-500">Applications</div>
-          <div className="mt-1 text-xl font-semibold text-zinc-900">
-            {applications}
-          </div>
-        </div>
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3">
-          <div className="text-xs text-zinc-500">Interviews</div>
-          <div className="mt-1 text-xl font-semibold text-zinc-900">
-            {interviews}
-          </div>
-        </div>
+        <span className="icon-tile">
+          <Target size={18} />
+        </span>
       </div>
-
-      {hasWeeklyActivity ? (
-        <div className="mt-4 text-sm text-zinc-600">{summary}</div>
-      ) : (
-        <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-          <div className="text-sm font-medium text-zinc-900">
-            No activity this week
+      <div className="mt-5 grid grid-cols-3 gap-4">
+        {metrics.map((item) => (
+          <div key={item.label}>
+            <span className="text-[11px] text-zinc-500">{item.label}</span>
+            <div className="mt-1 text-2xl font-medium tracking-tight">
+              {item.value}
+            </div>
           </div>
-          <div className="mt-1 text-sm text-zinc-600">
-            Kick off this week by adding jobs and sending applications.
+        ))}
+      </div>
+      <div
+        className="weekly-bars"
+        role="img"
+        aria-label={metrics
+          .map((item) => `${item.label}: ${item.value}`)
+          .join(", ")}
+      >
+        {metrics.map((item) => (
+          <div className="weekly-bar" key={item.label}>
+            <div
+              style={{
+                height: `${Math.max((item.value / max) * 100, 4)}%`,
+                background: item.color,
+              }}
+            />
+            <span>{item.label}</span>
           </div>
-          <div className="mt-4">
-            <Link href="/dashboard/jobs">
-              <Button>
-                <Plus className="h-4 w-4" />
-                Start this week
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )}
+        ))}
+      </div>
+      <p className="mt-5 border-t border-zinc-100 pt-4 text-xs leading-6 text-zinc-500">
+        {jobsAdded + applications + interviews > 0
+          ? summary
+          : "A fresh week, a fresh start. Add an opportunity to get things moving."}
+      </p>
     </section>
   );
 }

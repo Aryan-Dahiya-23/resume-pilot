@@ -1,4 +1,8 @@
 import { SignUp } from "@clerk/nextjs";
+import { AuthLayout } from "@/components/layout/auth-layout";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Create your workspace" };
 
 export default function SignUpPage() {
   const signInUrl = process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL ?? "/sign-in";
@@ -6,8 +10,8 @@ export default function SignUpPage() {
     process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL ?? "/dashboard";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-12">
+    <AuthLayout signUp>
       <SignUp signInUrl={signInUrl} forceRedirectUrl={redirectUrl} />
-    </div>
+    </AuthLayout>
   );
 }

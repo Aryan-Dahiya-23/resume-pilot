@@ -15,5 +15,5 @@ export default function ResumeDetailsPage() {
     );
   }
 
-  return <ResumeDetailsClient resumeId={resumeId} />;
+  return <ResumeDetailsClient key={resumeId} resumeId={resumeId} />;
 }

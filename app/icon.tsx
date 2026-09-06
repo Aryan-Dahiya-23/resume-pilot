@@ -1,12 +1,7 @@
 import { ImageResponse } from "next/og";
-
 export const runtime = "edge";
-export const size = {
-  width: 64,
-  height: 64,
-};
+export const size = { width: 64, height: 64 };
 export const contentType = "image/png";
-
 export default function Icon() {
   return new ImageResponse(
     (
@@ -17,39 +12,24 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          borderRadius: 16,
-          background: "linear-gradient(135deg, #09090b 0%, #27272a 100%)",
-          color: "#ffffff",
-          position: "relative",
-          fontFamily: "Arial, sans-serif",
-          fontWeight: 700,
+          borderRadius: "17px 17px 17px 4px",
+          background: "#19372c",
         }}
       >
-        <div
-          style={{
-            fontSize: 30,
-            lineHeight: 1,
-            marginTop: 2,
-          }}
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#d5ed9a"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
-          RP
-        </div>
-        <div
-          style={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            width: 10,
-            height: 10,
-            borderRadius: 999,
-            background: "#22c55e",
-            boxShadow: "0 0 0 2px rgba(255,255,255,0.2)",
-          }}
-        />
+          <path d="M7 17 17 7M7 7h10v10" />
+        </svg>
       </div>
     ),
-    {
-      ...size,
-    },
+    size,
   );
 }

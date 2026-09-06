@@ -66,11 +66,15 @@ function buildPrompt(input: ReviewResumeInput) {
   const roleTarget = input.roleTarget?.trim() || "Software Engineer";
   const targetLevel = input.targetLevel?.trim() || "Not specified";
   const structured = JSON.stringify(input.structuredJson ?? {}, null, 2);
+  // This is intentionally generated for every review instead of relying on a
+  // model's training cutoff or a date hardcoded when the application shipped.
+  const reviewDate = new Date().toISOString().slice(0, 10);
 
   return [
-    "You are an expert ATS and hiring resume reviewer for software roles.",
+    "You are an expert ATS and hiring resume reviewer.",
+    "Calibrate your feedback to the stated target role and level.",
     "Analyze the resume and return STRICT JSON only (no markdown, no extra text).",
-    "Use concise, actionable feedback.",
+    "Use concise, supportive, actionable feedback that the candidate can act on.",
     "",
     "Required JSON shape:",
     "{",
@@ -89,6 +93,19 @@ function buildPrompt(input: ReviewResumeInput) {
     "- Provide exactly 3 rewriteSuggestions",
     "- Provide exactly 3 nextActions",
     "- Score must reflect ATS readability + role alignment + measurable impact",
+    "- Ground every observation in the supplied resume text or parsed sections",
+    "- Do not invent employers, titles, dates, achievements, skills, or metrics",
+    "- If a bullet lacks a metric, recommend adding a truthful metric if available; never make one up in a rewrite",
+    "- Keep rewrite suggestions faithful to the candidate's stated experience and use the original text in before",
+    "- Only list missing keywords that are relevant to the target role and are not already evidenced in the resume",
+    "",
+    "Timeline rules:",
+    `- Current review date (UTC): ${reviewDate}`,
+    "- Make timeline claims only from explicit dates in the supplied resume",
+    "- Do not say that a timeline, role, or date is future-dated unless an explicit date is later than the current review date",
+    "- Treat a role marked Present, Current, or an equivalent term as valid and ongoing",
+    "- Treat an expected graduation date after the current review date as valid; do not present it as an error",
+    "- For month-only dates, the current month is not future-dated; for ambiguous dates, do not infer a timeline problem",
     "",
     `Target role: ${roleTarget}`,
     `Target level: ${targetLevel}`,
@@ -101,7 +118,9 @@ function buildPrompt(input: ReviewResumeInput) {
   ].join("\n");
 }
 
-export async function reviewResumeWithDeepSeek(input: ReviewResumeInput): Promise<ResumeReviewOutput> {
+export async function reviewResumeWithDeepSeek(
+  input: ReviewResumeInput,
+): Promise<ResumeReviewOutput> {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) {
     throw new Error("DEEPSEEK_API_KEY is not set");

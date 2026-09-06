@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   DashboardOverviewHeader,
+  OverviewMetrics,
   JobPipelineCard,
   NextActionsCard,
   ResumeOverviewCard,
@@ -165,7 +166,13 @@ export function DashboardPageClient({}: Record<string, never>) {
             onAddJobClick={() => setAddJobModalOpen(true)}
           />
 
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <OverviewMetrics
+            score={latestResume.id ? latestResume.score : null}
+            jobsByStatus={jobsByStatus}
+            interviewRate={interviewRate}
+          />
+
+          <div className="overview-grid">
             <ResumeOverviewCard
               latestResume={latestResume}
               delta={delta}
@@ -179,7 +186,7 @@ export function DashboardPageClient({}: Record<string, never>) {
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <div className="overview-grid">
             <NextActionsCard items={nextActions} />
             <WeeklySnapshotCard
               jobsAdded={weeklyJobsAdded}

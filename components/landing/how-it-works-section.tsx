@@ -1,32 +1,46 @@
-import { StepCard } from "@/components/landing/step-card";
-
 export function HowItWorksSection() {
   return (
-    <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8 lg:pb-16">
-      <div>
-        <div className="text-sm text-zinc-500">How it works</div>
-        <h2 className="mt-1 text-2xl font-semibold text-zinc-900">Upload. Review. Improve.</h2>
-        <p className="mt-2 max-w-2xl text-sm text-zinc-600">
-          The goal is momentum. Small improvements + consistent applications.
-        </p>
-      </div>
-
-      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <StepCard
-          number="1"
-          title="Upload your resume"
-          description="Upload a PDF. We extract text and store your file securely."
-        />
-        <StepCard
-          number="2"
-          title="Get instant feedback"
-          description="AI reviews structure, impact, and role match. You get a clear plan."
-        />
-        <StepCard
-          number="3"
-          title="Track your job hunt"
-          description="Add jobs in 10 seconds. Move them through your pipeline."
-        />
+    <section
+      className="landing-container landing-section !pt-2"
+      id="how-it-works"
+    >
+      <div className="step-layout">
+        <div>
+          <p className="eyebrow mb-4">A SIMPLE WAY FORWARD</p>
+          <h2>
+            From first draft
+            <br />
+            to <span className="editorial">next chapter.</span>
+          </h2>
+          <p className="mt-5 max-w-[300px] text-sm leading-7 text-zinc-500">
+            No scattered spreadsheets. No guessing what to change. Just a
+            workspace that helps you take the next step.
+          </p>
+        </div>
+        <div>
+          {[
+            {
+              title: "Bring your experience.",
+              text: "Upload your resume as a PDF or DOCX and tell us the role you’re working toward.",
+            },
+            {
+              title: "Find your strongest story.",
+              text: "Review your feedback, sharpen your bullets, and upload an improved version when you’re ready.",
+            },
+            {
+              title: "Keep moving forward.",
+              text: "Save opportunities, track applications, and keep your next conversation in view.",
+            },
+          ].map((step, i) => (
+            <article className="step-row" key={step.title}>
+              <span className="step-number">0{i + 1}</span>
+              <div>
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   );

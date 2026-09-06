@@ -3,7 +3,7 @@
 import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   DashboardPageError,
   DashboardPageLoading,
@@ -15,8 +15,14 @@ import {
 } from "@/components/dashboard/resume-details-sections";
 import { useResumeDetails } from "@/hooks/queries";
 import { useToast } from "@/components/providers/toast-provider";
-import type { ResumeReviewFeedback, ResumeReviewVersion } from "@/lib/api/resumes";
+import type {
+  ResumeReviewFeedback,
+  ResumeReviewVersion,
+} from "@/lib/api/resumes";
 import type { Resume, ResumeFeedback } from "@/lib/mock-data";
+import { Modal } from "@/components/ui/modal";
+import { Button } from "@/components/ui/button";
+import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
 type ReviewHistoryItem = {
@@ -72,45 +78,35 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSavingRole, setIsSavingRole] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [roleTarget, setRoleTarget] = useState("Frontend Engineer");
-  const [targetLevel, setTargetLevel] = useState("Internship");
+  const [roleDraft, setRoleTarget] = useState<string | null>(null);
+  const [levelDraft, setTargetLevel] = useState<string | null>(null);
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!detailsQuery.data) return;
-    setRoleTarget(detailsQuery.data.roleTarget ?? "Frontend Engineer");
-    setTargetLevel(detailsQuery.data.targetLevel ?? "Internship");
-  }, [
-    detailsQuery.data?.id,
-    detailsQuery.data?.roleTarget,
-    detailsQuery.data?.targetLevel,
-  ]);
+  const roleTarget =
+    roleDraft ?? detailsQuery.data?.roleTarget ?? "Frontend Engineer";
+  const targetLevel =
+    levelDraft ?? detailsQuery.data?.targetLevel ?? "Internship";
 
   const baseFeedback = useMemo(
     () =>
-      detailsQuery.data?.feedback ? toLegacyFeedback(detailsQuery.data.feedback) : emptyFeedback,
-    [detailsQuery.data?.feedback],
+      detailsQuery.data?.feedback
+        ? toLegacyFeedback(detailsQuery.data.feedback)
+        : emptyFeedback,
+    [detailsQuery.data],
   );
 
   const reviewHistory = useMemo(() => {
     const source = detailsQuery.data?.reviewHistory ?? [];
-    return source.map((item, index) => toHistoryItem(item, `v${source.length - index}`));
+    return source.map((item, index) =>
+      toHistoryItem(item, `v${source.length - index}`),
+    );
   }, [detailsQuery.data?.reviewHistory]);
 
-  useEffect(() => {
-    if (!reviewHistory.length) {
-      setSelectedReviewId(null);
-      return;
-    }
-    setSelectedReviewId((current) => {
-      if (current && reviewHistory.some((item) => item.id === current)) return current;
-      return reviewHistory[0].id;
-    });
-  }, [reviewHistory]);
-
   const selectedReview =
-    reviewHistory.find((item) => item.id === selectedReviewId) ?? reviewHistory[0] ?? null;
+    reviewHistory.find((item) => item.id === selectedReviewId) ??
+    reviewHistory[0] ??
+    null;
   const selectedFeedback = selectedReview?.feedback ?? baseFeedback;
   const selectedResume: Resume = {
     id: detailsQuery.data?.id ?? "",
@@ -153,7 +149,11 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
   async function handleRerunReview() {
     setIsRerunning(true);
     try {
-      await axios.post(`/api/resumes/${resumeId}/rerun`, {}, { withCredentials: true });
+      await axios.post(
+        `/api/resumes/${resumeId}/rerun`,
+        {},
+        { withCredentials: true },
+      );
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.resumes.list() }),
         queryClient.invalidateQueries({
@@ -214,7 +214,9 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
       router.push("/dashboard/resumes");
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.resumes.list() }),
-        queryClient.removeQueries({ queryKey: queryKeys.resumes.detail(resumeId) }),
+        queryClient.removeQueries({
+          queryKey: queryKeys.resumes.detail(resumeId),
+        }),
         queryClient.invalidateQueries({
           queryKey: queryKeys.dashboard.overview(),
         }),
@@ -290,24 +292,87 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
       <ResumeFeedbackHeader
         resume={selectedResume}
         onRerunReview={handleRerunReview}
-        isRerunning={isRerunning}
+        isRerunning={
+          isRerunning ||
+          ["PARSING", "REVIEWING"].includes(detailsQuery.data.status)
+        }
         scoreDelta={latestScoreDelta}
         versionOptions={versionOptions}
-        selectedVersionId={selectedReviewId ?? undefined}
+        selectedVersionId={selectedReview?.id}
         onSelectVersion={setSelectedReviewId}
       />
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">
-        <ResumeDetailsMain
-          feedback={selectedFeedback}
-          reviewHistory={reviewHistoryRows}
-          selectedReviewId={selectedReviewId}
-          onSelectReview={setSelectedReviewId}
-          onCopyKeywords={() => copyToClipboard(selectedFeedback.missingKeywords.join(", "))}
-          onCopySuggestion={(item) =>
-            copyToClipboard(`Before: ${item.before}\nAfter: ${item.after}\nWhy: ${item.why}`)
-          }
-        />
+      {detailsQuery.data.status !== "READY" && (
+        <section role="status" className="panel flex items-start gap-4 p-6">
+          {detailsQuery.data.status === "FAILED" ? (
+            <AlertCircle className="shrink-0 text-amber-600" size={22} />
+          ) : (
+            <Loader2
+              className="shrink-0 animate-spin text-[#7c9d59]"
+              size={22}
+            />
+          )}
+          <div>
+            <h2 className="text-base font-medium">
+              {detailsQuery.data.status === "FAILED"
+                ? "This review needs another try."
+                : detailsQuery.data.status === "UPLOADED"
+                  ? "Your resume is queued for review."
+                  : "Your story is getting a fresh look."}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-zinc-500">
+              {detailsQuery.data.status === "FAILED"
+                ? "We couldn’t finish processing this file. Try reviewing it again, or upload another version."
+                : detailsQuery.data.status === "UPLOADED"
+                  ? "Your upload is complete. Processing hasn’t started yet. This page updates automatically; if it stays queued, use Review again above."
+                  : "We’re reading your resume and preparing specific suggestions. This page updates automatically."}
+            </p>
+            {detailsQuery.data.status !== "FAILED" && (
+              <div className="mt-4 flex flex-wrap gap-4 text-xs text-zinc-500">
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 size={13} />
+                  Uploaded
+                </span>
+                <span>
+                  {detailsQuery.data.status === "REVIEWING"
+                    ? "✓ Resume read"
+                    : detailsQuery.data.status === "UPLOADED"
+                      ? "Next: read your file"
+                      : "Reading your file"}
+                </span>
+                <span>
+                  {detailsQuery.data.status === "REVIEWING"
+                    ? "Preparing feedback…"
+                    : "Then: your AI review"}
+                </span>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+      <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+        {detailsQuery.data.feedback || reviewHistory.length > 0 ? (
+          <>
+            <ResumeDetailsMain
+              feedback={selectedFeedback}
+              reviewHistory={reviewHistoryRows}
+              selectedReviewId={selectedReview?.id}
+              onSelectReview={setSelectedReviewId}
+              onCopyKeywords={() =>
+                copyToClipboard(selectedFeedback.missingKeywords.join(", "))
+              }
+              onCopySuggestion={(item) => copyToClipboard(item.after)}
+            />
+          </>
+        ) : (
+          <section className="panel empty-state">
+            <h2>Your feedback will appear here.</h2>
+            <p>
+              We’ll show your score, suggestions, and next steps once the review
+              is complete.
+            </p>
+          </section>
+        )}
         <ResumeDetailsSidebar
           feedback={selectedFeedback}
           roleTarget={roleTarget}
@@ -323,32 +388,30 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
         />
       </div>
 
-      {isDeleteModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Delete Resume?</div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove the resume, parse data, and review.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsDeleteModalOpen(false)}
-                disabled={isDeleting}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={handleConfirmDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
+      <Modal
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete this resume?"
+        description="This permanently removes the original file and all its reviews."
+        busy={isDeleting}
+      >
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => setIsDeleteModalOpen(false)}
+            disabled={isDeleting}
+          >
+            Keep resume
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleConfirmDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting…" : "Delete resume"}
+          </Button>
         </div>
-      ) : null}
+      </Modal>
     </>
   );
 }

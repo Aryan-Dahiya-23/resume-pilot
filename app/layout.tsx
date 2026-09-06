@@ -18,8 +18,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ResumePilot",
-  description: "AI Resume Reviewer + Job Tracker",
+  title: {
+    default: "ResumePilot — Your next chapter starts here",
+    template: "%s · ResumePilot",
+  },
+  description:
+    "Build a stronger resume and keep every opportunity moving. AI resume feedback and application tracking, in one thoughtful workspace.",
   icons: {
     icon: "/icon",
     shortcut: "/icon",
@@ -41,6 +45,20 @@ export default function RootLayout({
 
   return (
     <ClerkProvider
+      appearance={{
+        variables: {
+          colorPrimary: "#19372c",
+          colorText: "#1b2923",
+          colorTextSecondary: "#727970",
+          colorBackground: "#ffffff",
+          borderRadius: "0.7rem",
+          fontFamily: "var(--font-geist-sans), sans-serif",
+        },
+        elements: {
+          cardBox: "shadow-none border border-[#e4e8df] rounded-2xl",
+          formButtonPrimary: "shadow-none",
+        },
+      }}
       signInUrl={signInUrl}
       signUpUrl={signUpUrl}
       signInFallbackRedirectUrl={signInFallbackRedirectUrl}
@@ -50,7 +68,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <NextTopLoader showSpinner={false} />
+          <NextTopLoader color="#789d55" height={2} showSpinner={false} />
           <QueryProvider>
             <ToastProvider>{children}</ToastProvider>
           </QueryProvider>

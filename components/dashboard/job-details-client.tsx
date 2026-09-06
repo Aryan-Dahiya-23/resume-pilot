@@ -1,10 +1,20 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { AddJobModal } from "@/components/dashboard/jobs-sections";
-import { DashboardPageError, DashboardPageLoading } from "@/components/dashboard/page-state";
+import { useMemo, useState } from "react";
+import {
+  AddJobModal,
+  RoundsEditor,
+} from "@/components/dashboard/jobs-sections";
+import {
+  DashboardPageError,
+  DashboardPageLoading,
+} from "@/components/dashboard/page-state";
 import { useToast } from "@/components/providers/toast-provider";
 import {
   JobDetailsHeader,
@@ -12,6 +22,7 @@ import {
   JobDetailsSidebar,
 } from "@/components/dashboard/job-details-sections";
 import { useDeleteJob, useJob, useUpdateJob } from "@/hooks/queries";
+import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import type { Job, JobDetail, JobStatus } from "@/lib/mock-data";
 import { queryKeys } from "@/lib/react-query/query-keys";
@@ -21,8 +32,16 @@ function toRelativeDayLabel(dateInput: string) {
   if (Number.isNaN(date.getTime())) return "";
 
   const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfInputDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  );
+  const startOfInputDay = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  );
   const diffMs = startOfToday.getTime() - startOfInputDay.getTime();
   const dayDiff = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
@@ -49,7 +68,9 @@ function toInterviewRounds(value: unknown): JobDetail["rounds"] {
       return { name, status };
     })
     .filter(
-      (item): item is { name: string; status: "Done" | "Upcoming" | "Pending" } =>
+      (
+        item,
+      ): item is { name: string; status: "Done" | "Upcoming" | "Pending" } =>
         Boolean(item),
     );
 }
@@ -61,8 +82,8 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
   const updateJob = useUpdateJob(jobId);
   const deleteJob = useDeleteJob();
 
-  const [notesDraft, setNotesDraft] = useState("");
-  const [statusDraft, setStatusDraft] = useState<Job["status"]>("Saved");
+  const [notesDraft, setNotesDraft] = useState<string | null>(null);
+  const [statusDraft, setStatusDraft] = useState<Job["status"] | null>(null);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -105,20 +126,13 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
     [rawJob],
   );
 
-  useEffect(() => {
-    if (!rawJob) return;
-    setNotesDraft(rawJob.notes ?? "");
-    setStatusDraft(rawJob.status);
-    setContactNameDraft(rawJob.contactName ?? "");
-    setContactEmailDraft(rawJob.contactEmail ?? "");
-    setRoundsDraft(toInterviewRounds(rawJob.interviewRounds));
-  }, [rawJob?.id, rawJob?.notes, rawJob?.status]);
-
   async function refreshQueries() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.jobs.list() }),
       queryClient.invalidateQueries({ queryKey: queryKeys.jobs.detail(jobId) }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.overview() }),
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.dashboard.overview(),
+      }),
     ]);
   }
 
@@ -133,7 +147,9 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
 
   async function handleSaveStatus() {
     try {
-      await updateJob.mutateAsync({ status: statusDraft });
+      await updateJob.mutateAsync({
+        status: statusDraft ?? rawJob?.status ?? "Saved",
+      });
       await refreshQueries();
       toast({ tone: "success", message: "Status updated." });
     } catch {
@@ -143,7 +159,9 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
 
   async function handleSaveNotes() {
     try {
-      await updateJob.mutateAsync({ notes: notesDraft || null });
+      await updateJob.mutateAsync({
+        notes: (notesDraft ?? rawJob?.notes) || null,
+      });
       await refreshQueries();
       toast({ tone: "success", message: "Notes saved." });
     } catch {
@@ -160,7 +178,9 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
       await deleteJob.mutateAsync(jobId);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.jobs.list() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.overview() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.dashboard.overview(),
+        }),
       ]);
       toast({ tone: "success", message: "Job deleted." });
       setIsDeleteModalOpen(false);
@@ -192,7 +212,10 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
     status: JobStatus;
     contactName: string;
     contactEmail: string;
-    interviewRounds: Array<{ name: string; status: "Done" | "Upcoming" | "Pending" }>;
+    interviewRounds: Array<{
+      name: string;
+      status: "Done" | "Upcoming" | "Pending";
+    }>;
     location: string;
     link: string;
   }) {
@@ -262,7 +285,10 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
 
   return (
     <>
-      <JobDetailsHeader job={mappedJob} onEditJob={() => setIsEditModalOpen(true)} />
+      <JobDetailsHeader
+        job={mappedJob}
+        onEditJob={() => setIsEditModalOpen(true)}
+      />
       <AddJobModal
         open={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -281,214 +307,172 @@ export function JobDetailsClient({ jobId }: { jobId: string }) {
         }}
       />
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">
+      <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
         <JobDetailsMain
           details={details}
-          notesValue={notesDraft}
+          notesValue={notesDraft ?? rawJob?.notes ?? ""}
           onNotesChange={setNotesDraft}
           onSaveNotes={handleSaveNotes}
           isSavingNotes={updateJob.isPending}
           onCopyNotes={handleCopyNotes}
-          onEditRounds={() => setIsRoundsModalOpen(true)}
+          onEditRounds={() => {
+            setRoundsDraft(toInterviewRounds(rawJob?.interviewRounds));
+            setIsRoundsModalOpen(true);
+          }}
         />
         <JobDetailsSidebar
           details={details}
-          status={statusDraft}
+          status={statusDraft ?? rawJob?.status}
           onStatusChange={setStatusDraft}
           onSaveStatus={handleSaveStatus}
           isSavingStatus={updateJob.isPending}
           onSetFollowUp={handleSetFollowUp}
           isSettingFollowUp={updateJob.isPending}
-          onEditContact={() => setIsContactModalOpen(true)}
+          onEditContact={() => {
+            setContactNameDraft(rawJob?.contactName ?? "");
+            setContactEmailDraft(rawJob?.contactEmail ?? "");
+            setIsContactModalOpen(true);
+          }}
           onDelete={handleDeleteJob}
           isDeleting={deleteJob.isPending}
         />
       </div>
 
-      {isContactModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Edit contact</div>
-            <div className="mt-1 text-sm text-zinc-600">Update recruiter details.</div>
-            <div className="mt-4 grid grid-cols-1 gap-3">
-              <div>
-                <label className="text-xs font-medium text-zinc-600">Contact name</label>
-                <input
-                  value={contactNameDraft}
-                  onChange={(event) => setContactNameDraft(event.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-                  placeholder="Recruiter name"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-zinc-600">Contact email</label>
-                <input
-                  value={contactEmailDraft}
-                  onChange={(event) => setContactEmailDraft(event.target.value)}
-                  className="mt-1 w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-                  placeholder="recruiter@company.com"
-                />
-              </div>
+      <Modal
+        open={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        title="The right person, close at hand."
+        description="Keep your recruiter or hiring manager’s details with this opportunity."
+        busy={updateJob.isPending}
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void handleSaveContact();
+          }}
+        >
+          <fieldset disabled={updateJob.isPending} className="space-y-4">
+            <div>
+              <Label htmlFor="contact-name" className="field-label">
+                Contact name
+              </Label>
+              <Input
+                id="contact-name"
+                className="field-input"
+                value={contactNameDraft}
+                onChange={(e) => setContactNameDraft(e.target.value)}
+                placeholder="Recruiter or hiring manager"
+              />
             </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsContactModalOpen(false)}
-                disabled={updateJob.isPending}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
-                onClick={handleSaveContact}
-                disabled={updateJob.isPending}
-              >
-                {updateJob.isPending ? "Saving..." : "Save"}
-              </button>
+            <div>
+              <Label htmlFor="contact-email" className="field-label">
+                Contact email
+              </Label>
+              <Input
+                id="contact-email"
+                type="email"
+                className="field-input"
+                value={contactEmailDraft}
+                onChange={(e) => setContactEmailDraft(e.target.value)}
+                placeholder="name@company.com"
+              />
             </div>
+          </fieldset>
+          <div className="form-footer">
+            <Button
+              variant="secondary"
+              onClick={() => setIsContactModalOpen(false)}
+              disabled={updateJob.isPending}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={updateJob.isPending}>
+              {updateJob.isPending ? "Saving…" : "Save contact"}
+            </Button>
           </div>
+        </form>
+      </Modal>
+      <Modal
+        open={isRoundsModalOpen}
+        onClose={() => setIsRoundsModalOpen(false)}
+        title="Your interview journey."
+        description="Add the conversations ahead and track each round as you go."
+        busy={updateJob.isPending}
+      >
+        <fieldset disabled={updateJob.isPending}>
+          <RoundsEditor rounds={roundsDraft} onChange={setRoundsDraft} />
+        </fieldset>
+        <div className="form-footer">
+          <Button
+            variant="secondary"
+            onClick={() => setIsRoundsModalOpen(false)}
+            disabled={updateJob.isPending}
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleSaveRounds} disabled={updateJob.isPending}>
+            {updateJob.isPending ? "Saving…" : "Save rounds"}
+          </Button>
         </div>
-      ) : null}
-
-      {isRoundsModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-xl rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Edit interview rounds</div>
-            <div className="mt-1 text-sm text-zinc-600">Update your current interview pipeline.</div>
-            <div className="mt-4 space-y-2">
-              {roundsDraft.map((round, index) => (
-                <div key={index} className="grid grid-cols-[1fr_140px_40px] gap-2">
-                  <input
-                    value={round.name}
-                    onChange={(event) =>
-                      setRoundsDraft((prev) =>
-                        prev.map((item, itemIndex) =>
-                          itemIndex === index ? { ...item, name: event.target.value } : item,
-                        ),
-                      )
-                    }
-                    className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-                    placeholder="Technical round"
-                  />
-                  <select
-                    value={round.status}
-                    onChange={(event) =>
-                      setRoundsDraft((prev) =>
-                        prev.map((item, itemIndex) =>
-                          itemIndex === index
-                            ? {
-                                ...item,
-                                status: event.target.value as "Done" | "Upcoming" | "Pending",
-                              }
-                            : item,
-                        ),
-                      )
-                    }
-                    className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-400"
-                  >
-                    <option>Done</option>
-                    <option>Upcoming</option>
-                    <option>Pending</option>
-                  </select>
-                  <button
-                    className="rounded-2xl border border-zinc-200 bg-white px-2 py-2 text-sm text-zinc-600 hover:bg-zinc-50"
-                    onClick={() =>
-                      setRoundsDraft((prev) => prev.filter((_, itemIndex) => itemIndex !== index))
-                    }
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-              <Button
-                variant="secondary"
-                className="px-3"
-                onClick={() =>
-                  setRoundsDraft((prev) => [...prev, { name: "", status: "Pending" }])
-                }
-              >
-                Add round
-              </Button>
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsRoundsModalOpen(false)}
-                disabled={updateJob.isPending}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
-                onClick={handleSaveRounds}
-                disabled={updateJob.isPending}
-              >
-                {updateJob.isPending ? "Saving..." : "Save"}
-              </button>
-            </div>
-          </div>
+      </Modal>
+      <Modal
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Remove this opportunity?"
+        description="This permanently deletes this job, its notes, contacts, and interview details."
+        busy={deleteJob.isPending}
+      >
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => setIsDeleteModalOpen(false)}
+            disabled={deleteJob.isPending}
+          >
+            Keep it
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleConfirmDeleteJob}
+            disabled={deleteJob.isPending}
+          >
+            {deleteJob.isPending ? "Deleting…" : "Delete job"}
+          </Button>
         </div>
-      ) : null}
-
-      {isDeleteModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Delete Job?</div>
-            <div className="mt-2 text-sm text-zinc-600">
-              This will permanently remove this job from your tracker.
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsDeleteModalOpen(false)}
-                disabled={deleteJob.isPending}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60"
-                onClick={handleConfirmDeleteJob}
-                disabled={deleteJob.isPending}
-              >
-                {deleteJob.isPending ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
+      </Modal>
+      <Modal
+        open={isFollowUpModalOpen}
+        onClose={() => setIsFollowUpModalOpen(false)}
+        title="Keep the conversation going."
+        description="Leave yourself a note about when and how to follow up. This doesn’t schedule a notification."
+        busy={updateJob.isPending}
+      >
+        <Label htmlFor="follow-up-note" className="field-label">
+          Your next step
+        </Label>
+        <Textarea
+          id="follow-up-note"
+          className="field-input min-h-[120px] !text-sm !leading-7"
+          disabled={updateJob.isPending}
+          value={followUpDraft}
+          onChange={(e) => setFollowUpDraft(e.target.value)}
+          placeholder="e.g. Check in with the recruiter on Tuesday about next steps."
+        />
+        <div className="form-footer">
+          <Button
+            variant="secondary"
+            onClick={() => setIsFollowUpModalOpen(false)}
+            disabled={updateJob.isPending}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmSetFollowUp}
+            disabled={updateJob.isPending}
+          >
+            {updateJob.isPending ? "Saving…" : "Save follow-up"}
+          </Button>
         </div>
-      ) : null}
-
-      {isFollowUpModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl">
-            <div className="text-base font-semibold text-zinc-900">Set Follow-up</div>
-            <div className="mt-2 text-sm text-zinc-600">
-              Add a reminder note for your next action.
-            </div>
-            <textarea
-              value={followUpDraft}
-              onChange={(event) => setFollowUpDraft(event.target.value)}
-              placeholder="e.g., Follow up next Tuesday"
-              className="mt-4 min-h-[100px] w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 outline-none focus:border-zinc-400"
-            />
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <button
-                className="rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-                onClick={() => setIsFollowUpModalOpen(false)}
-                disabled={updateJob.isPending}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-2xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
-                onClick={handleConfirmSetFollowUp}
-                disabled={updateJob.isPending}
-              >
-                {updateJob.isPending ? "Saving..." : "Save"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      </Modal>
     </>
   );
 }
