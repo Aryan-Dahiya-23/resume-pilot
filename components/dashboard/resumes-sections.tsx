@@ -1,5 +1,6 @@
 "use client";
 import { FormSelect } from "@/components/ui/form-select";
+import { JobDescriptionField } from "@/components/dashboard/job-description-field";
 import { ExperienceLevelSelector } from "@/components/dashboard/experience-level-selector";
 import { SelectItem } from "@/components/ui/select";
 
@@ -326,6 +327,8 @@ export function ResumeUploadModal({
   selectedFile,
   roleTarget,
   targetLevel,
+  jobDescription,
+  onJobDescriptionChange,
   isUploading,
   uploadError,
   uploadResult,
@@ -339,6 +342,8 @@ export function ResumeUploadModal({
   selectedFile: File | null;
   roleTarget: string;
   targetLevel: string;
+  jobDescription: string;
+  onJobDescriptionChange: (value: string) => void;
   isUploading: boolean;
   uploadError: string | null;
   uploadResult: UploadResumeResponse["resume"] | null;
@@ -473,6 +478,7 @@ export function ResumeUploadModal({
             onChange={onTargetLevelChange}
             disabled={isUploading}
           />
+          <JobDescriptionField value={jobDescription} onChange={onJobDescriptionChange} disabled={isUploading} />
         </fieldset>
         <div className="mt-5 flex items-start gap-2 text-xs leading-5 text-zinc-500">
           <ShieldCheck size={15} className="mt-0.5 shrink-0" />

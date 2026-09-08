@@ -1,4 +1,5 @@
 import type { ReviewFinding } from "@/lib/ai/review-evidence";
+import type { JobMatch } from "@/lib/ai/job-match";
 
 export type Resume = {
   id: string;
@@ -23,6 +24,7 @@ export type Job = {
 };
 
 export type ResumeFeedback = {
+  jobMatch?: JobMatch | null;
   findings?: ReviewFinding[];
   score: number;
   summary: {

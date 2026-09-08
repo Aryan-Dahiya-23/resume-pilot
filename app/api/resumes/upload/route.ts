@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { parseJobDescription } from "@/lib/job-description";
 import { NextResponse } from "next/server";
 import { createResume, updateResumeStatus } from "@/lib/db/resumes";
 import { ensureCurrentDbUser } from "@/lib/db/users";
@@ -26,6 +27,12 @@ export async function POST(request: Request) {
   }
 
   const formData = await request.formData();
+  let jobDescription: string | null;
+  try {
+    jobDescription = parseJobDescription(formData.get("jobDescription"));
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 400 });
+  }
   const file = formData.get("file");
   const roleTargetRaw = formData.get("roleTarget");
   const targetLevelRaw = formData.get("targetLevel");
@@ -63,6 +70,7 @@ export async function POST(request: Request) {
     size: file.size,
     roleTarget: roleTarget || undefined,
     targetLevel: targetLevel || undefined,
+    jobDescription: jobDescription || undefined,
     status: "UPLOADED",
   });
 

@@ -13,6 +13,7 @@ export async function saveCompletedResumeReview(
     score: review.score,
     summaryJson: {
       findings: review.findings,
+      jobMatch: review.jobMatch,
       strengths: review.strengths,
       weaknesses: review.weaknesses,
       nextActions: review.nextActions,
@@ -42,6 +43,7 @@ type CreateResumeInput = {
   size: number;
   roleTarget?: string;
   targetLevel?: string;
+  jobDescription?: string;
   status?: ResumeStatus;
 };
 
@@ -55,6 +57,7 @@ export async function createResume(input: CreateResumeInput) {
       size: input.size,
       roleTarget: input.roleTarget,
       targetLevel: input.targetLevel,
+      jobDescription: input.jobDescription,
       status: input.status ?? "UPLOADED",
     },
   });
@@ -206,6 +209,7 @@ export async function updateResumeTargetByIdForUser(input: {
   userId: string;
   roleTarget: string | null;
   targetLevel: string | null;
+  jobDescription?: string | null;
 }) {
   return prisma.resume.updateMany({
     where: {
@@ -215,6 +219,7 @@ export async function updateResumeTargetByIdForUser(input: {
     data: {
       roleTarget: input.roleTarget,
       targetLevel: input.targetLevel,
+      jobDescription: input.jobDescription,
     },
   });
 }

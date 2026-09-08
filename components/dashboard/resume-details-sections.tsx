@@ -1,5 +1,7 @@
 "use client";
 import { FormSelect } from "@/components/ui/form-select";
+import { JobDescriptionField } from "@/components/dashboard/job-description-field";
+import { JobMatchSection } from "@/components/dashboard/job-match-section";
 import { SelectItem } from "@/components/ui/select";
 
 import { Input } from "@/components/ui/input";
@@ -146,6 +148,7 @@ export function ResumeDetailsMain({
 }) {
   return (
     <div className="min-w-0 space-y-6">
+      {feedback.jobMatch && <JobMatchSection match={feedback.jobMatch} />}
       <section className="panel overflow-hidden">
         <div className="flex items-center justify-between gap-4 border-b border-[#e1e9d5] bg-[#eef3e4] p-6">
           <div>
@@ -384,6 +387,8 @@ export function ResumeDetailsSidebar({
   feedback,
   roleTarget,
   targetLevel,
+  jobDescription,
+  onJobDescriptionChange,
   onRoleTargetChange,
   onTargetLevelChange,
   onSaveTargetRole,
@@ -396,6 +401,8 @@ export function ResumeDetailsSidebar({
   feedback: ResumeFeedback;
   roleTarget?: string;
   targetLevel?: string;
+  jobDescription: string;
+  onJobDescriptionChange: (value: string) => void;
   onRoleTargetChange?: (value: string) => void;
   onTargetLevelChange?: (value: string) => void;
   onSaveTargetRole?: () => void;
@@ -463,6 +470,9 @@ export function ResumeDetailsSidebar({
             </FormSelect>
           </div>
         </div>
+        <div className="mt-4">
+          <JobDescriptionField value={jobDescription} onChange={onJobDescriptionChange} disabled={isSavingRole} />
+        </div>
         <Button
           variant="secondary"
           className="mt-5 w-full"
@@ -473,7 +483,7 @@ export function ResumeDetailsSidebar({
           {isSavingRole ? "Saving…" : "Save target"}
         </Button>
         <p className="field-help">
-          Run a new review after changing your target.
+          Save your target, then run a new review to update the comparison.
         </p>
       </section>
       <section className="panel !border-[#dfe8d1] !bg-[#eef3e4] p-6">

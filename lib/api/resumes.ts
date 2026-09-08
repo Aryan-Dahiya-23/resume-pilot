@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { JobMatch } from "@/lib/ai/job-match";
 import type { ReviewFinding } from "@/lib/ai/review-evidence";
 
 export type UploadResumeResponse = {
@@ -21,6 +22,7 @@ type UploadResumePayload = {
   file: File;
   roleTarget: string;
   targetLevel?: string;
+  jobDescription?: string;
   onProgress?: (progress: number) => void;
 };
 
@@ -28,6 +30,7 @@ export async function uploadResume(payload: UploadResumePayload) {
   const formData = new FormData();
   formData.append("file", payload.file);
   formData.append("roleTarget", payload.roleTarget);
+  if (payload.jobDescription?.trim()) formData.append("jobDescription", payload.jobDescription.trim());
   if (payload.targetLevel) {
     formData.append("targetLevel", payload.targetLevel);
   }
@@ -84,6 +87,7 @@ export async function listResumes() {
 }
 
 export type ResumeDetails = {
+  jobDescription: string | null;
   id: string;
   fileName: string;
   roleTarget: string | null;
@@ -104,6 +108,7 @@ export type ResumeDetails = {
 };
 
 export type ResumeReviewFeedback = {
+  jobMatch?: JobMatch | null;
   findings?: ReviewFinding[];
   score: number;
   strengths: string[];

@@ -55,6 +55,7 @@ export const processResume = inngest.createFunction(
       reviewResumeWithDeepSeek({
         roleTarget: resume.roleTarget,
         targetLevel: resume.targetLevel,
+        jobDescription: resume.jobDescription,
         rawText: parsed.rawText,
         structuredJson: parsed.structured,
       }),

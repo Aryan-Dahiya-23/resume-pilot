@@ -37,6 +37,7 @@ function toLegacyFeedback(review: ResumeReviewFeedback): ResumeFeedback {
   return {
     score: review.score,
     findings: review.findings,
+    jobMatch: review.jobMatch,
     summary: {
       strengths: review.strengths,
       weaknesses: review.weaknesses,
@@ -81,6 +82,8 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [roleDraft, setRoleTarget] = useState<string | null>(null);
   const [levelDraft, setTargetLevel] = useState<string | null>(null);
+  const [jobDescriptionDraft, setJobDescription] = useState<string | null>(null);
+  const jobDescription = jobDescriptionDraft ?? detailsQuery.data?.jobDescription ?? "";
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -148,6 +151,15 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
   }
 
   async function handleRerunReview() {
+    const saved = detailsQuery.data;
+    if (saved && (
+      (roleDraft !== null && roleDraft.trim() !== (saved.roleTarget ?? "")) ||
+      (levelDraft !== null && levelDraft.trim() !== (saved.targetLevel ?? "")) ||
+      jobDescription.trim() !== (saved.jobDescription ?? "")
+    )) {
+      toast({ tone: "error", message: "Save your target changes before starting a new review." });
+      return;
+    }
     setIsRerunning(true);
     try {
       await axios.post(
@@ -244,7 +256,7 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
     try {
       await axios.patch(
         `/api/resumes/${resumeId}`,
-        { roleTarget, targetLevel },
+        { roleTarget, targetLevel, jobDescription },
         { withCredentials: true },
       );
       await Promise.all([
@@ -373,6 +385,12 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
           </div>
         </section>
       )}
+      {Boolean(detailsQuery.data.feedback || reviewHistory.length) &&
+        (detailsQuery.data.jobDescription ?? "") !== (selectedFeedback.jobMatch?.jobDescription ?? "") && (
+        <section role="status" className="panel p-4 text-sm leading-6 text-zinc-600">
+          This review does not use your currently saved job description. Run a new review to update the comparison. Previous reviews keep their original posting.
+        </section>
+      )}
       <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
         {detailsQuery.data.feedback || reviewHistory.length > 0 ? (
           <>
@@ -397,6 +415,8 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
           </section>
         )}
         <ResumeDetailsSidebar
+          jobDescription={jobDescription}
+          onJobDescriptionChange={setJobDescription}
           feedback={selectedFeedback}
           roleTarget={roleTarget}
           targetLevel={targetLevel}

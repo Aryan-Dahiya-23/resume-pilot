@@ -1,4 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
+import { readJobMatch } from "@/lib/ai/job-match";
+import { parseJobDescription } from "@/lib/job-description";
 import { readFindings } from "@/lib/ai/review-evidence";
 import { NextResponse } from "next/server";
 import {
@@ -42,6 +44,7 @@ function toFeedback(value: {
     (value.summaryJson as {
       strengths?: unknown;
       findings?: unknown;
+      jobMatch?: unknown;
       weaknesses?: unknown;
       nextActions?: unknown;
     } | null) ?? null;
@@ -49,6 +52,7 @@ function toFeedback(value: {
   return {
     score: value.score,
     findings: readFindings(summary?.findings),
+    jobMatch: readJobMatch(summary?.jobMatch),
     strengths: toStringArray(summary?.strengths),
     weaknesses: toStringArray(summary?.weaknesses),
     nextActions: toStringArray(summary?.nextActions),
@@ -155,6 +159,7 @@ export async function GET(
         fileName: resume.fileName,
         roleTarget: resume.roleTarget,
         targetLevel: resume.targetLevel,
+        jobDescription: resume.jobDescription,
         status: resume.status,
         createdAt: resume.createdAt,
         updatedAt: resume.updatedAt,
@@ -238,13 +243,22 @@ export async function PATCH(
   const body = (await request.json()) as {
     roleTarget?: unknown;
     targetLevel?: unknown;
+    jobDescription?: unknown;
   };
   const roleTarget =
     typeof body.roleTarget === "string" ? body.roleTarget.trim() : "";
   const targetLevel =
     typeof body.targetLevel === "string" ? body.targetLevel.trim() : "";
 
+  let jobDescription: string | null | undefined;
+  try {
+    jobDescription = body.jobDescription === undefined ? undefined : parseJobDescription(body.jobDescription);
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 400 });
+  }
+
   const updated = await updateResumeTargetByIdForUser({
+    jobDescription,
     resumeId: id,
     userId: dbUser.id,
     roleTarget: roleTarget || null,
