@@ -34,6 +34,7 @@ export function DashboardPageClient({}: Record<string, never>) {
   const [addJobModalOpen, setAddJobModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [roleTarget, setRoleTarget] = useState("Software Engineer");
+  const [targetLevel, setTargetLevel] = useState("");
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   const data = overviewQuery.data;
@@ -67,6 +68,7 @@ export function DashboardPageClient({}: Record<string, never>) {
     setUploadError(null);
     setSelectedFile(null);
     uploadResume.reset();
+    setTargetLevel("");
     setUploadModalOpen(true);
   }
 
@@ -81,6 +83,7 @@ export function DashboardPageClient({}: Record<string, never>) {
       await uploadResume.mutateAsync({
         file: selectedFile,
         roleTarget,
+        targetLevel: targetLevel || undefined,
       });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.resumes.list() }),
@@ -203,6 +206,8 @@ export function DashboardPageClient({}: Record<string, never>) {
         onClose={() => setUploadModalOpen(false)}
         selectedFile={selectedFile}
         roleTarget={roleTarget}
+        targetLevel={targetLevel}
+        onTargetLevelChange={setTargetLevel}
         isUploading={uploadResume.isPending}
         uploadError={uploadError}
         uploadResult={uploadResume.data?.resume ?? null}

@@ -87,7 +87,7 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
   const roleTarget =
     roleDraft ?? detailsQuery.data?.roleTarget ?? "Frontend Engineer";
   const targetLevel =
-    levelDraft ?? detailsQuery.data?.targetLevel ?? "Internship";
+    levelDraft ?? detailsQuery.data?.targetLevel ?? "";
 
   const baseFeedback = useMemo(
     () =>

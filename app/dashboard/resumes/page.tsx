@@ -40,6 +40,7 @@ export default function ResumesPage() {
   const [dateFilter, setDateFilter] = useState<ResumeDateFilter>("All");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [roleTarget, setRoleTarget] = useState("Software Engineer");
+  const [targetLevel, setTargetLevel] = useState("");
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [resumeToDelete, setResumeToDelete] = useState<string | null>(null);
@@ -72,6 +73,7 @@ export default function ResumesPage() {
   }, [resumesQuery.data]);
 
   function handleUploadClick() {
+    setTargetLevel("");
     setUploadError(null);
     setSelectedFile(null);
     uploadResume.reset();
@@ -97,6 +99,7 @@ export default function ResumesPage() {
       await uploadResume.mutateAsync({
         file: selectedFile,
         roleTarget,
+        targetLevel: targetLevel || undefined,
       });
       await queryClient.invalidateQueries({
         queryKey: queryKeys.resumes.list(),
@@ -171,6 +174,8 @@ export default function ResumesPage() {
             onClose={() => setUploadModalOpen(false)}
             selectedFile={selectedFile}
             roleTarget={roleTarget}
+            targetLevel={targetLevel}
+            onTargetLevelChange={setTargetLevel}
             isUploading={uploadResume.isPending}
             uploadError={uploadError}
             uploadResult={uploadResume.data?.resume ?? null}
