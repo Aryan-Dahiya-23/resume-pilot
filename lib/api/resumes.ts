@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { ReviewFinding } from "@/lib/ai/review-evidence";
 
 export type UploadResumeResponse = {
   resume: {
@@ -103,6 +104,7 @@ export type ResumeDetails = {
 };
 
 export type ResumeReviewFeedback = {
+  findings?: ReviewFinding[];
   score: number;
   strengths: string[];
   weaknesses: string[];

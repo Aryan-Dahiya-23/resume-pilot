@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { createResume } from "@/lib/db/resumes";
+import { createResume, updateResumeStatus } from "@/lib/db/resumes";
 import { ensureCurrentDbUser } from "@/lib/db/users";
 import { inngest } from "@/lib/inngest/client";
 import { uploadResumeFileToSupabaseStorage } from "@/lib/supabase-storage";
@@ -77,6 +77,7 @@ export async function POST(request: Request) {
     });
   } catch {
     processingQueued = false;
+    await updateResumeStatus(resume.id, "FAILED");
   }
 
   return NextResponse.json(
@@ -86,7 +87,7 @@ export async function POST(request: Request) {
         fileName: resume.fileName,
         roleTarget: resume.roleTarget,
         targetLevel: resume.targetLevel,
-        status: resume.status,
+        status: processingQueued ? resume.status : "FAILED",
         size: resume.size,
         mimeType: resume.mimeType,
         storageKey: resume.storageKey,

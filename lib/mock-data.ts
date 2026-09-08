@@ -1,3 +1,5 @@
+import type { ReviewFinding } from "@/lib/ai/review-evidence";
+
 export type Resume = {
   id: string;
   version: string;
@@ -21,6 +23,7 @@ export type Job = {
 };
 
 export type ResumeFeedback = {
+  findings?: ReviewFinding[];
   score: number;
   summary: {
     strengths: string[];
