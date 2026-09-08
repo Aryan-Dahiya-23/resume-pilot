@@ -430,14 +430,15 @@ export function ResumeDetailsSidebar({
           </div>
           <div>
             <Label htmlFor="resume-target-level" className="field-label">
-              Experience level
+              Target experience level (optional)
             </Label>
             <FormSelect
               id="resume-target-level"
               className="field-input"
-              value={targetLevel || "Internship"}
-              onValueChange={(e) => onTargetLevelChange?.(e)}
+              value={targetLevel || "unspecified"}
+              onValueChange={(e) => onTargetLevelChange?.(e === "unspecified" ? "" : e)}
             >
+              <SelectItem value="unspecified">Not specified</SelectItem>
               {targetLevel &&
                 ![
                   "Internship",

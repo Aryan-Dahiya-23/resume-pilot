@@ -1,5 +1,6 @@
 "use client";
 import { FormSelect } from "@/components/ui/form-select";
+import { ExperienceLevelSelector } from "@/components/dashboard/experience-level-selector";
 import { SelectItem } from "@/components/ui/select";
 
 import { Input } from "@/components/ui/input";
@@ -324,22 +325,26 @@ export function ResumeUploadModal({
   onClose,
   selectedFile,
   roleTarget,
+  targetLevel,
   isUploading,
   uploadError,
   uploadResult,
   onFileSelect,
   onRoleTargetChange,
+  onTargetLevelChange,
   onStartUpload,
 }: {
   open: boolean;
   onClose: () => void;
   selectedFile: File | null;
   roleTarget: string;
+  targetLevel: string;
   isUploading: boolean;
   uploadError: string | null;
   uploadResult: UploadResumeResponse["resume"] | null;
   onFileSelect: (file: File | null) => void;
   onRoleTargetChange: (value: string) => void;
+  onTargetLevelChange: (value: string) => void;
   onStartUpload: () => void;
 }) {
   const [dragActive, setDragActive] = useState(false);
@@ -463,6 +468,11 @@ export function ResumeUploadModal({
               We’ll tailor keywords and suggestions to this role.
             </p>
           </div>
+          <ExperienceLevelSelector
+            value={targetLevel}
+            onChange={onTargetLevelChange}
+            disabled={isUploading}
+          />
         </fieldset>
         <div className="mt-5 flex items-start gap-2 text-xs leading-5 text-zinc-500">
           <ShieldCheck size={15} className="mt-0.5 shrink-0" />
