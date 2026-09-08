@@ -1,6 +1,38 @@
 import { prisma } from "@/lib/prisma";
 import type { ResumeStatus } from "@prisma/client";
 import { Prisma } from "@prisma/client";
+import type { ResumeReviewOutput } from "@/lib/ai/review-resume";
+
+export async function saveCompletedResumeReview(
+  resumeId: string,
+  runId: string,
+  review: ResumeReviewOutput,
+) {
+  const data = {
+    resumeId,
+    score: review.score,
+    summaryJson: {
+      findings: review.findings,
+      strengths: review.strengths,
+      weaknesses: review.weaknesses,
+      nextActions: review.nextActions,
+    },
+    missingKeywords: review.missingKeywords,
+    suggestionsJson: review.rewriteSuggestions,
+    model: review.model,
+  };
+  // Publish review, history, and ready status together. Replayed saves reuse
+  // the run ID so retries cannot create duplicate history entries.
+  return prisma.$transaction([
+    prisma.resumeReviewHistory.upsert({
+      where: { id: runId },
+      create: { id: runId, ...data },
+      update: {},
+    }),
+    prisma.resumeReview.upsert({ where: { resumeId }, create: data, update: data }),
+    prisma.resume.update({ where: { id: resumeId }, data: { status: "READY" } }),
+  ]);
+}
 
 type CreateResumeInput = {
   userId: string;
@@ -135,6 +167,19 @@ export async function updateResumeStatus(resumeId: string, status: ResumeStatus)
   return prisma.resume.update({
     where: { id: resumeId },
     data: { status },
+  });
+}
+
+// Compare status and timestamp so concurrent retry requests cannot both queue work.
+export async function claimResumeReview(input: {
+  resumeId: string;
+  userId: string;
+  status: ResumeStatus;
+  updatedAt: Date;
+}) {
+  return prisma.resume.updateMany({
+    where: { id: input.resumeId, userId: input.userId, status: input.status, updatedAt: input.updatedAt },
+    data: { status: "UPLOADED", updatedAt: new Date() },
   });
 }
 

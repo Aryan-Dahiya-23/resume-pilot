@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { readFindings } from "@/lib/ai/review-evidence";
 import { NextResponse } from "next/server";
 import {
   deleteResumeByIdForUser,
@@ -40,12 +41,14 @@ function toFeedback(value: {
   const summary =
     (value.summaryJson as {
       strengths?: unknown;
+      findings?: unknown;
       weaknesses?: unknown;
       nextActions?: unknown;
     } | null) ?? null;
 
   return {
     score: value.score,
+    findings: readFindings(summary?.findings),
     strengths: toStringArray(summary?.strengths),
     weaknesses: toStringArray(summary?.weaknesses),
     nextActions: toStringArray(summary?.nextActions),

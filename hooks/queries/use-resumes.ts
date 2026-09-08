@@ -9,6 +9,10 @@ export function useResumes(filters: ListResumesFilters) {
     queryKey: queryKeys.resumes.listWithFilters(filters),
     queryFn: () => listResumesQuery(filters),
     placeholderData: keepPreviousData,
+    refetchInterval: (query) =>
+      query.state.data?.resumes.some((resume) =>
+        ["UPLOADED", "PARSING", "REVIEWING"].includes(resume.status),
+      ) ? 3000 : false,
   });
 }
 

@@ -36,6 +36,7 @@ type ReviewHistoryItem = {
 function toLegacyFeedback(review: ResumeReviewFeedback): ResumeFeedback {
   return {
     score: review.score,
+    findings: review.findings,
     summary: {
       strengths: review.strengths,
       weaknesses: review.weaknesses,
@@ -166,6 +167,7 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
       setSelectedReviewId(null);
       toast({ tone: "success", message: "Review has been re-queued." });
     } catch (err) {
+      void detailsQuery.refetch();
       if (axios.isAxiosError(err)) {
         toast({
           tone: "error",
@@ -275,7 +277,7 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
     return <DashboardPageLoading label="Loading resume details..." />;
   }
 
-  if (detailsQuery.isError || !detailsQuery.data) {
+  if (!detailsQuery.data) {
     return (
       <DashboardPageError
         title="Could not load this resume"
@@ -291,10 +293,13 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
     <>
       <ResumeFeedbackHeader
         resume={selectedResume}
+        reviewStatus={detailsQuery.data.status}
         onRerunReview={handleRerunReview}
         isRerunning={
           isRerunning ||
-          ["PARSING", "REVIEWING"].includes(detailsQuery.data.status)
+          ["PARSING", "REVIEWING"].includes(detailsQuery.data.status) ||
+          (detailsQuery.data.status === "UPLOADED" &&
+            detailsQuery.dataUpdatedAt - new Date(detailsQuery.data.updatedAt).getTime() < 10 * 60 * 1000)
         }
         scoreDelta={latestScoreDelta}
         versionOptions={versionOptions}
@@ -302,6 +307,14 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
         onSelectVersion={setSelectedReviewId}
       />
 
+      {detailsQuery.isError && (
+        <section role="status" className="panel p-4 text-sm">
+          We couldn’t refresh the review status. Your last loaded results are shown below.
+          <Button variant="secondary" className="ml-3" onClick={() => void detailsQuery.refetch()}>
+            Refresh status
+          </Button>
+        </section>
+      )}
       {detailsQuery.data.status !== "READY" && (
         <section role="status" className="panel flex items-start gap-4 p-6">
           {detailsQuery.data.status === "FAILED" ? (
@@ -318,15 +331,25 @@ export function ResumeDetailsClient({ resumeId }: { resumeId: string }) {
                 ? "This review needs another try."
                 : detailsQuery.data.status === "UPLOADED"
                   ? "Your resume is queued for review."
-                  : "Your story is getting a fresh look."}
+                  : detailsQuery.data.status === "PARSING"
+                    ? "Reading your resume."
+                    : "Preparing your feedback."}
             </h2>
             <p className="mt-2 text-sm leading-6 text-zinc-500">
               {detailsQuery.data.status === "FAILED"
-                ? "We couldn’t finish processing this file. Try reviewing it again, or upload another version."
+                ? "We couldn’t finish after retrying. Your file and previous reviews are safe. Retry below; if the file cannot be read, upload a PDF with selectable text or a DOCX."
                 : detailsQuery.data.status === "UPLOADED"
-                  ? "Your upload is complete. Processing hasn’t started yet. This page updates automatically; if it stays queued, use Review again above."
-                  : "We’re reading your resume and preparing specific suggestions. This page updates automatically."}
+                  ? "Your upload is complete and waiting to start. This page updates automatically. If it stays queued for 10 minutes, you can use Review again."
+                  : "This page updates automatically, including while we retry temporary interruptions. You can leave this page and come back to your results."}
             </p>
+            {detailsQuery.data.status === "FAILED" && (
+              <Button className="mt-4" onClick={handleRerunReview} disabled={isRerunning}>
+                {isRerunning ? "Queuing review…" : "Retry review"}
+              </Button>
+            )}
+            {detailsQuery.data.feedback && (
+              <p className="mt-2 text-xs text-zinc-500">Your previous review remains available below until a new one is ready.</p>
+            )}
             {detailsQuery.data.status !== "FAILED" && (
               <div className="mt-4 flex flex-wrap gap-4 text-xs text-zinc-500">
                 <span className="flex items-center gap-1">

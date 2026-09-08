@@ -27,11 +27,28 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProgressRing } from "@/components/ui/progress-ring";
 import type { Resume, ResumeFeedback } from "@/lib/mock-data";
+import type { ReviewFinding } from "@/lib/ai/review-evidence";
+
+function FindingEvidence({ finding }: { finding?: ReviewFinding }) {
+  if (!finding) return null;
+  return (
+    <details className="mt-2 rounded-lg border border-zinc-200 bg-white p-3">
+      <summary className="cursor-pointer text-xs font-medium text-[#526e3c] focus-visible:outline-2 focus-visible:outline-offset-4">
+        View resume evidence
+      </summary>
+      <blockquote className="mt-3 whitespace-pre-wrap break-words border-l-2 border-[#b8cba5] pl-3 text-xs leading-6 text-zinc-600">
+        {finding.evidence}
+      </blockquote>
+      <p className="mt-3 text-xs leading-6"><span className="font-medium">Next step: </span>{finding.action}</p>
+    </details>
+  );
+}
 
 export function ResumeFeedbackHeader({
   resume,
   onRerunReview,
   isRerunning,
+  reviewStatus,
   scoreDelta,
   versionOptions,
   selectedVersionId,
@@ -40,6 +57,7 @@ export function ResumeFeedbackHeader({
   resume: Resume;
   onRerunReview?: () => void;
   isRerunning?: boolean;
+  reviewStatus?: string;
   scoreDelta?: number | null;
   versionOptions?: Array<{ id: string; label: string }>;
   selectedVersionId?: string;
@@ -86,7 +104,12 @@ export function ResumeFeedbackHeader({
             )}
             <Button onClick={onRerunReview} disabled={isRerunning}>
               <RefreshCw size={15} />
-              {isRerunning ? "Queuing review…" : "Review again"}
+              {isRerunning
+                ? reviewStatus === "PARSING" ? "Reading resume…"
+                  : reviewStatus === "REVIEWING" ? "Preparing feedback…"
+                    : reviewStatus === "UPLOADED" ? "Review queued"
+                    : "Queuing review…"
+                : reviewStatus === "FAILED" ? "Retry review" : "Review again"}
             </Button>
           </>
         }
@@ -154,7 +177,10 @@ export function ResumeDetailsMain({
                   className="flex gap-2 text-[13px] leading-6 text-zinc-600"
                 >
                   <Check size={13} className="mt-1.5 shrink-0 text-[#7f9c65]" />
-                  {item}
+                  <div className="min-w-0 flex-1 break-words">
+                    {item}
+                    <FindingEvidence finding={feedback.findings?.find((finding) => finding.kind === "strength" && finding.observation === item)} />
+                  </div>
                 </li>
               ))}
             </ul>
@@ -179,7 +205,10 @@ export function ResumeDetailsMain({
                     size={13}
                     className="mt-1.5 shrink-0 text-[#b39765]"
                   />
-                  {item}
+                  <div className="min-w-0 flex-1 break-words">
+                    {item}
+                    <FindingEvidence finding={feedback.findings?.find((finding) => finding.kind === "improvement" && finding.observation === item)} />
+                  </div>
                 </li>
               ))}
             </ul>
@@ -193,6 +222,7 @@ export function ResumeDetailsMain({
         <p className="border-t border-zinc-100 px-6 py-3 text-[11px] leading-5 text-zinc-500">
           An AI estimate to guide your edits. Scores do not predict a hiring
           outcome.
+          {!feedback.findings?.length && " This older review has no linked excerpts. Run a new review to get feedback with resume evidence."}
         </p>
       </section>
       <section className="panel p-6">
