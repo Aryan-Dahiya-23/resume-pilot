@@ -11,6 +11,20 @@ export function AuthLayout({
 }) {
   return (
     <main className="auth-layout">
+      <header className="auth-compact">
+        <Brand light />
+        <Link
+          href="/"
+          className="auth-compact-back"
+          aria-label="Back to ResumePilot"
+        >
+          <ArrowLeft size={14} />
+          Back
+        </Link>
+        <h1 className="auth-compact-tagline">
+          {signUp ? "A fresh start." : "Your next chapter."}
+        </h1>
+      </header>
       <section className="auth-story">
         <Brand light />
         <h1>
@@ -47,7 +61,7 @@ export function AuthLayout({
         className="auth-form"
         aria-label={signUp ? "Create your account" : "Sign in to your account"}
       >
-        <Link href="/" className="text-link !text-xs">
+        <Link href="/" className="text-link auth-form-back !text-xs">
           <ArrowLeft size={14} />
           Back to ResumePilot
         </Link>
