@@ -15,7 +15,7 @@ import {
   Sprout,
   Target,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Brand } from "@/components/ui/brand";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +40,7 @@ const navigation = [
   { href: "/dashboard/resumes", label: "My resumes", icon: FileText },
   { href: "/dashboard/jobs", label: "Job tracker", icon: BriefcaseBusiness },
 ];
+const navigationStaleTime = 5 * 60 * 1000;
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -66,8 +67,36 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         (item) => item.href !== "/dashboard" && pathname.startsWith(item.href),
       )?.href ?? "/dashboard");
   const isDetails = pathname.split("/").length > 3;
+
+  useEffect(() => {
+    const options = { staleTime: navigationStaleTime };
+
+    void Promise.all([
+      queryClient.prefetchQuery({
+        ...options,
+        queryKey: queryKeys.dashboard.overview(),
+        queryFn: getDashboardOverview,
+      }),
+      queryClient.prefetchQuery({
+        ...options,
+        queryKey: queryKeys.resumes.listWithFilters({}),
+        queryFn: () => listResumesQuery({}),
+      }),
+      queryClient.prefetchQuery({
+        ...options,
+        queryKey: queryKeys.jobs.listWithFilters({}),
+        queryFn: () => listJobsQuery({}),
+      }),
+      queryClient.prefetchQuery({
+        ...options,
+        queryKey: queryKeys.user.current(),
+        queryFn: getCurrentDbUserClient,
+      }),
+    ]);
+  }, [queryClient]);
+
   function prefetch(href: string) {
-    const options = { staleTime: 30_000 };
+    const options = { staleTime: navigationStaleTime };
     if (href === "/dashboard")
       void queryClient.prefetchQuery({
         ...options,
@@ -147,6 +176,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               aria-current={active ? "page" : undefined}
               onMouseEnter={() => prefetch(item.href)}
               onFocus={() => prefetch(item.href)}
+              onTouchStart={() => prefetch(item.href)}
               onClick={() => setMobileOpen(false)}
             >
               <item.icon size={17} strokeWidth={1.6} />
@@ -186,6 +216,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         }
         onMouseEnter={() => prefetch("/dashboard/settings")}
         onFocus={() => prefetch("/dashboard/settings")}
+        onTouchStart={() => prefetch("/dashboard/settings")}
         onClick={() => setMobileOpen(false)}
       >
         <Settings2 size={17} strokeWidth={1.6} />
@@ -195,6 +226,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         {avatar}
         <Link
           href="/dashboard/settings"
+          onMouseEnter={() => prefetch("/dashboard/settings")}
+          onFocus={() => prefetch("/dashboard/settings")}
+          onTouchStart={() => prefetch("/dashboard/settings")}
           onClick={() => setMobileOpen(false)}
           className="min-w-0 flex-1"
         >
@@ -241,13 +275,23 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <Breadcrumb className="breadcrumb">
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden sm:inline-flex">
-                  <BreadcrumbLink href="/dashboard">
+                  <BreadcrumbLink
+                    href="/dashboard"
+                    onMouseEnter={() => prefetch("/dashboard")}
+                    onFocus={() => prefetch("/dashboard")}
+                    onTouchStart={() => prefetch("/dashboard")}
+                  >
                     Workspace
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden sm:inline-flex" />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href={currentPageHref}>
+                  <BreadcrumbLink
+                    href={currentPageHref}
+                    onMouseEnter={() => prefetch(currentPageHref)}
+                    onFocus={() => prefetch(currentPageHref)}
+                    onTouchStart={() => prefetch(currentPageHref)}
+                  >
                     {currentPage}
                   </BreadcrumbLink>
                 </BreadcrumbItem>
