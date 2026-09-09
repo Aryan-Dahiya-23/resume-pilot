@@ -94,7 +94,7 @@ export function JobDetailsMain({
 }) {
   const notes = notesValue ?? details.notes ?? "";
   return (
-    <div className="min-w-0 space-y-6">
+    <div className="min-w-0 space-y-6 [overflow-wrap:anywhere]">
       <section className="panel">
         <div className="panel-heading">
           <div>

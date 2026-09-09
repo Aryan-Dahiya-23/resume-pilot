@@ -145,10 +145,10 @@ export function ResumeDetailsMain({
   }) => void;
 }) {
   return (
-    <div className="min-w-0 space-y-6">
+    <div className="min-w-0 space-y-6 [overflow-wrap:anywhere]">
       <section className="panel overflow-hidden">
-        <div className="flex items-center justify-between gap-4 border-b border-[#e1e9d5] bg-[#eef3e4] p-6">
-          <div>
+        <div className="flex flex-col items-start justify-between gap-4 border-b border-[#e1e9d5] bg-[#eef3e4] p-6 sm:flex-row sm:items-center">
+          <div className="min-w-0">
             <p className="eyebrow">YOUR RESUME READINESS</p>
             <h2 className="mt-2 text-2xl font-medium tracking-tight">
               {feedback.score >= 75
@@ -226,7 +226,7 @@ export function ResumeDetailsMain({
         </p>
       </section>
       <section className="panel p-6">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="section-title">Find the right words.</h2>
             <p className="mt-1 text-xs leading-6 text-zinc-500">
@@ -248,7 +248,7 @@ export function ResumeDetailsMain({
           {feedback.missingKeywords.map((keyword) => (
             <span
               key={keyword}
-              className="rounded-md border border-[#dae5ce] bg-[#f3f7ec] px-3 py-1.5 text-xs text-[#658048]"
+              className="max-w-full rounded-md border border-[#dae5ce] bg-[#f3f7ec] px-3 py-1.5 text-xs text-[#658048]"
             >
               {keyword}
             </span>
@@ -283,7 +283,7 @@ export function ResumeDetailsMain({
                 </p>
               </div>
               <div className="border-t border-[#e1ead5] bg-[#f1f6e9] p-4">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="eyebrow !text-[10px] !text-[#6c8b4e]">
                     A STRONGER VERSION
                   </p>
